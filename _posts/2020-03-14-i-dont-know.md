@@ -10,7 +10,7 @@ I remember coming out of the subway in Crown Heights, Brooklyn, and a TV reporte
 
 “I don’t know” is useful not in that it produces the right answer, but in that the phrase resets the search for a correct answer. If we’re on the wrong track, saying “I don’t know” gets us back to neutral.
 
-But the problem with “I don’t know” is that the phrase can’t get you to what’s maximally useful. It can get you closer to the right answer if you were going the wrong way, but “I don’t know” can’t take you all the way. At the risk of exposing my naiveté, but with the potential upside of a reader’s smile: it’s good to have the right answer.
+But the problem with “I don’t know” is that the phrase can’t get you to what’s maximally useful. It can get you closer to the right answer if you were going the wrong way, but “I don’t know” can’t take you all the way. At the risk of exposing my naiveté, but with the potential upside of a smile: it’s good to have the right answer.
 
 The right price generates the most revenue. The right feature attracts the most users. The right spouse makes a man thrive. This is devastatingly obvious to me now, but that wasn’t true in my early 20s.
 
@@ -18,15 +18,15 @@ A younger me found "I don't know"'s broad applicability infatuating. It takes so
 
 You can be lazy and still be right when you say “I don’t know.”
 
-The scary thing is trying to really answer questions. “What’s the highest impact action a person can reasonably take in 15 minutes to mitigate climate change?” “How does the watch you’re wearing work?” “Where did that apple you’re eating come from?” “What do muscles actually do on a molecular level?” "Why do the materials in front of you stay solid?" And so on. Fun game.
+The scary thing is trying to really answer questions. “What’s the highest impact action a person can reasonably take in 15 minutes to mitigate climate change?” “How does the watch you’re wearing work?” “Where did that apple you’re eating come from?” "Why do the materials in front of you stay solid?" And so on. Fun game.
 
 When I started realizing how oddly ignored ignorance is, I went through a phase of annoying my parents with simple questions like those above to which none of us knew the answer. It was empowering to show those who raised me that none of us really knew how say, soap works.
 
-Okay until here I think
+The questions above are simply asked, but difficult to answer. Even if decent answers are sometimes only one sentence long, it’s hard for me to construct a correct one quickly. The unknown is always a simple question away. It’s like someone could knock my mind over with the flick of a finger. Going easy on the 9s for readability, I’m 99.99% ignorance.
 
-The questions above are simply asked, but difficult to answer. Even if decent answers are sometimes only one sentence long, it’s hard to construct a correct one quickly. The unknown is always a simple question away. It’s like someone could knock the human mind over with the flick of a finger. Going easy on the 9s for readability, I’m 99.99% ignorance.
+Even those who strive to find correct answers are 99.99% ignorance. Scientists spend their lives trying to be correct. And really, every job has the concept of correct floating above the workplace. The right length of a 2x4 to cut, the right amount of eye contact, the right choice of technology. It’s not a revelation by any stretch that work asks for correct answers.
 
-Even those who have consciously internalized the importance of being correct are 99.99% ignorance. Scientists spend their lives trying to be correct. Perhaps less consciously, everyone seeks correctness. The carpenter must cut the board to the right length.
+Despite the fact that many adults, whether consciously or not, spend much of their lives trying to be correct. We remain exceedingly ignorant of the complex world in which we inhabit. This is old news to many. But perhaps the framing is useful.
 
 The point of this essay is to try to drive a wedge under the unknown a bit. While life is full of sorrow and struggle, it still “works” despite its participants being one second away from many simple, but confounding questions. The human experience functions amazingly well despite overwhelming ignorance of the interconnected systems which underlie our daily experience.
 
