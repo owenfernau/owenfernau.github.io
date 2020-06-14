@@ -18,9 +18,9 @@ A younger me found "I don't know"'s broad applicability infatuating. It takes so
 
 You can be lazy and still be right when you say “I don’t know.” And being lazy is often wrong.
 
-The scary thing is trying to really answer questions. “What’s the highest impact action a person can reasonably take in 15 minutes to mitigate climate change?” takes a while to figure out. Physical-world questions like “How does the watch you’re wearing work?” still stump me. "Why do the materials in front of you even stay solid?" And so on. Fun game for non-physics majors.
+The scary thing is trying to really answer questions. “What’s the highest impact action a person can reasonably take in 15 minutes to mitigate climate change?” takes a while to figure out. Physical-world questions like “How does the watch you’re wearing work?” still stump me. "Why do the materials in front of you even stay solid?" And so on. Fun game for non-physicists.
 
-While the questions above are simply asked, they’re difficult to answer. Even if decent answers are sometimes only one sentence long, it’s hard for me to construct a correct one without the internet’s aid. Despite the unknown’s prevalence, our minds flow forward generally unperturbed by the ignorance surrounding them (there’s probably an evolution explanation here).
+While the questions above are simply asked, they’re difficult to answer. Even if decent answers are sometimes only one sentence long, it’s hard for me to construct a correct one without the internet’s aid. Despite the unknown’s prevalence, our minds flow forward generally unperturbed by the ignorance surrounding them (there’s probably an evolutionary explanation here).
 
 Even those who strive for the right answer still can be stymied by simple questions. There’s simply too much to know. Scientists spend their lives trying to be correct. Yet a question outside their specialty is about as difficult to answer as it is to the average person. This is not to put scientists down, but to point out the fragility of the mind in the context of the complex world.
 
