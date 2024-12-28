@@ -15,5 +15,3 @@ The one-at-a-time process by which language must be understood makes for a power
 Searching for truth in language is hard because, in addition to the language’s linear form which ushers people into linear points of view, the people producing language have variable degrees of cognizance as to how the form’s design shapes their worldview. Just as athletes don’t need to study anatomy to excel, writers and speakers don’t need to understand language in order to use it.
 
 It’s wild to think about. Many people interact with linguistic information most of their waking hours, without understanding how the communication form constructs itself. Not that I understand language, but considering its ubiquity, it seems prudent to be wary of how the communication form’s design shapes worldviews.
-
-David Foster Wallace, in his famous commencement speech once told the parable of the fish who swam in water without ever asking what water is. He goes on to say the most ‘important, obvious realities are often the hardest ones to see and to talk about.’ Language is a sea we’re swimming in, without an answer to the fish’s question ‘what the hell is water?’
