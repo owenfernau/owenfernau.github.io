@@ -1,4 +1,49 @@
 body {
-    background: #eaebea
+    background: #eaebea;
 }
 
+/* Header container for title and button */
+.header-container {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 20px;  /* Add some space before the paragraph content */
+}
+
+/* Noto Sans Mono font styling for paragraph */
+.noto-sans-mono-unique {
+    font-family: "Noto Sans Mono", monospace;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+}
+
+/* Noto Sans Mono font styling for heading */
+.noto-sans-mono-heading {
+    font-family: "Noto Sans Mono", monospace;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+    margin: 0;
+    padding: 0;
+    display: inline;  /* This makes the h3 behave like an inline element */
+    font-size: 1.17em;  /* This preserves the default h3 size */
+}
+
+/* Button styling */
+.button {
+    font-family: "Noto Sans Mono", monospace;
+    background-color: transparent;
+    border: 1px solid #000;
+    padding: 5px 15px;
+    text-decoration: none;
+    color: #000;
+    font-size: 14px;
+}
+
+.button:hover {
+    background-color: #000;
+    color: #eaebea;
+}
