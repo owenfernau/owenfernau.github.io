@@ -18,6 +18,10 @@ body {
     font-weight: 300;
     font-style: normal;
     font-variation-settings: "wdth" 100;
+    font-size: 14px;  /* Match your button size */
+    line-height: 1.5;  /* For consistent line spacing */
+    -webkit-font-smoothing: antialiased;  /* Better font rendering in webkit browsers like Brave */
+    -moz-osx-font-smoothing: grayscale;   /* Better font rendering in Firefox */
 }
 
 /* Button styling */
