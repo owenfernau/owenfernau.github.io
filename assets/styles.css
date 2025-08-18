@@ -48,3 +48,9 @@ body {
     background-color: #000;
     color: #eaebea;
 }
+
+/* Image styling to match text width */
+.noto-sans-mono-unique img {
+    width: 100%;
+    height: auto;
+}
