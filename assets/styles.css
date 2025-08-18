@@ -22,6 +22,13 @@ body {
     line-height: 1.5;  /* For consistent line spacing */
     -webkit-font-smoothing: antialiased;  /* Better font rendering in webkit browsers like Brave */
     -moz-osx-font-smoothing: grayscale;   /* Better font rendering in Firefox */
+    
+    /* Fixed width based on 113 characters */
+    width: 113ch;  /* ch unit = width of '0' character in current font */
+    max-width: 113ch;
+    white-space: pre-wrap;  /* Preserves whitespace and wraps text */
+    word-wrap: break-word;  /* Breaks long words if needed */
+    overflow-wrap: break-word;  /* Modern alternative to word-wrap */
 }
 
 /* Button styling */
