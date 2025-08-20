@@ -11,6 +11,14 @@ body {
     margin-bottom: 20px;
 }
 
+/* Page title styling to match buttons */
+.page-title {
+    font-family: "Noto Sans Mono", monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: #000;
+}
+
 /* Noto Sans Mono font styling for paragraph */
 .noto-sans-mono-unique {
     font-family: "Noto Sans Mono", monospace;
