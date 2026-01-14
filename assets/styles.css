@@ -45,7 +45,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     
-    width: 113ch;
+    width: 100%;
     max-width: 113ch;
     
     list-style: none;
@@ -58,7 +58,7 @@ body {
 }
 
 .bio-list li::before {
-    content: "- ";
+    content: "";
 }
 
 /* General text styling for essays/notes pages */
@@ -70,7 +70,7 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     
-    width: 113ch;
+    width: 100%;
     max-width: 113ch;
     white-space: pre-wrap;
     word-wrap: break-word;
