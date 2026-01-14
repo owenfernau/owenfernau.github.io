@@ -35,16 +35,6 @@ body {
     color: #eaebea;
 }
 
-/* Notes button - inverted style for visibility */
-.button.notes {
-    background-color: #000;
-    color: #eaebea;
-}
-
-.button.notes:hover {
-    background-color: transparent;
-    color: #000;
-}
 
 /* Bio list styling */
 .bio-list {
