@@ -98,6 +98,8 @@ hr {
 }
 
 /* Mobile responsive - stack buttons vertically */
+/*
+
 @media (max-width: 768px) {
     .header-container {
         flex-direction: column;
@@ -105,3 +107,4 @@ hr {
         gap: 10px;
     }
 }
+*/
