@@ -11,12 +11,23 @@ body {
     margin-bottom: 20px;
 }
 
-/* Page title styling to match buttons */
+/* Page title styling to match buttons 
 .page-title {
     font-family: "IBM Plex Mono", monospace;
     font-size: 14px;
     font-weight: 600;
     color: #000;
+}
+*/
+
+.page-title {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: #000;
+    text-align: center; /* Center the text */
+    flex: 1; /* Allow it to take up available space */
+    padding: 0 10px; /* Add some breathing room on sides */
 }
 
 /* Button styling */
