@@ -113,6 +113,15 @@ hr {
     cursor: pointer;
 }
 
+.arrow {
+    display: inline-block;
+    transition: transform 0.1s ease;
+}
+
+.expandable.open .arrow {
+    transform: rotate(90deg);
+}
+
 .sub-list {
     display: none;
     list-style: none;
