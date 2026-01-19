@@ -108,6 +108,23 @@ hr {
     margin: 0;
 }
 
+/* Expandable list items */
+.expandable {
+    cursor: pointer;
+}
+
+.sub-list {
+    display: none;
+    list-style: none;
+    padding-left: 20px;
+    margin: 0;
+    padding-top: 1em;
+}
+
+.expandable.open .sub-list {
+    display: block;
+}
+
 /* Mobile responsive - stack buttons vertically */
 /*
 
