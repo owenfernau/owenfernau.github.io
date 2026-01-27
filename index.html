@@ -21,10 +21,10 @@
 		<br>
 		<li class="expandable"> <span class="arrow">▶</span> Running editorial operations for <a href="http://www.ournetwork.xyz/">OurNetwork</a>, a media organization focused on onchain data.
 				<ul class="sub-list">
-					<li> ○ grew newsletter from TK to TK in TK months</li>
-					<li> ○ managed partnerships worth TK, with TK, TK, and TK</li>
+					<li> ○ grew newsletter from 30,000 to 36,000 subscribers</li>
+					<li> ○ managed partnerships with $1B+ blockchains like Polygon, NEAR, and Sui</li>
 					<li> ○ developed editorial processes with 500+ researcher community</li>
-					<li> ○ modified Python code to create custom SVG charts like this one</li>
+					<li> ○ modified Python code to create custom data visualizations (<span class="lightbox-link" onclick="openLightbox(event)">like this one</span>)</li>
 				</ul>
 			</li>
 		<br>
@@ -53,14 +53,29 @@
 	</ul>
 	<hr>
 	<p class="email-text">email: owenfernau at gmail.com</p>
+
+	<!-- Lightbox modal -->
+	<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+		<img src="assets/oracles_chainlink.svg" alt="SVG data visualization example">
+	</div>
+
 	<script>
 		document.querySelectorAll('.expandable').forEach(item => {
 			item.addEventListener('click', function(e) {
-				if (e.target.tagName !== 'A') {
+				if (e.target.tagName !== 'A' && !e.target.classList.contains('lightbox-link')) {
 					this.classList.toggle('open');
 				}
 			});
 		});
+
+		function openLightbox(e) {
+			e.stopPropagation();
+			document.getElementById('lightbox').classList.add('open');
+		}
+
+		function closeLightbox() {
+			document.getElementById('lightbox').classList.remove('open');
+		}
 	</script>
 </body>
 </html>
