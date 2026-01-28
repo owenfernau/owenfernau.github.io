@@ -127,8 +127,9 @@ hr {
     list-style: none;
     padding-left: 20px;
     margin: 0;
+    margin-bottom: -0.5em;
     padding-top: 1em;
-    padding-bottom: 1em;
+    padding-bottom: 0;
 }
 
 .sub-list .sub-list {
