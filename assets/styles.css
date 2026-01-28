@@ -142,6 +142,11 @@ hr {
     display: block;
 }
 
+.sub-header {
+    margin: 0;
+    padding-bottom: 0.5em;
+}
+
 /* Lightbox modal */
 .lightbox {
     display: none;
