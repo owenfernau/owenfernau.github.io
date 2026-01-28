@@ -118,7 +118,7 @@ hr {
     transition: transform 0.1s ease;
 }
 
-.expandable.open .arrow {
+.expandable.open > .arrow {
     transform: rotate(90deg);
 }
 
@@ -128,9 +128,15 @@ hr {
     padding-left: 20px;
     margin: 0;
     padding-top: 1em;
+    padding-bottom: 1em;
 }
 
-.expandable.open .sub-list {
+.sub-list .sub-list {
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+}
+
+.expandable.open > .sub-list {
     display: block;
 }
 
