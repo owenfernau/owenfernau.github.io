@@ -135,6 +135,7 @@ hr {
 .sub-list .sub-list {
     padding-top: 0.2em;
     padding-bottom: 0.2em;
+    margin-bottom: 0;
 }
 
 .expandable.open > .sub-list {
@@ -161,8 +162,8 @@ hr {
 }
 
 .lightbox img {
-    max-width: 70%;
-    max-height: 70%;
+    max-width: 90%;
+    max-height: 90%;
     background: #eaebea;
     border: 2px solid #000;
     padding: 15px;

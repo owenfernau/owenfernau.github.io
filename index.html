@@ -24,8 +24,8 @@
 					<li> ○ grew newsletter from 30,000 to 36,000 subscribers</li>
 					<li> ○ managed partnerships with $1B+ blockchains like Polygon, NEAR, and Sui</li>
 					<li> ○ developed editorial systems to serve community of 500+ data analysts</li>
-					<li> ○ modified Python code to create custom data visualizations (<span class="lightbox-link" onclick="openLightbox(event)">like this one</span>)</li>
-					<li> ○ picked up key endorsements like TK and TK (Solana founder)</li>
+					<li> ○ modified Python code to create custom data visualizations (<span class="lightbox-link" onclick="openLightbox(event, 'lightbox')">like this one</span>)</li>
+					<li> ○ picked up key endorsements <span class="lightbox-link" onclick="openLightbox(event, 'lightbox-endorsements')">like these</span> TK FORMAT STUPID? TK</li>
 				</ul>
 			</li>
 		<br>
@@ -35,7 +35,7 @@
 					<li> ○ interviewed industry leaders like TK, TK, and TK</li>
 					<li class="expandable"> <span class="arrow">▶</span> articles I'm particularly proud of
 						<ul class="sub-list">
-							<li> ○ sample article 1</li>
+							<li> ○ <a href="https://thedefiant.io/news/defi/investors-questions-rollup-token-valuations">sample article 1</a> TK</li>
 							<li> ○ sample article 2</li>
 							<li> ○ sample article 3</li>
 						</ul>
@@ -62,9 +62,12 @@
 	<hr>
 	<p class="email-text">email: owenfernau at gmail.com</p>
 
-	<!-- Lightbox modal -->
-	<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+	<!-- Lightbox modals -->
+	<div id="lightbox" class="lightbox" onclick="closeLightbox(this)">
 		<img src="assets/oracles_chainlink.svg" alt="SVG data visualization example">
+	</div>
+	<div id="lightbox-endorsements" class="lightbox" onclick="closeLightbox(this)">
+		<img src="assets/endorsements.svg" alt="Endorsements">
 	</div>
 
 	<script>
@@ -77,13 +80,13 @@
 			});
 		});
 
-		function openLightbox(e) {
+		function openLightbox(e, id) {
 			e.stopPropagation();
-			document.getElementById('lightbox').classList.add('open');
+			document.getElementById(id).classList.add('open');
 		}
 
-		function closeLightbox() {
-			document.getElementById('lightbox').classList.remove('open');
+		function closeLightbox(el) {
+			el.classList.remove('open');
 		}
 	</script>
 </body>
