@@ -111,11 +111,16 @@ hr {
 /* Expandable list items */
 .expandable {
     cursor: pointer;
+    background-color: #e0e1e0;
+    padding: 8px;
+    width: calc(100vw - 16px);
+    margin-left: calc(-50vw + 50% + 8px);
+    box-sizing: border-box;
 }
 
 .arrow {
     display: inline-block;
-    transition: transform 0.1s ease;
+    transition: transform 0.195s ease;
 }
 
 .expandable.open > .arrow {
@@ -127,9 +132,8 @@ hr {
     list-style: none;
     padding-left: 20px;
     margin: 0;
-    margin-bottom: -0.5em;
     padding-top: 1em;
-    padding-bottom: 0;
+    padding-bottom: 0.5em;
 }
 
 .sub-list .sub-list {
