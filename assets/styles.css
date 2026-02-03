@@ -111,20 +111,28 @@ hr {
 /* Expandable list items */
 .expandable {
     cursor: pointer;
-    background-color: #e0e1e0;
-    padding: 8px;
-    width: calc(100vw - 16px);
-    margin-left: calc(-50vw + 50% + 8px);
-    box-sizing: border-box;
 }
 
 .arrow {
-    display: inline-block;
-    transition: transform 0.195s ease;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 1em;
+    height: 1em;
+    border: 1px solid #000;
+    font-size: 14px;
+    line-height: 1;
+    vertical-align: middle;
 }
 
-.expandable.open > .arrow {
-    transform: rotate(90deg);
+.arrow::before {
+    content: "+";
+    transition: transform 0.1s ease;
+    display: inline-block;
+}
+
+.expandable.open > .arrow::before {
+    content: "−";
 }
 
 .sub-list {
@@ -132,8 +140,9 @@ hr {
     list-style: none;
     padding-left: 20px;
     margin: 0;
+    margin-bottom: -0.5em;
     padding-top: 1em;
-    padding-bottom: 0.5em;
+    padding-bottom: 0;
 }
 
 .sub-list .sub-list {
