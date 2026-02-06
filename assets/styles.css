@@ -131,6 +131,11 @@ hr {
     display: inline-block;
 }
 
+.arrow:hover {
+    background-color: #000;
+    color: #eaebea;
+}
+
 .expandable.open > .arrow::before {
     content: "−";
 }
