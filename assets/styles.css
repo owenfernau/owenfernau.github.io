@@ -150,6 +150,11 @@ hr {
     padding-bottom: 0;
 }
 
+.sub-list > li {
+    padding-left: 1.5em;
+    text-indent: -1.5em;
+}
+
 .sub-list .sub-list {
     padding-top: 0.2em;
     padding-bottom: 0.2em;
