@@ -123,6 +123,7 @@ hr {
     font-size: 14px;
     line-height: 1;
     vertical-align: middle;
+    text-indent: 0;
 }
 
 .arrow::before {
