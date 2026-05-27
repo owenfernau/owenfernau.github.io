@@ -240,6 +240,25 @@ hr {
     text-align: right;
 }
 
+@media (max-width: 600px) {
+    .profile-block {
+        float: none;
+        flex-direction: row;
+        align-items: center;
+        margin: 15px 0 0 0;
+        gap: 15px;
+    }
+
+    .headshot {
+        width: 80px;
+        height: 80px;
+    }
+
+    .tagline {
+        text-align: left;
+    }
+}
+
 /* Mobile responsive - stack buttons vertically */
 /*
 
