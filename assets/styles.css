@@ -2,6 +2,12 @@ body {
     background: #eaebea;
 }
 
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 40px;
+}
+
 /* Header container for title and button */
 .header-container {
     display: flex;
@@ -9,6 +15,16 @@ body {
     align-items: center;
     width: 100%;
     margin-bottom: 20px;
+}
+
+.profile-block {
+    float: right;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    margin-left: 20px;
+    margin-top: 15px;
 }
 
 /* Page title styling to match buttons 
@@ -207,6 +223,21 @@ hr {
 .lightbox-link:hover {
     background-color: #000;
     color: #eaebea;
+}
+
+.headshot {
+    width: 195px;
+    height: 195px;
+    object-fit: cover;
+    border: 1px solid #000;
+}
+
+.tagline {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 14px;
+    font-weight: 400;
+    margin: 0;
+    text-align: right;
 }
 
 /* Mobile responsive - stack buttons vertically */
