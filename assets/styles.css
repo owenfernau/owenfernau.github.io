@@ -1,11 +1,14 @@
 body {
     background: #eaebea;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 40px;
+    scrollbar-gutter: stable;
 }
 
 .container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 20px 40px;
 }
 
 /* Header container for title and button */
@@ -41,9 +44,7 @@ body {
     font-size: 14px;
     font-weight: 600;
     color: #000;
-    text-align: center; /* Center the text */
-    flex: 1; /* Allow it to take up available space */
-    padding: 0 10px; /* Add some breathing room on sides */
+    text-align: left;
 }
 
 /* Button styling */
