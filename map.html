@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Idea map — Owen Fernau</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#e6e6e0; --ink:#191916; --muted:#6c6c63;
+    --card:#5db06b; --card-ink:#0e2510; --card-hover:#54a361;
+    --line:#c9c9c0; --accent:#2f7a3a;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#16161a; --ink:#e7e7e0; --muted:#9a9a90; --line:#33332f; --card:#3f7d4a; --card-ink:#e8f3ea; --card-hover:#478654; --accent:#7fc98b; }
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+    padding:48px 24px 96px;
+  }
+  .wrap{ max-width:1160px; margin:0 auto; position:relative; }
+  header{ margin-bottom:40px; max-width:660px; }
+  h1{ font-size:20px; font-weight:700; margin:0 0 12px; letter-spacing:-0.01em; }
+  .manifesto{ font-size:14px; color:var(--muted); margin:0 0 6px; }
+  .last-updated{ font-size:12px; color:var(--muted); position:absolute; top:0; right:0; margin:0; }
+  .legend{ font-size:12px; color:var(--muted); margin-top:16px; display:flex; gap:18px; flex-wrap:wrap; }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .dot{ width:9px; height:9px; border-radius:50%; border:1.5px solid var(--accent); }
+  .dot.seed{ background:transparent; }
+  .dot.sprout{ background:var(--accent); opacity:.45; }
+  .dot.evergreen{ background:var(--accent); }
+
+  /* two-zone layout */
+  .layout{ display:grid; grid-template-columns:1fr 300px; gap:52px; align-items:start; }
+  @media(max-width:740px){ .layout{ grid-template-columns:1fr; } }
+
+  /* left: card grid */
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:18px; }
+  .card{
+    background:var(--card); color:var(--card-ink); border:none; text-align:left;
+    border-radius:4px; padding:18px 18px 16px; cursor:pointer; min-height:140px;
+    display:flex; flex-direction:column; gap:10px; font-family:inherit;
+    transition:transform .16s ease, background .16s ease; position:relative;
+    opacity:0; animation:rise .5s ease forwards;
+  }
+  .card:hover{ transform:translateY(-3px); background:var(--card-hover); }
+  .card .kind{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; opacity:.7; }
+  .card .title{ font-size:15px; font-weight:500; line-height:1.4; }
+  .card .tags{ margin-top:auto; font-size:11px; opacity:.75; }
+  .card .stat{ position:absolute; top:16px; right:16px; }
+  @keyframes rise{ to{ opacity:1; transform:translateY(0); } }
+
+  /* right: queue rail */
+  .queue-rail{ border-left:1px solid var(--line); padding-left:26px; }
+  .queue-hd{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 16px; }
+  .q-form{ display:flex; flex-direction:column; gap:7px; margin-bottom:18px; }
+  .q-form input, .q-form select{
+    font-family:inherit; font-size:12px; background:transparent;
+    border:1px solid var(--line); border-radius:3px; padding:6px 9px;
+    color:var(--ink); width:100%; outline:none;
+  }
+  .q-form input::placeholder{ color:var(--muted); }
+  .q-form input:focus, .q-form select:focus{ border-color:var(--muted); }
+  .q-form select{ color:var(--muted); }
+  .q-form select option{ color:var(--ink); background:var(--paper); }
+  .q-submit{
+    font-family:inherit; font-size:12px; color:var(--accent); background:transparent;
+    border:1px solid var(--accent); border-radius:3px; padding:5px 10px;
+    cursor:pointer; align-self:flex-end; transition:all .15s;
+  }
+  .q-submit:hover{ background:var(--accent); color:var(--paper); }
+  .q-divider{ border:none; border-top:1px solid var(--line); margin:0 0 12px; }
+  .q-item{
+    display:flex; align-items:baseline; gap:8px;
+    padding:8px 0; border-bottom:1px solid var(--line); font-size:12px;
+  }
+  .q-item:last-child{ border-bottom:none; }
+  .q-kind{ color:var(--muted); font-size:10px; letter-spacing:.06em; text-transform:uppercase; flex-shrink:0; width:54px; }
+  .q-title{ flex:1; color:var(--ink); line-height:1.4; cursor:pointer; }
+  .q-title:hover{ color:var(--accent); }
+  .q-del{
+    color:var(--muted); background:none; border:none; cursor:pointer;
+    font-size:14px; padding:0; line-height:1; flex-shrink:0; font-family:inherit;
+  }
+  .q-del:hover{ color:var(--ink); }
+
+  /* detail overlay */
+  .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:flex-start;
+    justify-content:center; padding:48px 20px; overflow-y:auto; z-index:10; }
+  .overlay.open{ display:flex; }
+  .panel{ background:var(--paper); color:var(--ink); border:1px solid var(--line); border-radius:6px;
+    max-width:640px; width:100%; padding:32px 34px 36px; }
+  .panel .kind{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); }
+  .panel h2{ font-size:18px; font-weight:700; margin:8px 0 18px; line-height:1.35; }
+  .panel .body{ font-size:14px; }
+  .panel .body p{ margin:0 0 14px; }
+  .panel .seednote{ color:var(--muted); font-style:italic; }
+  .map{ display:grid; grid-template-columns:1fr 1fr; gap:8px 14px; margin:16px 0; font-size:13px; }
+  .map .h{ font-weight:700; color:var(--accent); }
+  .insight{ border-left:2px solid var(--accent); padding:6px 0 6px 14px; margin:16px 0; font-size:13px; }
+  .conns{ margin-top:22px; border-top:1px solid var(--line); padding-top:16px; }
+  .conns .lbl{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+  .conns a{ display:inline-block; font-size:12px; color:var(--accent); border:1px solid var(--line);
+    border-radius:999px; padding:4px 11px; margin:0 6px 6px 0; cursor:pointer; text-decoration:none; }
+  .conns a:hover{ border-color:var(--accent); }
+  .close{ float:right; background:transparent; border:none; color:var(--muted); font-family:inherit;
+    font-size:18px; cursor:pointer; line-height:1; }
+  a.src{ color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="last-updated" id="last-updated"></p>
+  <header>
+    <h1>a dynamic map of AI safety learning</h1>
+  </header>
+
+  <div class="layout">
+    <div class="grid" id="grid"></div>
+
+    <div class="queue-rail">
+      <p class="queue-hd">queue</p>
+      <form class="q-form" id="q-form">
+        <input id="q-title" placeholder="title..." autocomplete="off">
+        <input id="q-url" placeholder="url (optional)" autocomplete="off">
+        <select id="q-kind">
+          <option value="source">source</option>
+          <option value="idea">idea</option>
+          <option value="question">question</option>
+        </select>
+        <button type="submit" class="q-submit">add &rarr;</button>
+      </form>
+      <hr class="q-divider">
+      <div id="q-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="panel" id="panel"></div>
+</div>
+
+<script>
+/* ============================================================
+   NODES: developed ideas that earn a card.
+   Add here when something is worked out enough to explain.
+   ============================================================ */
+const NODES = [
+  {
+    id:'fed-ai', kind:'idea', status:'evergreen',
+    title:'Regulate AI like the Fed regulates banks',
+    tags:['governance','econ-bridge'],
+    links:['interest-rates','goodfire','em-fields'],
+    body:`<p>Most "regulate AI" takes reach for an <em>FDA for AI</em> — a one-time approval gate before release. The Fed analogy points somewhere subtler: bank supervision is <strong>continuous</strong>. The regulator never stops watching.</p>
+    <div class="map">
+      <div class="h">Fed &rarr; banks</div><div class="h">Agency &rarr; AI labs</div>
+      <div>Stress tests</div><div>Capability evals</div>
+      <div>Embedded examiners</div><div>Embedded auditors</div>
+      <div>Capital buffers</div><div>Safety thresholds</div>
+      <div>Systemic-risk watch</div><div>Frontier-risk watch</div>
+    </div>
+    <div class="insight">The key difference: continuous supervision, not a single gate. The Fed keeps talking to banks forever &mdash; "constantly talking and monitoring risk."</div>
+    <p class="seednote">Caveat: the right-hand column is what the analogy <em>suggests</em>, not what exists. It's a thinking tool, not a claim.</p>`
+  }
+];
+
+/* ============================================================
+   QUEUE: things to read/watch/think through.
+   Items here haven't been worked into an idea yet.
+   Add via the form on the page, or hardcode below.
+   ============================================================ */
+const QUEUE_STATIC = [
+  {
+    id:'goodfire', kind:'source',
+    title:'Goodfire — the world inside neural networks',
+    url:'https://www.goodfire.ai/research/the-world-inside-neural-networks',
+    body:`<p>Mechanistic interpretability: reading what's actually happening <em>inside</em> a model rather than just judging its outputs.</p>
+    <p>The bridge I keep noticing: interpretability is to a model what an examiner's audit is to a bank, or what monitoring is to any system you can't fully trust. All three are "seeing inside."</p>
+    <p><a class="src" href="https://www.goodfire.ai/research/the-world-inside-neural-networks" target="_blank" rel="noopener">Read &rarr;</a></p>`
+  },
+  {
+    id:'karpathy', kind:'source',
+    title:'Karpathy — Intro to LLMs',
+    url:'https://www.youtube.com/watch?v=zjkBMFhNj_g'
+  },
+  {
+    id:'3b1b', kind:'source',
+    title:'3Blue1Brown — Neural Networks series',
+    url:'https://www.3blue1brown.com/topics/neural-networks'
+  },
+  {
+    id:'em-fields', kind:'idea',
+    title:'Monitoring the EM fields of GPU / data centers',
+    body:`<p>Can you observe what compute is doing from the <em>outside</em> — side-channel signals, power draw, electromagnetic emissions — as a verification or governance tool? "Seeing what's going on" without needing to be let inside.</p>`
+  },
+  {
+    id:'interest-rates', kind:'question',
+    title:"Interest rates' relationship to AI",
+    body:`<p>Does the cost of capital shape the <em>pace and shape</em> of the AI buildout? Cheap money fuels speculative infrastructure; expensive money forces discipline. If compute is the new capital expenditure, rates may be an underrated lever on the whole field.</p>`
+  }
+];
+
+/* ---------- localStorage queue ---------- */
+function loadUserQueue(){
+  try{ return JSON.parse(localStorage.getItem('map-queue') || '[]'); }catch{ return []; }
+}
+function saveUserQueue(items){ localStorage.setItem('map-queue', JSON.stringify(items)); }
+
+/* ---------- lookup (nodes + static queue) ---------- */
+function findItem(id){
+  return NODES.find(x => x.id === id) || QUEUE_STATIC.find(x => x.id === id);
+}
+
+/* ---------- card grid ---------- */
+const grid = document.getElementById('grid');
+const overlay = document.getElementById('overlay');
+const panel = document.getElementById('panel');
+
+function renderGrid(){
+  grid.innerHTML = '';
+  NODES.forEach((n, i) => {
+    const c = document.createElement('button');
+    c.className = 'card';
+    c.style.animationDelay = (i * 45) + 'ms';
+    c.innerHTML =
+      '<span class="title">' + n.title + '</span>' +
+      (n.tags ? '<span class="tags">' + n.tags.map(t => '#' + t).join('  ') + '</span>' : '');
+    c.onclick = () => openPanel(n.id, 'node');
+    grid.appendChild(c);
+  });
+}
+
+/* ---------- overlay ---------- */
+function openPanel(id, source){
+  const n = source === 'node' ? NODES.find(x => x.id === id) : QUEUE_STATIC.find(x => x.id === id);
+  if(!n) return;
+  const conns = (n.links || []).map(lid => findItem(lid)).filter(Boolean);
+  panel.innerHTML =
+    '<button class="close" aria-label="close" onclick="closeOverlay()">&times;</button>' +
+    '<h2>' + n.title + '</h2>' +
+    '<div class="body">' + (n.body || '<p class="seednote">Not written yet.</p>') + '</div>' +
+    (conns.length ? '<div class="conns"><div class="lbl">connects to</div>' +
+      conns.map(c => {
+        const src = NODES.find(x => x.id === c.id) ? 'node' : 'queue';
+        return '<a onclick="openPanel(\'' + c.id + '\',\'' + src + '\')">' + c.title + '</a>';
+      }).join('') + '</div>' : '');
+  overlay.classList.add('open');
+  panel.scrollTop = 0;
+}
+function closeOverlay(){ overlay.classList.remove('open'); }
+overlay.onclick = e => { if(e.target === overlay) closeOverlay(); };
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeOverlay(); });
+
+/* ---------- queue ---------- */
+const qList = document.getElementById('q-list');
+
+function renderQueue(){
+  qList.innerHTML = '';
+  const userItems = loadUserQueue();
+  const all = [...QUEUE_STATIC, ...userItems];
+  all.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'q-item';
+
+    const title = document.createElement('span');
+    title.className = 'q-title';
+    title.textContent = item.title;
+    title.onclick = () => {
+      if(item.body) { openPanel(item.id, 'queue'); }
+      else if(item.url) { window.open(item.url, '_blank', 'noopener'); }
+    };
+
+    row.appendChild(title);
+
+    if(item._user){
+      const del = document.createElement('button');
+      del.className = 'q-del';
+      del.textContent = '×';
+      del.title = 'remove';
+      del.onclick = () => {
+        const items = loadUserQueue().filter(x => x.id !== item.id);
+        saveUserQueue(items);
+        renderQueue();
+      };
+      row.appendChild(del);
+    }
+
+    qList.appendChild(row);
+  });
+}
+
+document.getElementById('q-form').onsubmit = function(e){
+  e.preventDefault();
+  const title = document.getElementById('q-title').value.trim();
+  if(!title) return;
+  const url = document.getElementById('q-url').value.trim();
+  const kind = document.getElementById('q-kind').value;
+  const items = loadUserQueue();
+  items.unshift({ id:'u-' + Date.now(), kind, title, url: url || null, _user:true });
+  saveUserQueue(items);
+  this.reset();
+  renderQueue();
+};
+
+const LAST_UPDATED = 'June 2, 2026';
+document.getElementById('last-updated').textContent = 'last updated: ' + LAST_UPDATED;
+
+renderGrid();
+renderQueue();
+</script>
+</body>
+</html>
