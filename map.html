@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Safety Map — Owen Fernau</title>
+<title>AI Map — Owen Fernau</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
@@ -23,7 +23,6 @@
     min-height:100vh;
   }
 
-  /* header */
   .header{
     padding:24px 32px 20px;
     border-bottom:1px solid var(--line);
@@ -32,11 +31,16 @@
   .header h1{ font-size:15px; font-weight:700; letter-spacing:-0.01em; }
   .header .meta{ font-size:11px; color:var(--muted); }
 
-  /* cards row */
   .cards-row{
     display:flex; gap:10px; padding:20px 32px;
-    border-bottom:1px solid var(--line);
+    border-bottom:1px solid var(--line); flex-wrap:wrap;
   }
+  .sub-row{
+    display:none; gap:10px; padding:14px 32px;
+    border-bottom:1px solid var(--line); flex-wrap:wrap;
+    background:var(--paper);
+  }
+  .sub-row.open{ display:flex; }
   .card{
     border-radius:4px; padding:10px 16px;
     font-size:12px; line-height:1.3;
@@ -48,25 +52,24 @@
   .card.has-notes{ color:var(--accent); border-color:var(--accent); background:transparent; }
   .card.active{ background:var(--accent); color:var(--paper); border-color:var(--accent); }
   .card:hover:not(.active){ border-color:var(--muted); color:var(--ink); }
-  .card.has-notes:hover:not(.active){ background:transparent; color:var(--accent); border-color:var(--accent); opacity:.8; }
+  .card.has-notes:hover:not(.active){ opacity:.75; }
 
-  /* layout */
   .layout{
     display:grid;
     grid-template-columns:1fr 260px;
     min-height:calc(100vh - 120px);
   }
 
-  /* main panel */
   .main{
     padding:40px 48px;
     border-right:1px solid var(--line);
   }
   .panel-title{
     font-size:22px; font-weight:700; letter-spacing:-0.01em;
-    margin-bottom:28px; color:var(--ink);
+    margin-bottom:28px;
   }
   .panel-title.green{ color:var(--accent); }
+
   .note-list{ list-style:none; }
   .note-row{
     display:flex; align-items:baseline; gap:10px;
@@ -76,8 +79,11 @@
   .note-row:last-of-type{ border-bottom:none; }
   .note-dash{ color:var(--muted); flex-shrink:0; }
   .note-text{ flex:1; }
+  .note-row.linked{ cursor:pointer; }
+  .note-row.linked .note-text{ color:var(--accent); }
+  .note-row.linked:hover .note-text{ opacity:.75; }
+  .note-link-arrow{ color:var(--accent); font-size:11px; flex-shrink:0; }
 
-  /* sidebar */
   .sidebar{ padding:32px 24px; }
   .sidebar-label{
     font-size:11px; letter-spacing:.08em; text-transform:uppercase;
@@ -112,11 +118,12 @@
 <body>
 
 <div class="header">
-  <h1>AI Safety Map (Dynamically Updating)</h1>
+  <h1>AI Map (Dynamically Updating)</h1>
   <span class="meta" id="last-updated"></span>
 </div>
 
 <div class="cards-row" id="cards-row"></div>
+<div class="sub-row" id="sub-row"></div>
 
 <div class="layout">
   <main class="main" id="main-panel"></main>
@@ -135,6 +142,7 @@
 const IS_LOCAL = ['localhost','127.0.0.1'].includes(location.hostname);
 let DATA = { root:'', lastUpdated:'', cards:[], links:[] };
 let activeCardId = null;
+let activeSubCardId = null;
 
 async function loadData(){
   const res = await fetch('nodes.json');
@@ -148,11 +156,7 @@ async function saveData(){
   const now = new Date();
   DATA.lastUpdated = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   document.getElementById('last-updated').textContent = 'last updated: ' + DATA.lastUpdated;
-  await fetch('/save',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(DATA)
-  });
+  await fetch('/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(DATA)});
 }
 
 function renderHeader(){
@@ -160,80 +164,106 @@ function renderHeader(){
     document.getElementById('last-updated').textContent = 'last updated: ' + DATA.lastUpdated;
 }
 
-/* ---------- cards ---------- */
+function hasNotes(card){ return card.notes && card.notes.length > 0; }
+function noteText(n){ return typeof n === 'string' ? n : n.text; }
+function noteLink(n){ return typeof n === 'object' && n.link ? n.link : null; }
+
 function renderCards(){
   const row = document.getElementById('cards-row');
   row.innerHTML = '';
-  DATA.cards.forEach(c => {
+  const topLevel = DATA.cards.filter(c => c.topLevel);
+  const active = topLevel.filter(c => c.id === activeCardId);
+  const rest = topLevel.filter(c => c.id !== activeCardId);
+  [...active, ...rest].forEach(c => {
     const btn = document.createElement('button');
-    const hasNotes = c.notes && c.notes.length > 0;
     btn.className = 'card' +
-      (hasNotes ? ' has-notes' : '') +
+      (hasNotes(c) ? ' has-notes' : '') +
       (activeCardId === c.id ? ' active' : '');
     btn.textContent = c.title;
     btn.onclick = () => {
       activeCardId = activeCardId === c.id ? null : c.id;
-      renderCards();
-      renderPanel();
+      activeSubCardId = null;
+      renderCards(); renderSubRow(); renderPanel();
     };
     row.appendChild(btn);
   });
 }
 
-/* ---------- main panel ---------- */
+function renderSubRow(){
+  const row = document.getElementById('sub-row');
+  if(!activeSubCardId){ row.className = 'sub-row'; row.innerHTML = ''; return; }
+  const card = DATA.cards.find(c => c.id === activeSubCardId);
+  if(!card){ row.className = 'sub-row'; return; }
+  row.className = 'sub-row open';
+  row.innerHTML = '';
+  const btn = document.createElement('button');
+  btn.className = 'card active';
+  btn.textContent = card.title;
+  btn.onclick = () => { activeSubCardId = null; renderSubRow(); renderPanel(); };
+  row.appendChild(btn);
+}
+
 function renderPanel(){
   const main = document.getElementById('main-panel');
   main.innerHTML = '';
-  if(!activeCardId) return;
+  const cardId = activeSubCardId || activeCardId;
+  if(!cardId) return;
 
-  const card = DATA.cards.find(c => c.id === activeCardId);
+  const card = DATA.cards.find(c => c.id === cardId);
   if(!card) return;
 
-  const hasNotes = card.notes && card.notes.length > 0;
-
-  const title = document.createElement('div');
-  title.className = 'panel-title' + (hasNotes ? ' green' : '');
-  title.textContent = card.title;
-  main.appendChild(title);
 
   const list = document.createElement('ul');
   list.className = 'note-list';
   (card.notes || []).forEach(note => {
     const li = document.createElement('li');
-    li.className = 'note-row';
-    li.innerHTML = '<span class="note-dash">—</span><span class="note-text">' + note + '</span>';
+    const link = noteLink(note);
+    li.className = 'note-row' + (link ? ' linked' : '');
+
+    const dash = document.createElement('span');
+    dash.className = 'note-dash';
+    dash.textContent = '—';
+
+    const text = document.createElement('span');
+    text.className = 'note-text';
+    text.textContent = noteText(note);
+
+    li.appendChild(dash);
+    li.appendChild(text);
+
+    if(link){
+      const arrow = document.createElement('span');
+      arrow.className = 'note-link-arrow';
+      arrow.textContent = '→';
+      li.appendChild(arrow);
+      li.onclick = () => { activeSubCardId = link; renderSubRow(); renderPanel(); };
+    }
+
     list.appendChild(li);
   });
   main.appendChild(list);
 }
 
-/* ---------- links ---------- */
 function renderLinks(){
   const list = document.getElementById('link-list');
   list.innerHTML = '';
   DATA.links.forEach(lnk => {
     const li = document.createElement('li');
     li.className = 'link-item';
-
     const a = document.createElement('a');
     a.href = lnk.url; a.target = '_blank'; a.rel = 'noopener';
     a.textContent = lnk.title;
-
     const arrow = document.createElement('span');
     arrow.className = 'link-arrow';
     arrow.textContent = '↗';
-
-    li.appendChild(a);
-    li.appendChild(arrow);
-
+    li.appendChild(a); li.appendChild(arrow);
     if(IS_LOCAL){
       const del = document.createElement('button');
       del.className = 'link-delete';
       del.textContent = '×';
       del.onclick = async () => {
         DATA.links = DATA.links.filter(l => l.id !== lnk.id);
-        await saveData();
-        renderLinks();
+        await saveData(); renderLinks();
       };
       li.appendChild(del);
     }
@@ -252,11 +282,8 @@ function setupAddLink(){
     let url = urlIn.value.trim();
     if(!title || !url) return;
     if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
-    DATA.links.push({ id:'l-'+Date.now(), title, url });
-    await saveData();
-    titleIn.value = ''; urlIn.value = '';
-    renderLinks();
-    titleIn.focus();
+    DATA.links.push({id:'l-'+Date.now(), title, url});
+    await saveData(); renderLinks(); titleIn.value = ''; urlIn.value = ''; titleIn.focus();
   };
 }
 
@@ -264,6 +291,7 @@ async function init(){
   await loadData();
   renderHeader();
   renderCards();
+  renderSubRow();
   renderPanel();
   renderLinks();
   setupAddLink();
