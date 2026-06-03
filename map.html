@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI safety map — Owen Fernau</title>
+<title>AI Safety Map — Owen Fernau</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
@@ -11,143 +11,143 @@
   :root{
     --paper:#e6e6e0; --ink:#191916; --muted:#6c6c63;
     --line:#c9c9c0; --accent:#2f7a3a;
-    --tile:#d4d4cc; --panel:#d0d0c8;
   }
   @media(prefers-color-scheme:dark){
-    :root{ --paper:#16161a; --ink:#e7e7e0; --muted:#9a9a90; --line:#33332f; --accent:#7fc98b; --tile:#242428; --panel:#1e1e22; }
+    :root{ --paper:#16161a; --ink:#e7e7e0; --muted:#9a9a90; --line:#33332f; --accent:#7fc98b; }
   }
   *{ box-sizing:border-box; margin:0; padding:0; }
   body{
     background:var(--paper); color:var(--ink);
     font-family:"JetBrains Mono", ui-monospace, monospace;
     line-height:1.6; -webkit-font-smoothing:antialiased;
+    min-height:100vh;
   }
 
-  /* hero */
-  .hero{
-    background:#e6e6e0; color:#191916;
-    padding:24px 32px;
-    position:relative;
+  /* header */
+  .header{
+    padding:24px 32px 20px;
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; justify-content:space-between;
   }
-  .hero h1{
-    font-size:16px;
-    font-weight:700; letter-spacing:-0.01em; line-height:1.4;
+  .header h1{ font-size:15px; font-weight:700; letter-spacing:-0.01em; }
+  .header .meta{ font-size:11px; color:var(--muted); }
+
+  /* cards row */
+  .cards-row{
+    display:flex; gap:10px; padding:20px 32px;
+    border-bottom:1px solid var(--line);
   }
-  .hero .meta{
-    position:absolute; bottom:18px; right:24px;
-    font-size:11px; color:var(--muted);
+  .card{
+    border-radius:4px; padding:10px 16px;
+    font-size:12px; line-height:1.3;
+    cursor:pointer; border:1px solid transparent;
+    font-family:inherit; text-align:left;
+    background:var(--line); color:var(--muted);
+    transition:all .15s;
+  }
+  .card.has-notes{ color:var(--accent); border-color:var(--accent); background:transparent; }
+  .card.active{ background:var(--accent); color:var(--paper); border-color:var(--accent); }
+  .card:hover:not(.active){ border-color:var(--muted); color:var(--ink); }
+  .card.has-notes:hover:not(.active){ background:transparent; color:var(--accent); border-color:var(--accent); opacity:.8; }
+
+  /* layout */
+  .layout{
+    display:grid;
+    grid-template-columns:1fr 260px;
+    min-height:calc(100vh - 120px);
   }
 
-  /* bucket row */
-  .bucket-row{
-    display:flex; gap:10px; padding:20px 24px;
-    overflow-x:auto; background:var(--paper);
+  /* main panel */
+  .main{
+    padding:40px 48px;
+    border-right:1px solid var(--line);
   }
-  .bucket-row::-webkit-scrollbar{ display:none; }
-  .tile{
-    background:var(--tile); color:var(--muted); border:none;
-    border-radius:4px; padding:18px 20px; min-width:130px; min-height:90px;
-    font-family:inherit; font-size:12px; cursor:pointer;
-    text-align:left; transition:all .15s; flex-shrink:0;
-    display:flex; align-items:flex-end;
-  }
-  .tile:hover{ color:var(--ink); }
-  .tile.active{ background:var(--ink); color:var(--paper); }
-
-  /* bucket panel */
-  .bucket-panel{
-    display:none; background:var(--panel);
-    padding:32px 48px 48px; min-height:60vh;
-  }
-  .bucket-panel.open{ display:block; }
   .panel-title{
     font-size:22px; font-weight:700; letter-spacing:-0.01em;
-    margin-bottom:28px;
+    margin-bottom:28px; color:var(--ink);
   }
-
-  /* notes */
-  .note-item{ border-bottom:1px solid var(--line); }
-  .note-item:last-of-type{ border-bottom:none; }
+  .panel-title.green{ color:var(--accent); }
+  .note-list{ list-style:none; }
   .note-row{
     display:flex; align-items:baseline; gap:10px;
-    padding:10px 0; cursor:pointer;
+    padding:8px 0; border-bottom:1px solid var(--line);
+    font-size:14px;
   }
-  .note-dash{ color:var(--muted); flex-shrink:0; user-select:none; }
-  .note-title{
-    font-size:14px; flex:1; line-height:1.5;
-    outline:none;
-  }
-  .note-title:focus{ color:var(--accent); }
-  .note-link-badge{
-    font-size:11px; color:var(--accent); flex-shrink:0;
-    text-decoration:none; opacity:.7; transition:opacity .15s;
-  }
-  .note-link-badge:hover{ opacity:1; }
+  .note-row:last-of-type{ border-bottom:none; }
+  .note-dash{ color:var(--muted); flex-shrink:0; }
+  .note-text{ flex:1; }
 
-  /* sub-panel */
-  .note-sub{
-    display:none; padding:0 0 20px 22px;
+  /* sidebar */
+  .sidebar{ padding:32px 24px; }
+  .sidebar-label{
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:14px;
   }
-  .note-sub.open{ display:block; }
-  .sub-body{
-    width:100%; min-height:100px; background:transparent;
-    border:none; border-left:2px solid var(--accent);
-    padding:10px 0 10px 16px;
-    font-family:inherit; font-size:13px; color:var(--ink);
-    resize:none; outline:none; line-height:1.7;
-    display:block;
+  .link-list{ list-style:none; }
+  .link-item{
+    display:flex; align-items:baseline; gap:6px;
+    padding:7px 0; border-bottom:1px solid var(--line); font-size:12px;
   }
-  .sub-body[readonly]{ cursor:default; color:var(--ink); }
-  .sub-url{
-    display:block; margin-top:10px; padding-left:18px;
-    font-size:12px; color:var(--accent); text-decoration:none;
+  .link-item:last-of-type{ border-bottom:none; }
+  .link-item a{ color:var(--ink); text-decoration:none; flex:1; line-height:1.4; }
+  .link-item a:hover{ color:var(--accent); }
+  .link-arrow{ color:var(--accent); font-size:11px; flex-shrink:0; }
+  .link-delete{
+    background:none; border:none; color:transparent;
+    font-family:inherit; font-size:12px; cursor:pointer; padding:0; flex-shrink:0;
   }
-  .sub-url:hover{ text-decoration:underline; }
-  .sub-delete{
-    display:block; margin-top:12px; padding-left:18px;
-    font-size:11px; color:var(--muted); background:none;
-    border:none; cursor:pointer; font-family:inherit; text-align:left;
-  }
-  .sub-delete:hover{ color:var(--ink); }
+  .link-item:hover .link-delete{ color:var(--muted); }
+  .link-delete:hover{ color:var(--ink) !important; }
 
-  /* add note */
-  .add-note-wrap{ margin-top:24px; display:flex; gap:10px; align-items:center; }
-  .add-note-input{
-    font-family:inherit; font-size:13px; background:transparent;
-    border:none; border-bottom:1px solid var(--line); padding:4px 0;
-    color:var(--ink); outline:none; flex:1; max-width:480px;
+  .add-link{ margin-top:18px; }
+  .add-link input{
+    font-family:inherit; font-size:12px; background:transparent;
+    border:none; border-bottom:1px solid var(--line);
+    color:var(--ink); outline:none; width:100%; padding:4px 0; margin-bottom:8px;
   }
-  .add-note-input::placeholder{ color:var(--muted); }
-  .add-note-input:focus{ border-bottom-color:var(--accent); }
+  .add-link input::placeholder{ color:var(--muted); }
+  .add-link input:focus{ border-bottom-color:var(--accent); }
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <h1 id="root-q"></h1>
+<div class="header">
+  <h1>AI Safety Map (Dynamically Updating)</h1>
   <span class="meta" id="last-updated"></span>
 </div>
 
-<div class="bucket-row" id="bucket-row"></div>
+<div class="cards-row" id="cards-row"></div>
 
-<div class="bucket-panel" id="bucket-panel"></div>
+<div class="layout">
+  <main class="main" id="main-panel"></main>
+
+  <aside class="sidebar">
+    <div class="sidebar-label">links</div>
+    <ul class="link-list" id="link-list"></ul>
+    <div class="add-link" id="add-link-form" style="display:none">
+      <input id="add-link-title" type="text" placeholder="title" autocomplete="off">
+      <input id="add-link-url" type="text" placeholder="url" autocomplete="off">
+    </div>
+  </aside>
+</div>
 
 <script>
-const LAST_UPDATED = 'June 2, 2026';
 const IS_LOCAL = ['localhost','127.0.0.1'].includes(location.hostname);
+let DATA = { root:'', lastUpdated:'', cards:[], links:[] };
+let activeCardId = null;
 
-let DATA = { root:'', buckets:[] };
-let activeBucketId = null;
-let activeNoteId   = null;
-
-/* ---------- data ---------- */
 async function loadData(){
   const res = await fetch('nodes.json');
   DATA = await res.json();
+  if(!DATA.cards) DATA.cards = [];
+  if(!DATA.links) DATA.links = [];
 }
 
 async function saveData(){
   if(!IS_LOCAL) return;
+  const now = new Date();
+  DATA.lastUpdated = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('last-updated').textContent = 'last updated: ' + DATA.lastUpdated;
   await fetch('/save',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -155,205 +155,118 @@ async function saveData(){
   });
 }
 
-function getBucket(id){ return DATA.buckets.find(b => b.id === id); }
-function getNote(bucketId, noteId){
-  const b = getBucket(bucketId);
-  return b ? b.notes.find(n => n.id === noteId) : null;
+function renderHeader(){
+  if(DATA.lastUpdated)
+    document.getElementById('last-updated').textContent = 'last updated: ' + DATA.lastUpdated;
 }
 
-/* ---------- hero ---------- */
-function renderHero(){
-  document.getElementById('root-q').textContent = DATA.root;
-  document.getElementById('last-updated').textContent = 'last updated: ' + LAST_UPDATED;
-}
-
-/* ---------- bucket row ---------- */
-function renderBucketRow(){
-  const row = document.getElementById('bucket-row');
+/* ---------- cards ---------- */
+function renderCards(){
+  const row = document.getElementById('cards-row');
   row.innerHTML = '';
-  DATA.buckets.forEach(b => {
-    const tile = document.createElement('button');
-    tile.className = 'tile' + (activeBucketId === b.id ? ' active' : '');
-    tile.textContent = b.sub;
-    tile.onclick = () => selectBucket(b.id);
-    row.appendChild(tile);
+  DATA.cards.forEach(c => {
+    const btn = document.createElement('button');
+    const hasNotes = c.notes && c.notes.length > 0;
+    btn.className = 'card' +
+      (hasNotes ? ' has-notes' : '') +
+      (activeCardId === c.id ? ' active' : '');
+    btn.textContent = c.title;
+    btn.onclick = () => {
+      activeCardId = activeCardId === c.id ? null : c.id;
+      renderCards();
+      renderPanel();
+    };
+    row.appendChild(btn);
   });
 }
 
-function selectBucket(id){
-  activeBucketId = activeBucketId === id ? null : id;
-  activeNoteId = null;
-  renderBucketRow();
-  renderBucketPanel();
-}
+/* ---------- main panel ---------- */
+function renderPanel(){
+  const main = document.getElementById('main-panel');
+  main.innerHTML = '';
+  if(!activeCardId) return;
 
-/* ---------- bucket panel ---------- */
-function renderBucketPanel(){
-  const panel = document.getElementById('bucket-panel');
-  if(!activeBucketId){ panel.classList.remove('open'); return; }
-  const b = getBucket(activeBucketId);
-  panel.classList.add('open');
-  panel.innerHTML = '';
+  const card = DATA.cards.find(c => c.id === activeCardId);
+  if(!card) return;
+
+  const hasNotes = card.notes && card.notes.length > 0;
 
   const title = document.createElement('div');
-  title.className = 'panel-title';
-  title.textContent = b.title;
-  panel.appendChild(title);
+  title.className = 'panel-title' + (hasNotes ? ' green' : '');
+  title.textContent = card.title;
+  main.appendChild(title);
 
-  const list = document.createElement('div');
-  list.id = 'notes-list';
-  b.notes.forEach(n => list.appendChild(makeNoteItem(b.id, n)));
-  panel.appendChild(list);
-
-  if(IS_LOCAL) panel.appendChild(makeAddNoteForm(b.id));
-}
-
-function makeNoteItem(bucketId, note){
-  const item = document.createElement('div');
-  item.className = 'note-item';
-  item.id = 'item-' + note.id;
-
-  /* row */
-  const row = document.createElement('div');
-  row.className = 'note-row';
-
-  const dash = document.createElement('span');
-  dash.className = 'note-dash';
-  dash.textContent = '—';
-
-  const titleEl = document.createElement('span');
-  titleEl.className = 'note-title';
-  titleEl.textContent = note.title;
-  if(IS_LOCAL){
-    titleEl.contentEditable = 'true';
-    titleEl.onblur = async () => {
-      const val = titleEl.textContent.trim();
-      if(!val){ titleEl.textContent = note.title; return; }
-      note.title = val;
-      await saveData();
-    };
-    titleEl.onkeydown = e => { if(e.key==='Enter'){ e.preventDefault(); titleEl.blur(); } };
-  }
-
-  row.appendChild(dash);
-  row.appendChild(titleEl);
-
-  if(note.url){
-    const badge = document.createElement('a');
-    badge.className = 'note-link-badge';
-    badge.textContent = '↗';
-    badge.href = note.url;
-    badge.target = '_blank';
-    badge.rel = 'noopener';
-    badge.onclick = e => e.stopPropagation();
-    row.appendChild(badge);
-  }
-
-  row.onclick = e => {
-    if(e.target === titleEl && IS_LOCAL) return;
-    toggleNote(bucketId, note.id);
-  };
-
-  /* sub-panel */
-  const sub = document.createElement('div');
-  sub.className = 'note-sub' + (activeNoteId === note.id ? ' open' : '');
-  sub.id = 'sub-' + note.id;
-
-  const body = document.createElement('textarea');
-  body.className = 'sub-body';
-  body.placeholder = 'write something...';
-  body.value = note.body || '';
-  body.rows = Math.max(3, (note.body || '').split('\n').length + 1);
-  if(!IS_LOCAL) body.readOnly = true;
-  body.oninput = () => { body.rows = Math.max(3, body.value.split('\n').length + 1); };
-  body.onblur = async () => {
-    if(!IS_LOCAL) return;
-    note.body = body.value;
-    await saveData();
-  };
-  sub.appendChild(body);
-
-  if(note.url){
-    const link = document.createElement('a');
-    link.className = 'sub-url';
-    link.href = note.url;
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.textContent = 'open link ↗';
-    sub.appendChild(link);
-  }
-
-  if(IS_LOCAL){
-    const del = document.createElement('button');
-    del.className = 'sub-delete';
-    del.textContent = 'delete note';
-    del.onclick = async () => {
-      if(!confirm('delete?')) return;
-      const b = getBucket(bucketId);
-      b.notes = b.notes.filter(n => n.id !== note.id);
-      if(activeNoteId === note.id) activeNoteId = null;
-      await saveData();
-      renderBucketPanel();
-    };
-    sub.appendChild(del);
-  }
-
-  item.appendChild(row);
-  item.appendChild(sub);
-  return item;
-}
-
-function toggleNote(bucketId, noteId){
-  activeNoteId = activeNoteId === noteId ? null : noteId;
-  const b = getBucket(bucketId);
-  b.notes.forEach(n => {
-    const sub = document.getElementById('sub-' + n.id);
-    if(sub) sub.className = 'note-sub' + (n.id === activeNoteId ? ' open' : '');
+  const list = document.createElement('ul');
+  list.className = 'note-list';
+  (card.notes || []).forEach(note => {
+    const li = document.createElement('li');
+    li.className = 'note-row';
+    li.innerHTML = '<span class="note-dash">—</span><span class="note-text">' + note + '</span>';
+    list.appendChild(li);
   });
-  if(activeNoteId){
-    const ta = document.querySelector('#sub-' + activeNoteId + ' .sub-body');
-    if(ta && IS_LOCAL) setTimeout(() => ta.focus(), 50);
-  }
+  main.appendChild(list);
 }
 
-/* ---------- add note form ---------- */
-function makeAddNoteForm(bucketId){
-  const wrap = document.createElement('div');
-  wrap.className = 'add-note-wrap';
+/* ---------- links ---------- */
+function renderLinks(){
+  const list = document.getElementById('link-list');
+  list.innerHTML = '';
+  DATA.links.forEach(lnk => {
+    const li = document.createElement('li');
+    li.className = 'link-item';
 
-  const input = document.createElement('input');
-  input.className = 'add-note-input';
-  input.placeholder = '+ add a note...';
-  input.type = 'text';
-  input.autocomplete = 'off';
+    const a = document.createElement('a');
+    a.href = lnk.url; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = lnk.title;
 
-  input.onkeydown = async e => {
+    const arrow = document.createElement('span');
+    arrow.className = 'link-arrow';
+    arrow.textContent = '↗';
+
+    li.appendChild(a);
+    li.appendChild(arrow);
+
+    if(IS_LOCAL){
+      const del = document.createElement('button');
+      del.className = 'link-delete';
+      del.textContent = '×';
+      del.onclick = async () => {
+        DATA.links = DATA.links.filter(l => l.id !== lnk.id);
+        await saveData();
+        renderLinks();
+      };
+      li.appendChild(del);
+    }
+    list.appendChild(li);
+  });
+}
+
+function setupAddLink(){
+  if(!IS_LOCAL) return;
+  document.getElementById('add-link-form').style.display = 'block';
+  const titleIn = document.getElementById('add-link-title');
+  const urlIn   = document.getElementById('add-link-url');
+  urlIn.onkeydown = async e => {
     if(e.key !== 'Enter') return;
-    const title = input.value.trim();
-    if(!title) return;
-    const b = getBucket(bucketId);
-    const newNote = { id: 'n-' + Date.now(), title, body: '', url: null };
-    b.notes.push(newNote);
-    activeNoteId = newNote.id;
+    const title = titleIn.value.trim();
+    let url = urlIn.value.trim();
+    if(!title || !url) return;
+    if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    DATA.links.push({ id:'l-'+Date.now(), title, url });
     await saveData();
-    input.value = '';
-    renderBucketPanel();
-    setTimeout(() => {
-      const ta = document.querySelector('#sub-' + newNote.id + ' .sub-body');
-      if(ta) ta.focus();
-    }, 50);
+    titleIn.value = ''; urlIn.value = '';
+    renderLinks();
+    titleIn.focus();
   };
-
-  wrap.appendChild(input);
-  return wrap;
 }
 
-/* ---------- init ---------- */
 async function init(){
   await loadData();
-  renderHero();
-  renderBucketRow();
-  renderBucketPanel();
+  renderHeader();
+  renderCards();
+  renderPanel();
+  renderLinks();
+  setupAddLink();
 }
 
 init();

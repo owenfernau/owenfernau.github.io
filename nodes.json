@@ -1,73 +1,15 @@
 {
-  "root": "Dynamically Updating AI Safety Concept Tool",
-  "buckets": [
-    {
-      "id": "race",
-      "title": "why is this hard?",
-      "sub": "race / coordination",
-      "notes": []
-    },
-    {
-      "id": "governance",
-      "title": "who decides?",
-      "sub": "governance",
-      "notes": [
-        {
-          "id": "fed-ai",
-          "title": "Regulate AI like the Fed regulates banks",
-          "body": "Most 'regulate AI' takes reach for an FDA for AI — a one-time approval gate before release. The Fed analogy points somewhere subtler: bank supervision is continuous. The regulator never stops watching. Continuous supervision, not a single gate."
-        }
-      ]
-    },
-    {
-      "id": "interpretability",
-      "title": "can we see inside?",
-      "sub": "interpretability",
-      "notes": [
-        {
-          "id": "goodfire",
-          "title": "Goodfire — the world inside neural networks",
-          "url": "https://www.goodfire.ai/research/the-world-inside-neural-networks",
-          "body": ""
-        },
-        {
-          "id": "3b1b",
-          "title": "3Blue1Brown — Neural Networks series",
-          "url": "https://www.3blue1brown.com/topics/neural-networks",
-          "body": ""
-        }
-      ]
-    },
-    {
-      "id": "alignment",
-      "title": "can we steer it?",
-      "sub": "alignment",
-      "notes": [
-        {
-          "id": "karpathy",
-          "title": "Karpathy — Intro to LLMs",
-          "url": "https://www.youtube.com/watch?v=zjkBMFhNj_g",
-          "body": ""
-        }
-      ]
-    },
-    {
-      "id": "control",
-      "title": "can we stop it?",
-      "sub": "control",
-      "notes": [
-        {
-          "id": "em-fields",
-          "title": "Monitoring the EM fields of GPU / data centers",
-          "body": "Can you observe what compute is doing from the outside — side-channel signals, power draw, electromagnetic emissions — as a verification or governance tool? Seeing what's going on without needing to be let inside."
-        }
-      ]
-    },
-    {
-      "id": "deployment",
-      "title": "what does good look like?",
-      "sub": "deployment",
-      "notes": []
-    }
+  "root": "AI Safety Map (Dynamically Updating)",
+  "lastUpdated": "June 3, 2026",
+  "cards": [
+    { "id": "algorithms", "title": "algorithms", "notes": [] },
+    { "id": "data", "title": "data", "notes": [] },
+    { "id": "computing-power", "title": "computing power", "notes": ["energy"] }
+  ],
+  "links": [
+    { "id": "goodfire", "title": "Goodfire — the world inside neural networks", "url": "https://www.goodfire.ai/research/the-world-inside-neural-networks" },
+    { "id": "3b1b", "title": "3Blue1Brown — Neural Networks series", "url": "https://www.3blue1brown.com/topics/neural-networks" },
+    { "id": "karpathy", "title": "Karpathy — Intro to LLMs", "url": "https://www.youtube.com/watch?v=zjkBMFhNj_g" },
+    { "id": "l-1780513955601", "title": "Neural Networks and Deep Learning by Michael Nielsen", "url": "http://neuralnetworksanddeeplearning.com/" }
   ]
 }
