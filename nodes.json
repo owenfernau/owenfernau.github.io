@@ -1,46 +1,73 @@
 {
-  "nodes": [
+  "root": "Dynamically Updating AI Safety Concept Tool",
+  "buckets": [
     {
-      "id": "fed-ai",
-      "kind": "idea",
-      "status": "evergreen",
-      "title": "Regulate AI like the Fed regulates banks",
-      "tags": ["governance", "econ-bridge"],
-      "links": ["interest-rates", "goodfire", "em-fields"],
-      "body": "<p>Most \"regulate AI\" takes reach for an <em>FDA for AI</em> — a one-time approval gate before release. The Fed analogy points somewhere subtler: bank supervision is <strong>continuous</strong>. The regulator never stops watching.</p>\n    <div class=\"map\">\n      <div class=\"h\">Fed &rarr; banks</div><div class=\"h\">Agency &rarr; AI labs</div>\n      <div>Stress tests</div><div>Capability evals</div>\n      <div>Embedded examiners</div><div>Embedded auditors</div>\n      <div>Capital buffers</div><div>Safety thresholds</div>\n      <div>Systemic-risk watch</div><div>Frontier-risk watch</div>\n    </div>\n    <div class=\"insight\">The key difference: continuous supervision, not a single gate. The Fed keeps talking to banks forever &mdash; \"constantly talking and monitoring risk.\"</div>\n    <p class=\"seednote\">Caveat: the right-hand column is what the analogy <em>suggests</em>, not what exists. It's a thinking tool, not a claim.</p>"
-    }
-  ],
-  "queue": [
-    {
-      "id": "goodfire",
-      "kind": "source",
-      "title": "Goodfire — the world inside neural networks",
-      "url": "https://www.goodfire.ai/research/the-world-inside-neural-networks",
-      "body": "<p>Mechanistic interpretability: reading what's actually happening <em>inside</em> a model rather than just judging its outputs.</p>\n    <p>The bridge I keep noticing: interpretability is to a model what an examiner's audit is to a bank, or what monitoring is to any system you can't fully trust. All three are \"seeing inside.\"</p>\n    <p><a class=\"src\" href=\"https://www.goodfire.ai/research/the-world-inside-neural-networks\" target=\"_blank\" rel=\"noopener\">Read &rarr;</a></p>"
+      "id": "race",
+      "title": "why is this hard?",
+      "sub": "race / coordination",
+      "notes": []
     },
     {
-      "id": "karpathy",
-      "kind": "source",
-      "title": "Karpathy — Intro to LLMs",
-      "url": "https://www.youtube.com/watch?v=zjkBMFhNj_g"
+      "id": "governance",
+      "title": "who decides?",
+      "sub": "governance",
+      "notes": [
+        {
+          "id": "fed-ai",
+          "title": "Regulate AI like the Fed regulates banks",
+          "body": "Most 'regulate AI' takes reach for an FDA for AI — a one-time approval gate before release. The Fed analogy points somewhere subtler: bank supervision is continuous. The regulator never stops watching. Continuous supervision, not a single gate."
+        }
+      ]
     },
     {
-      "id": "3b1b",
-      "kind": "source",
-      "title": "3Blue1Brown — Neural Networks series",
-      "url": "https://www.3blue1brown.com/topics/neural-networks"
+      "id": "interpretability",
+      "title": "can we see inside?",
+      "sub": "interpretability",
+      "notes": [
+        {
+          "id": "goodfire",
+          "title": "Goodfire — the world inside neural networks",
+          "url": "https://www.goodfire.ai/research/the-world-inside-neural-networks",
+          "body": ""
+        },
+        {
+          "id": "3b1b",
+          "title": "3Blue1Brown — Neural Networks series",
+          "url": "https://www.3blue1brown.com/topics/neural-networks",
+          "body": ""
+        }
+      ]
     },
     {
-      "id": "em-fields",
-      "kind": "idea",
-      "title": "Monitoring the EM fields of GPU / data centers",
-      "body": "<p>Can you observe what compute is doing from the <em>outside</em> — side-channel signals, power draw, electromagnetic emissions — as a verification or governance tool? \"Seeing what's going on\" without needing to be let inside.</p>"
+      "id": "alignment",
+      "title": "can we steer it?",
+      "sub": "alignment",
+      "notes": [
+        {
+          "id": "karpathy",
+          "title": "Karpathy — Intro to LLMs",
+          "url": "https://www.youtube.com/watch?v=zjkBMFhNj_g",
+          "body": ""
+        }
+      ]
     },
     {
-      "id": "interest-rates",
-      "kind": "question",
-      "title": "Interest rates' relationship to AI",
-      "body": "<p>Does the cost of capital shape the <em>pace and shape</em> of the AI buildout? Cheap money fuels speculative infrastructure; expensive money forces discipline. If compute is the new capital expenditure, rates may be an underrated lever on the whole field.</p>"
+      "id": "control",
+      "title": "can we stop it?",
+      "sub": "control",
+      "notes": [
+        {
+          "id": "em-fields",
+          "title": "Monitoring the EM fields of GPU / data centers",
+          "body": "Can you observe what compute is doing from the outside — side-channel signals, power draw, electromagnetic emissions — as a verification or governance tool? Seeing what's going on without needing to be let inside."
+        }
+      ]
+    },
+    {
+      "id": "deployment",
+      "title": "what does good look like?",
+      "sub": "deployment",
+      "notes": []
     }
   ]
 }

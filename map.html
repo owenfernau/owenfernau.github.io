@@ -10,406 +10,350 @@
 <style>
   :root{
     --paper:#e6e6e0; --ink:#191916; --muted:#6c6c63;
-    --card:#5db06b; --card-ink:#0e2510; --card-hover:#54a361;
     --line:#c9c9c0; --accent:#2f7a3a;
+    --tile:#d4d4cc; --panel:#d0d0c8;
   }
   @media(prefers-color-scheme:dark){
-    :root{ --paper:#16161a; --ink:#e7e7e0; --muted:#9a9a90; --line:#33332f; --card:#3f7d4a; --card-ink:#e8f3ea; --card-hover:#478654; --accent:#7fc98b; }
+    :root{ --paper:#16161a; --ink:#e7e7e0; --muted:#9a9a90; --line:#33332f; --accent:#7fc98b; --tile:#242428; --panel:#1e1e22; }
   }
-  *{ box-sizing:border-box; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
   body{
-    margin:0; background:var(--paper); color:var(--ink);
+    background:var(--paper); color:var(--ink);
     font-family:"JetBrains Mono", ui-monospace, monospace;
     line-height:1.6; -webkit-font-smoothing:antialiased;
-    padding:48px 24px 96px;
   }
-  .wrap{ max-width:1160px; margin:0 auto; position:relative; }
-  header{ margin-bottom:40px; max-width:660px; }
-  h1{ font-size:20px; font-weight:700; margin:0 0 12px; letter-spacing:-0.01em; }
-  .last-updated{ font-size:12px; color:var(--muted); position:absolute; top:0; right:0; margin:0; }
 
-  /* two-zone layout */
-  .layout{ display:grid; grid-template-columns:1fr 300px; gap:52px; align-items:start; }
-  @media(max-width:740px){ .layout{ grid-template-columns:1fr; } }
+  /* hero */
+  .hero{
+    background:#e6e6e0; color:#191916;
+    padding:24px 32px;
+    position:relative;
+  }
+  .hero h1{
+    font-size:16px;
+    font-weight:700; letter-spacing:-0.01em; line-height:1.4;
+  }
+  .hero .meta{
+    position:absolute; bottom:18px; right:24px;
+    font-size:11px; color:var(--muted);
+  }
 
-  /* cards */
-  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:18px; }
-  .card{
-    background:var(--card); color:var(--card-ink); border:none; text-align:left;
-    border-radius:4px; padding:18px 18px 16px; cursor:pointer; min-height:140px;
-    display:flex; flex-direction:column; gap:10px; font-family:inherit;
-    transition:transform .16s ease, background .16s ease; position:relative;
-    opacity:0; animation:rise .5s ease forwards;
+  /* bucket row */
+  .bucket-row{
+    display:flex; gap:10px; padding:20px 24px;
+    overflow-x:auto; background:var(--paper);
   }
-  .card:hover{ transform:translateY(-3px); background:var(--card-hover); }
-  .card .title{ font-size:15px; font-weight:500; line-height:1.4; }
-  .card .tags{ margin-top:auto; font-size:11px; opacity:.75; }
-  @keyframes rise{ to{ opacity:1; transform:translateY(0); } }
+  .bucket-row::-webkit-scrollbar{ display:none; }
+  .tile{
+    background:var(--tile); color:var(--muted); border:none;
+    border-radius:4px; padding:18px 20px; min-width:130px; min-height:90px;
+    font-family:inherit; font-size:12px; cursor:pointer;
+    text-align:left; transition:all .15s; flex-shrink:0;
+    display:flex; align-items:flex-end;
+  }
+  .tile:hover{ color:var(--ink); }
+  .tile.active{ background:var(--ink); color:var(--paper); }
 
-  /* edit pencil on card (local only) */
-  .card-edit{
-    position:absolute; top:10px; right:10px; background:rgba(0,0,0,.15);
-    border:none; border-radius:3px; padding:3px 7px; font-size:11px;
-    color:var(--card-ink); cursor:pointer; font-family:inherit;
-    opacity:0; transition:opacity .15s; line-height:1.4;
+  /* bucket panel */
+  .bucket-panel{
+    display:none; background:var(--panel);
+    padding:32px 48px 48px; min-height:60vh;
   }
-  .card:hover .card-edit{ opacity:1; }
+  .bucket-panel.open{ display:block; }
+  .panel-title{
+    font-size:22px; font-weight:700; letter-spacing:-0.01em;
+    margin-bottom:28px;
+  }
 
-  /* new card placeholder */
-  .card-new{
-    background:transparent; border:1.5px dashed var(--line); border-radius:4px;
-    min-height:140px; display:flex; align-items:center; justify-content:center;
-    cursor:pointer; font-family:inherit; font-size:13px; color:var(--muted);
-    transition:all .15s; width:100%;
+  /* notes */
+  .note-item{ border-bottom:1px solid var(--line); }
+  .note-item:last-of-type{ border-bottom:none; }
+  .note-row{
+    display:flex; align-items:baseline; gap:10px;
+    padding:10px 0; cursor:pointer;
   }
-  .card-new:hover{ border-color:var(--muted); color:var(--ink); }
+  .note-dash{ color:var(--muted); flex-shrink:0; user-select:none; }
+  .note-title{
+    font-size:14px; flex:1; line-height:1.5;
+    outline:none;
+  }
+  .note-title:focus{ color:var(--accent); }
+  .note-link-badge{
+    font-size:11px; color:var(--accent); flex-shrink:0;
+    text-decoration:none; opacity:.7; transition:opacity .15s;
+  }
+  .note-link-badge:hover{ opacity:1; }
 
-  /* queue rail */
-  .queue-rail{ border-left:1px solid var(--line); padding-left:26px; }
-  .queue-hd{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0 0 16px; }
-  .q-form{ display:flex; flex-direction:column; gap:7px; margin-bottom:18px; }
-  .q-form input{
-    font-family:inherit; font-size:12px; background:transparent;
-    border:1px solid var(--line); border-radius:3px; padding:6px 9px;
-    color:var(--ink); width:100%; outline:none;
+  /* sub-panel */
+  .note-sub{
+    display:none; padding:0 0 20px 22px;
   }
-  .q-form input::placeholder{ color:var(--muted); }
-  .q-form input:focus{ border-color:var(--muted); }
-  .q-submit{
-    font-family:inherit; font-size:12px; color:var(--accent); background:transparent;
-    border:1px solid var(--accent); border-radius:3px; padding:5px 10px;
-    cursor:pointer; align-self:flex-end; transition:all .15s;
+  .note-sub.open{ display:block; }
+  .sub-body{
+    width:100%; min-height:100px; background:transparent;
+    border:none; border-left:2px solid var(--accent);
+    padding:10px 0 10px 16px;
+    font-family:inherit; font-size:13px; color:var(--ink);
+    resize:none; outline:none; line-height:1.7;
+    display:block;
   }
-  .q-submit:hover{ background:var(--accent); color:var(--paper); }
-  .q-divider{ border:none; border-top:1px solid var(--line); margin:0 0 12px; }
-  .q-item{
-    display:flex; align-items:baseline; gap:8px;
-    padding:8px 0; border-bottom:1px solid var(--line); font-size:12px;
+  .sub-body[readonly]{ cursor:default; color:var(--ink); }
+  .sub-url{
+    display:block; margin-top:10px; padding-left:18px;
+    font-size:12px; color:var(--accent); text-decoration:none;
   }
-  .q-item:last-child{ border-bottom:none; }
-  .q-title{ flex:1; color:var(--ink); line-height:1.4; cursor:pointer; }
-  .q-title:hover{ color:var(--accent); }
-  .q-btn{
-    color:var(--muted); background:none; border:none; cursor:pointer;
-    font-size:12px; padding:0; line-height:1; flex-shrink:0; font-family:inherit;
+  .sub-url:hover{ text-decoration:underline; }
+  .sub-delete{
+    display:block; margin-top:12px; padding-left:18px;
+    font-size:11px; color:var(--muted); background:none;
+    border:none; cursor:pointer; font-family:inherit; text-align:left;
   }
-  .q-btn:hover{ color:var(--ink); }
+  .sub-delete:hover{ color:var(--ink); }
 
-  /* overlay */
-  .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.5); display:none;
-    align-items:flex-start; justify-content:center; padding:48px 20px;
-    overflow-y:auto; z-index:10; }
-  .overlay.open{ display:flex; }
-  .panel{
-    background:var(--paper); color:var(--ink); border:1px solid var(--line);
-    border-radius:6px; max-width:640px; width:100%; padding:32px 34px 36px;
-  }
-  .panel .kind{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); }
-  .panel h2{ font-size:18px; font-weight:700; margin:8px 0 18px; line-height:1.35; }
-  .panel .body{ font-size:14px; }
-  .panel .body p{ margin:0 0 14px; }
-  .panel .seednote{ color:var(--muted); font-style:italic; }
-  .map{ display:grid; grid-template-columns:1fr 1fr; gap:8px 14px; margin:16px 0; font-size:13px; }
-  .map .h{ font-weight:700; color:var(--accent); }
-  .insight{ border-left:2px solid var(--accent); padding:6px 0 6px 14px; margin:16px 0; font-size:13px; }
-  .conns{ margin-top:22px; border-top:1px solid var(--line); padding-top:16px; }
-  .conns .lbl{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
-  .conns a{
-    display:inline-block; font-size:12px; color:var(--accent); border:1px solid var(--line);
-    border-radius:999px; padding:4px 11px; margin:0 6px 6px 0; cursor:pointer; text-decoration:none;
-  }
-  .conns a:hover{ border-color:var(--accent); }
-  .close{ float:right; background:transparent; border:none; color:var(--muted); font-family:inherit; font-size:18px; cursor:pointer; line-height:1; }
-  a.src{ color:var(--accent); }
-
-  /* edit forms (local only) */
-  .ef{ display:flex; flex-direction:column; gap:12px; }
-  .ef label{ font-size:12px; color:var(--muted); display:flex; flex-direction:column; gap:5px; }
-  .ef input, .ef textarea{
+  /* add note */
+  .add-note-wrap{ margin-top:24px; display:flex; gap:10px; align-items:center; }
+  .add-note-input{
     font-family:inherit; font-size:13px; background:transparent;
-    border:1px solid var(--line); border-radius:3px; padding:8px 10px;
-    color:var(--ink); outline:none; resize:vertical;
+    border:none; border-bottom:1px solid var(--line); padding:4px 0;
+    color:var(--ink); outline:none; flex:1; max-width:480px;
   }
-  .ef input:focus, .ef textarea:focus{ border-color:var(--muted); }
-  .ef-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:4px; }
-  .ef-save{
-    font-family:inherit; font-size:12px; color:var(--accent); background:transparent;
-    border:1px solid var(--accent); border-radius:3px; padding:6px 14px; cursor:pointer;
-  }
-  .ef-save:hover{ background:var(--accent); color:var(--paper); }
-  .ef-del{
-    font-family:inherit; font-size:12px; color:var(--muted); background:transparent;
-    border:none; padding:0; cursor:pointer;
-  }
-  .ef-del:hover{ color:var(--ink); }
+  .add-note-input::placeholder{ color:var(--muted); }
+  .add-note-input:focus{ border-bottom-color:var(--accent); }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <p class="last-updated" id="last-updated"></p>
-  <header>
-    <h1>a dynamic map of AI safety learning</h1>
-  </header>
 
-  <div class="layout">
-    <div class="grid" id="grid"></div>
-
-    <div class="queue-rail">
-      <p class="queue-hd">queue</p>
-      <form class="q-form" id="q-form">
-        <input id="q-title" placeholder="title..." autocomplete="off">
-        <input id="q-url" placeholder="url (optional)" autocomplete="off">
-        <button type="submit" class="q-submit">add &rarr;</button>
-      </form>
-      <hr class="q-divider">
-      <div id="q-list"></div>
-    </div>
-  </div>
+<div class="hero">
+  <h1 id="root-q"></h1>
+  <span class="meta" id="last-updated"></span>
 </div>
 
-<div class="overlay" id="overlay">
-  <div class="panel" id="panel"></div>
-</div>
+<div class="bucket-row" id="bucket-row"></div>
+
+<div class="bucket-panel" id="bucket-panel"></div>
 
 <script>
 const LAST_UPDATED = 'June 2, 2026';
-const IS_LOCAL = ['localhost', '127.0.0.1'].includes(location.hostname);
+const IS_LOCAL = ['localhost','127.0.0.1'].includes(location.hostname);
 
-let NODES = [];
-let QUEUE = [];
+let DATA = { root:'', buckets:[] };
+let activeBucketId = null;
+let activeNoteId   = null;
 
 /* ---------- data ---------- */
-async function loadData() {
+async function loadData(){
   const res = await fetch('nodes.json');
-  const data = await res.json();
-  NODES = data.nodes || [];
-  QUEUE = data.queue || [];
+  DATA = await res.json();
 }
 
-async function saveData() {
-  if (!IS_LOCAL) return;
-  await fetch('/save', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nodes: NODES, queue: QUEUE })
+async function saveData(){
+  if(!IS_LOCAL) return;
+  await fetch('/save',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(DATA)
   });
 }
 
-function findItem(id) {
-  return NODES.find(x => x.id === id) || QUEUE.find(x => x.id === id);
+function getBucket(id){ return DATA.buckets.find(b => b.id === id); }
+function getNote(bucketId, noteId){
+  const b = getBucket(bucketId);
+  return b ? b.notes.find(n => n.id === noteId) : null;
 }
 
-function esc(s) {
-  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+/* ---------- hero ---------- */
+function renderHero(){
+  document.getElementById('root-q').textContent = DATA.root;
+  document.getElementById('last-updated').textContent = 'last updated: ' + LAST_UPDATED;
 }
 
-/* ---------- card grid ---------- */
-const grid = document.getElementById('grid');
-
-function renderGrid() {
-  grid.innerHTML = '';
-  NODES.forEach((n, i) => {
-    const c = document.createElement('button');
-    c.className = 'card';
-    c.style.animationDelay = (i * 45) + 'ms';
-    c.innerHTML =
-      '<span class="title">' + n.title + '</span>' +
-      (n.tags ? '<span class="tags">' + n.tags.map(t => '#' + t).join('  ') + '</span>' : '') +
-      (IS_LOCAL ? '<button class="card-edit" onclick="event.stopPropagation();openEditNode(\'' + n.id + '\')">edit</button>' : '');
-    c.onclick = () => openPanel(n.id, 'node');
-    grid.appendChild(c);
+/* ---------- bucket row ---------- */
+function renderBucketRow(){
+  const row = document.getElementById('bucket-row');
+  row.innerHTML = '';
+  DATA.buckets.forEach(b => {
+    const tile = document.createElement('button');
+    tile.className = 'tile' + (activeBucketId === b.id ? ' active' : '');
+    tile.textContent = b.sub;
+    tile.onclick = () => selectBucket(b.id);
+    row.appendChild(tile);
   });
-
-  if (IS_LOCAL) {
-    const add = document.createElement('button');
-    add.className = 'card-new';
-    add.textContent = '+ new card';
-    add.onclick = () => openEditNode(null);
-    grid.appendChild(add);
-  }
 }
 
-/* ---------- detail overlay ---------- */
-const overlay = document.getElementById('overlay');
-const panel = document.getElementById('panel');
-
-function openPanel(id, zone) {
-  const n = zone === 'node' ? NODES.find(x => x.id === id) : QUEUE.find(x => x.id === id);
-  if (!n) return;
-  const conns = (n.links || []).map(lid => findItem(lid)).filter(Boolean);
-  panel.innerHTML =
-    '<button class="close" onclick="closeOverlay()">&times;</button>' +
-    '<h2>' + n.title + '</h2>' +
-    '<div class="body">' + (n.body || '<p style="color:var(--muted);font-style:italic">Nothing written yet.</p>') + '</div>' +
-    (conns.length ? '<div class="conns"><div class="lbl">connects to</div>' +
-      conns.map(c => {
-        const z = NODES.find(x => x.id === c.id) ? 'node' : 'queue';
-        return '<a onclick="openPanel(\'' + c.id + '\',\'' + z + '\')">' + c.title + '</a>';
-      }).join('') + '</div>' : '');
-  overlay.classList.add('open');
-  panel.scrollTop = 0;
+function selectBucket(id){
+  activeBucketId = activeBucketId === id ? null : id;
+  activeNoteId = null;
+  renderBucketRow();
+  renderBucketPanel();
 }
 
-function closeOverlay() { overlay.classList.remove('open'); }
-overlay.onclick = e => { if (e.target === overlay) closeOverlay(); };
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeOverlay(); });
+/* ---------- bucket panel ---------- */
+function renderBucketPanel(){
+  const panel = document.getElementById('bucket-panel');
+  if(!activeBucketId){ panel.classList.remove('open'); return; }
+  const b = getBucket(activeBucketId);
+  panel.classList.add('open');
+  panel.innerHTML = '';
 
-/* ---------- queue ---------- */
-const qList = document.getElementById('q-list');
+  const title = document.createElement('div');
+  title.className = 'panel-title';
+  title.textContent = b.title;
+  panel.appendChild(title);
 
-function loadUserQueue() {
-  try { return JSON.parse(localStorage.getItem('map-queue') || '[]'); } catch { return []; }
+  const list = document.createElement('div');
+  list.id = 'notes-list';
+  b.notes.forEach(n => list.appendChild(makeNoteItem(b.id, n)));
+  panel.appendChild(list);
+
+  if(IS_LOCAL) panel.appendChild(makeAddNoteForm(b.id));
 }
-function saveUserQueue(items) { localStorage.setItem('map-queue', JSON.stringify(items)); }
 
-function renderQueue() {
-  qList.innerHTML = '';
-  const items = IS_LOCAL ? QUEUE : [...QUEUE, ...loadUserQueue()];
-  items.forEach(item => {
-    const row = document.createElement('div');
-    row.className = 'q-item';
+function makeNoteItem(bucketId, note){
+  const item = document.createElement('div');
+  item.className = 'note-item';
+  item.id = 'item-' + note.id;
 
-    const title = document.createElement('span');
-    title.className = 'q-title';
-    title.textContent = item.title;
-    title.onclick = () => {
-      if (item.body) openPanel(item.id, 'queue');
-      else if (item.url) window.open(item.url, '_blank', 'noopener');
+  /* row */
+  const row = document.createElement('div');
+  row.className = 'note-row';
+
+  const dash = document.createElement('span');
+  dash.className = 'note-dash';
+  dash.textContent = '—';
+
+  const titleEl = document.createElement('span');
+  titleEl.className = 'note-title';
+  titleEl.textContent = note.title;
+  if(IS_LOCAL){
+    titleEl.contentEditable = 'true';
+    titleEl.onblur = async () => {
+      const val = titleEl.textContent.trim();
+      if(!val){ titleEl.textContent = note.title; return; }
+      note.title = val;
+      await saveData();
     };
-    row.appendChild(title);
+    titleEl.onkeydown = e => { if(e.key==='Enter'){ e.preventDefault(); titleEl.blur(); } };
+  }
 
-    if (IS_LOCAL) {
-      const edit = document.createElement('button');
-      edit.className = 'q-btn';
-      edit.textContent = 'edit';
-      edit.onclick = () => openEditQueueItem(item.id);
-      row.appendChild(edit);
-    } else if (item._user) {
-      const del = document.createElement('button');
-      del.className = 'q-btn';
-      del.textContent = '×';
-      del.onclick = () => {
-        saveUserQueue(loadUserQueue().filter(x => x.id !== item.id));
-        renderQueue();
-      };
-      row.appendChild(del);
-    }
+  row.appendChild(dash);
+  row.appendChild(titleEl);
 
-    qList.appendChild(row);
-  });
-}
+  if(note.url){
+    const badge = document.createElement('a');
+    badge.className = 'note-link-badge';
+    badge.textContent = '↗';
+    badge.href = note.url;
+    badge.target = '_blank';
+    badge.rel = 'noopener';
+    badge.onclick = e => e.stopPropagation();
+    row.appendChild(badge);
+  }
 
-document.getElementById('q-form').onsubmit = async function(e) {
-  e.preventDefault();
-  const title = document.getElementById('q-title').value.trim();
-  if (!title) return;
-  const url = document.getElementById('q-url').value.trim() || null;
-  const newItem = { id: 'u-' + Date.now(), kind: 'source', title, url };
+  row.onclick = e => {
+    if(e.target === titleEl && IS_LOCAL) return;
+    toggleNote(bucketId, note.id);
+  };
 
-  if (IS_LOCAL) {
-    QUEUE.unshift(newItem);
+  /* sub-panel */
+  const sub = document.createElement('div');
+  sub.className = 'note-sub' + (activeNoteId === note.id ? ' open' : '');
+  sub.id = 'sub-' + note.id;
+
+  const body = document.createElement('textarea');
+  body.className = 'sub-body';
+  body.placeholder = 'write something...';
+  body.value = note.body || '';
+  body.rows = Math.max(3, (note.body || '').split('\n').length + 1);
+  if(!IS_LOCAL) body.readOnly = true;
+  body.oninput = () => { body.rows = Math.max(3, body.value.split('\n').length + 1); };
+  body.onblur = async () => {
+    if(!IS_LOCAL) return;
+    note.body = body.value;
     await saveData();
-  } else {
-    const items = loadUserQueue();
-    items.unshift({ ...newItem, _user: true });
-    saveUserQueue(items);
+  };
+  sub.appendChild(body);
+
+  if(note.url){
+    const link = document.createElement('a');
+    link.className = 'sub-url';
+    link.href = note.url;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = 'open link ↗';
+    sub.appendChild(link);
   }
-  this.reset();
-  renderQueue();
-};
 
-/* ---------- edit: node ---------- */
-function openEditNode(id) {
-  const isNew = !id;
-  const n = isNew
-    ? { id: 'n-' + Date.now(), title: '', tags: [], links: [], body: '' }
-    : NODES.find(x => x.id === id);
-
-  panel.innerHTML =
-    '<button class="close" onclick="closeOverlay()">&times;</button>' +
-    '<h2 style="margin-bottom:20px">' + (isNew ? 'new card' : 'edit card') + '</h2>' +
-    '<div class="ef">' +
-      '<label>title<input id="en-title" value="' + esc(n.title) + '" placeholder="title..."></label>' +
-      '<label>tags <span style="opacity:.5">(comma-separated)</span><input id="en-tags" value="' + esc((n.tags||[]).join(', ')) + '"></label>' +
-      '<label>body <span style="opacity:.5">(html ok)</span><textarea id="en-body" rows="9">' + esc(n.body||'') + '</textarea></label>' +
-      '<div class="ef-actions">' +
-        '<button class="ef-save" onclick="saveNode(\'' + n.id + '\',' + isNew + ')">save</button>' +
-        (!isNew ? '<button class="ef-del" onclick="deleteNode(\'' + n.id + '\')">delete</button>' : '') +
-      '</div>' +
-    '</div>';
-
-  overlay.classList.add('open');
-}
-
-async function saveNode(id, isNew) {
-  const title = document.getElementById('en-title').value.trim();
-  if (!title) return;
-  const tags = document.getElementById('en-tags').value.split(',').map(t => t.trim()).filter(Boolean);
-  const body = document.getElementById('en-body').value;
-
-  if (isNew) {
-    NODES.push({ id, kind: 'idea', status: 'seed', title, tags, links: [], body });
-  } else {
-    Object.assign(NODES.find(x => x.id === id), { title, tags, body });
+  if(IS_LOCAL){
+    const del = document.createElement('button');
+    del.className = 'sub-delete';
+    del.textContent = 'delete note';
+    del.onclick = async () => {
+      if(!confirm('delete?')) return;
+      const b = getBucket(bucketId);
+      b.notes = b.notes.filter(n => n.id !== note.id);
+      if(activeNoteId === note.id) activeNoteId = null;
+      await saveData();
+      renderBucketPanel();
+    };
+    sub.appendChild(del);
   }
-  await saveData();
-  closeOverlay();
-  renderGrid();
+
+  item.appendChild(row);
+  item.appendChild(sub);
+  return item;
 }
 
-async function deleteNode(id) {
-  if (!confirm('delete this card?')) return;
-  NODES = NODES.filter(x => x.id !== id);
-  await saveData();
-  closeOverlay();
-  renderGrid();
+function toggleNote(bucketId, noteId){
+  activeNoteId = activeNoteId === noteId ? null : noteId;
+  const b = getBucket(bucketId);
+  b.notes.forEach(n => {
+    const sub = document.getElementById('sub-' + n.id);
+    if(sub) sub.className = 'note-sub' + (n.id === activeNoteId ? ' open' : '');
+  });
+  if(activeNoteId){
+    const ta = document.querySelector('#sub-' + activeNoteId + ' .sub-body');
+    if(ta && IS_LOCAL) setTimeout(() => ta.focus(), 50);
+  }
 }
 
-/* ---------- edit: queue item ---------- */
-function openEditQueueItem(id) {
-  const item = QUEUE.find(x => x.id === id);
-  if (!item) return;
+/* ---------- add note form ---------- */
+function makeAddNoteForm(bucketId){
+  const wrap = document.createElement('div');
+  wrap.className = 'add-note-wrap';
 
-  panel.innerHTML =
-    '<button class="close" onclick="closeOverlay()">&times;</button>' +
-    '<h2 style="margin-bottom:20px">edit queue item</h2>' +
-    '<div class="ef">' +
-      '<label>title<input id="eq-title" value="' + esc(item.title) + '"></label>' +
-      '<label>url<input id="eq-url" value="' + esc(item.url||'') + '"></label>' +
-      '<label>notes <span style="opacity:.5">(html ok)</span><textarea id="eq-body" rows="6">' + esc(item.body||'') + '</textarea></label>' +
-      '<div class="ef-actions">' +
-        '<button class="ef-save" onclick="saveQueueItem(\'' + item.id + '\')">save</button>' +
-        '<button class="ef-del" onclick="deleteQueueItem(\'' + item.id + '\')">delete</button>' +
-      '</div>' +
-    '</div>';
+  const input = document.createElement('input');
+  input.className = 'add-note-input';
+  input.placeholder = '+ add a note...';
+  input.type = 'text';
+  input.autocomplete = 'off';
 
-  overlay.classList.add('open');
-}
+  input.onkeydown = async e => {
+    if(e.key !== 'Enter') return;
+    const title = input.value.trim();
+    if(!title) return;
+    const b = getBucket(bucketId);
+    const newNote = { id: 'n-' + Date.now(), title, body: '', url: null };
+    b.notes.push(newNote);
+    activeNoteId = newNote.id;
+    await saveData();
+    input.value = '';
+    renderBucketPanel();
+    setTimeout(() => {
+      const ta = document.querySelector('#sub-' + newNote.id + ' .sub-body');
+      if(ta) ta.focus();
+    }, 50);
+  };
 
-async function saveQueueItem(id) {
-  const item = QUEUE.find(x => x.id === id);
-  item.title = document.getElementById('eq-title').value.trim() || item.title;
-  item.url = document.getElementById('eq-url').value.trim() || null;
-  item.body = document.getElementById('eq-body').value;
-  await saveData();
-  closeOverlay();
-  renderQueue();
-}
-
-async function deleteQueueItem(id) {
-  if (!confirm('remove from queue?')) return;
-  QUEUE = QUEUE.filter(x => x.id !== id);
-  await saveData();
-  closeOverlay();
-  renderQueue();
+  wrap.appendChild(input);
+  return wrap;
 }
 
 /* ---------- init ---------- */
-async function init() {
-  document.getElementById('last-updated').textContent = 'last updated: ' + LAST_UPDATED;
+async function init(){
   await loadData();
-  renderGrid();
-  renderQueue();
+  renderHero();
+  renderBucketRow();
+  renderBucketPanel();
 }
 
 init();
