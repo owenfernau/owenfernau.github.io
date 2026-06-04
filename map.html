@@ -225,7 +225,48 @@ function renderGraph(){
   const bounds     = graphBounds(graph);
   const enc        = isSubGraph ? minEnclosingCircle(graph) : null;
 
-  svg.setAttribute('viewBox', computeViewBox(bounds, enc));
+  // collect ghost context: sibling nodes projected outside the enclosing circle
+  let ghostData = null;
+  if(isSubGraph && enc){
+    const parentGid    = graphStack[graphStack.length - 2];
+    const parentGraph  = getGraph(parentGid);
+    const selfInParent = parentGraph && parentGraph.nodes.find(n => n.ref === currentGid());
+    if(parentGraph && selfInParent && selfInParent.x != null){
+      const GHOST_MIN = enc.r + R + 60;
+      const peers = parentGraph.nodes.filter(n => n.ref !== currentGid() && n.x != null);
+      const rawDists = peers.map(p => {
+        const vx = p.x - selfInParent.x, vy = p.y - selfInParent.y;
+        return Math.sqrt(vx*vx + vy*vy) || 1;
+      });
+      const scale = GHOST_MIN / Math.min(...rawDists);
+      const nodeMap = {};
+      peers.forEach(p => {
+        const vx = p.x - selfInParent.x, vy = p.y - selfInParent.y;
+        nodeMap[p.ref] = { ref: p.ref, x: enc.cx + vx*scale, y: enc.cy + vy*scale };
+      });
+      ghostData = {
+        nodes: Object.values(nodeMap),
+        nodeMap,
+        edges:       parentGraph.edges.filter(e => e.from !== currentGid() && e.to !== currentGid()),
+        circleEdges: parentGraph.edges.filter(e => e.from === currentGid() || e.to === currentGid())
+      };
+    }
+  }
+
+  // expand viewBox to include ghost nodes
+  let vbStr = computeViewBox(bounds, enc);
+  if(ghostData){
+    const [vx0, vy0, vw0, vh0] = vbStr.split(' ').map(Number);
+    let vx = vx0, vy = vy0, x2 = vx0+vw0, y2 = vy0+vh0;
+    ghostData.nodes.forEach(p => {
+      vx = Math.min(vx, p.x - R - PAD);
+      vy = Math.min(vy, p.y - R - PAD);
+      x2 = Math.max(x2, p.x + R + PAD);
+      y2 = Math.max(y2, p.y + R + PAD + LBL);
+    });
+    vbStr = `${vx} ${vy} ${x2-vx} ${y2-vy}`;
+  }
+  svg.setAttribute('viewBox', vbStr);
 
   const defs = svgEl('defs');
   defs.innerHTML = `
@@ -234,6 +275,79 @@ function renderGraph(){
       <path d="M0,0 L0,8 L12,4 z" fill="context-stroke"/>
     </marker>`;
   svg.appendChild(defs);
+
+  // ghost context: parent graph rendered faintly outside the enclosing circle
+  if(ghostData){
+    const ghostG = svgEl('g');
+    ghostG.setAttribute('opacity', '0.15');
+
+    ghostData.edges.forEach(edge => {
+      const fp = ghostData.nodeMap[edge.from];
+      const tp = ghostData.nodeMap[edge.to];
+      if(!fp || !tp) return;
+      const ddx = tp.x-fp.x, ddy = tp.y-fp.y;
+      const len = Math.sqrt(ddx*ddx+ddy*ddy);
+      if(len === 0) return;
+      const ux = ddx/len, uy = ddy/len;
+      const line = svgEl('line');
+      line.setAttribute('x1', fp.x+R*ux); line.setAttribute('y1', fp.y+R*uy);
+      line.setAttribute('x2', tp.x-R*ux); line.setAttribute('y2', tp.y-R*uy);
+      line.setAttribute('stroke', 'var(--ink)');
+      line.setAttribute('stroke-width', '1.5');
+      ghostG.appendChild(line);
+    });
+
+    // edges connecting the enclosing circle to ghost nodes
+    ghostData.circleEdges.forEach(edge => {
+      const isFrom  = edge.from === currentGid();
+      const gp      = ghostData.nodeMap[isFrom ? edge.to : edge.from];
+      if(!gp) return;
+      const dx = gp.x - enc.cx, dy = gp.y - enc.cy;
+      const dlen = Math.sqrt(dx*dx + dy*dy);
+      if(dlen === 0) return;
+      const ux = dx/dlen, uy = dy/dlen;
+      const px = enc.cx + ux*enc.r, py = enc.cy + uy*enc.r;
+      const line = svgEl('line');
+      line.setAttribute('x1', isFrom ? px+ux*4    : gp.x-ux*R);
+      line.setAttribute('y1', isFrom ? py+uy*4    : gp.y-uy*R);
+      line.setAttribute('x2', isFrom ? gp.x-ux*R  : px-ux*4);
+      line.setAttribute('y2', isFrom ? gp.y-uy*R  : py-uy*4);
+      line.setAttribute('stroke', 'var(--ink)');
+      line.setAttribute('stroke-width', '1.5');
+      ghostG.appendChild(line);
+    });
+
+    ghostData.nodes.forEach(p => {
+      const node = getNode(p.ref);
+      if(!node) return;
+      const g = svgEl('g');
+      g.setAttribute('transform', `translate(${p.x},${p.y})`);
+      const circle = svgEl('circle');
+      circle.setAttribute('r', R);
+      circle.setAttribute('cx', 0); circle.setAttribute('cy', 0);
+      circle.setAttribute('stroke-width', '1.5');
+      circle.setAttribute('fill', 'var(--paper)');
+      circle.setAttribute('stroke',
+        node.type === 'ambient' ? 'var(--muted)' :
+        node.type === 'output'  ? 'var(--accent)' : 'var(--ink)');
+      if(node.type === 'ambient') circle.setAttribute('stroke-dasharray', '4 3');
+      g.appendChild(circle);
+      const text = svgEl('text');
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'auto');
+      text.setAttribute('y', LBL);
+      text.setAttribute('font-family', '"JetBrains Mono", monospace');
+      text.setAttribute('font-size', '11');
+      text.setAttribute('fill',
+        node.type === 'ambient' ? 'var(--muted)' :
+        node.type === 'output'  ? 'var(--accent)' : 'var(--ink)');
+      text.textContent = node.label;
+      g.appendChild(text);
+      ghostG.appendChild(g);
+    });
+
+    svg.appendChild(ghostG);
+  }
 
   // enclosing circle — drawn first so it's behind everything
   if(enc){
