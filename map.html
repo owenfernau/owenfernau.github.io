@@ -29,7 +29,11 @@
     display:flex; align-items:baseline; gap:16px; justify-content:space-between;
   }
   .header-left{ display:flex; align-items:baseline; gap:14px; flex:1; min-width:0; }
-  .header h1{ font-size:15px; font-weight:700; letter-spacing:-0.01em; white-space:nowrap; }
+  .header h1{
+    font-size:15px; font-weight:700; letter-spacing:-0.01em; white-space:nowrap;
+    cursor:pointer;
+  }
+  .header h1:hover{ opacity:.7; }
   .meta{ font-size:11px; color:var(--muted); white-space:nowrap; }
 
   .breadcrumb{
@@ -47,32 +51,11 @@
     min-height:calc(100vh - 73px);
   }
 
-  .main{
-    padding:40px 48px;
-    border-right:1px solid var(--line);
-  }
+  .main{ padding:40px 48px; border-right:1px solid var(--line); }
 
   #graph-svg{ width:100%; height:auto; display:block; overflow:visible; }
 
-  .sidebar{ padding:32px 24px; display:flex; flex-direction:column; gap:24px; }
-
-  .node-panel{ padding-bottom:24px; border-bottom:1px solid var(--line); }
-  .np-title{ font-size:14px; font-weight:700; margin-bottom:10px; }
-  .np-explore{
-    margin-top:12px; font-size:11px; color:var(--accent);
-    cursor:pointer; background:none; border:none;
-    font-family:inherit; padding:0; display:block;
-  }
-  .np-explore:hover{ opacity:.75; }
-
-  .note-list{ list-style:none; }
-  .note-row{
-    display:flex; align-items:baseline; gap:8px;
-    padding:5px 0; border-bottom:1px solid var(--line); font-size:12px;
-  }
-  .note-row:last-of-type{ border-bottom:none; }
-  .note-dash{ color:var(--muted); flex-shrink:0; }
-  .note-empty{ font-size:11px; color:var(--muted); font-style:italic; }
+  .sidebar{ padding:32px 24px; }
 
   .section-label{
     font-size:11px; letter-spacing:.08em; text-transform:uppercase;
@@ -107,7 +90,7 @@
 
 <div class="header">
   <div class="header-left">
-    <h1>AI Map</h1>
+    <h1 id="h1-home">AI Map</h1>
     <nav class="breadcrumb" id="breadcrumb"></nav>
   </div>
   <span class="meta" id="last-updated"></span>
@@ -118,32 +101,24 @@
     <svg id="graph-svg"></svg>
   </main>
   <aside class="sidebar">
-    <div id="node-panel" style="display:none" class="node-panel">
-      <div class="np-title" id="np-title"></div>
-      <ul class="note-list" id="np-notes"></ul>
-      <button class="np-explore" id="np-explore" style="display:none">explore →</button>
-    </div>
-
-    <div>
-      <div class="section-label">links</div>
-      <ul class="link-list" id="link-list"></ul>
-      <div class="add-link" id="add-link-form" style="display:none">
-        <input id="add-link-title" type="text" placeholder="title" autocomplete="off">
-        <input id="add-link-url" type="text" placeholder="url" autocomplete="off">
-      </div>
+    <div class="section-label">links</div>
+    <ul class="link-list" id="link-list"></ul>
+    <div class="add-link" id="add-link-form" style="display:none">
+      <input id="add-link-title" type="text" placeholder="title" autocomplete="off">
+      <input id="add-link-url" type="text" placeholder="url" autocomplete="off">
     </div>
   </aside>
 </div>
 
 <script>
 const IS_LOCAL = ['localhost','127.0.0.1'].includes(location.hostname);
-const R   = 28;  // node circle radius
-const PAD = 72;  // viewBox padding
-const LBL = R + 18; // label y-offset below circle center
+const R       = 28;   // node circle radius
+const PAD     = 72;   // viewBox padding
+const LBL     = R + 18; // label y-offset below circle center
+const ENC_PAD = 60;   // padding from node edges to enclosing circle
 
 let DATA = {};
 let graphStack = ['root'];
-let activeNodeId = null;
 
 // ── data ──────────────────────────────────────────────────────────────────────
 
@@ -172,17 +147,32 @@ const currentGid  = ()  => graphStack[graphStack.length - 1];
 
 function svgEl(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
 
-function computeViewBox(graph){
+function graphBounds(graph){
   let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
   graph.nodes.forEach(p => {
     if(p.x == null) return;
-    minX = Math.min(minX, p.x - R);
-    minY = Math.min(minY, p.y - R);
-    maxX = Math.max(maxX, p.x + R);
-    maxY = Math.max(maxY, p.y + R);
+    minX = Math.min(minX, p.x-R); minY = Math.min(minY, p.y-R);
+    maxX = Math.max(maxX, p.x+R); maxY = Math.max(maxY, p.y+R);
   });
-  if(minX === Infinity) return '0 0 800 500';
-  // extra bottom padding for labels below circles
+  return { minX, minY, maxX, maxY, valid: minX !== Infinity };
+}
+
+function minEnclosingCircle(graph){
+  const pts = graph.nodes.filter(p => p.x != null);
+  if(!pts.length) return null;
+  const cx = pts.reduce((s,p) => s+p.x, 0) / pts.length;
+  const cy = pts.reduce((s,p) => s+p.y, 0) / pts.length;
+  const r  = Math.max(...pts.map(p => Math.sqrt((p.x-cx)**2+(p.y-cy)**2))) + R + ENC_PAD;
+  return { cx, cy, r };
+}
+
+function computeViewBox(bounds, enc){
+  if(!bounds.valid) return '0 0 800 500';
+  if(enc){
+    const { cx, cy, r } = enc;
+    return `${cx-r-PAD} ${cy-r-PAD} ${(r+PAD)*2} ${(r+PAD)*2}`;
+  }
+  const { minX, minY, maxX, maxY } = bounds;
   return `${minX-PAD} ${minY-PAD} ${maxX-minX+PAD*2} ${maxY-minY+PAD*2+LBL}`;
 }
 
@@ -190,35 +180,34 @@ function computeViewBox(graph){
 
 function navigateTo(graphId){
   graphStack.push(graphId);
-  activeNodeId = null;
   renderAll();
 }
 
 function navigateToIndex(i){
-  graphStack = graphStack.slice(0, i + 1);
-  activeNodeId = null;
+  graphStack = graphStack.slice(0, i+1);
   renderAll();
 }
 
 // ── render: breadcrumb ────────────────────────────────────────────────────────
+// h1 handles root; breadcrumb only shows levels below root
 
 function renderBreadcrumb(){
   const nav = document.getElementById('breadcrumb');
   nav.innerHTML = '';
-  graphStack.forEach((gid, i) => {
-    const g = getGraph(gid);
-    const title = g ? g.title : gid;
-    const isCurrent = i === graphStack.length - 1;
+  graphStack.slice(1).forEach((gid, i) => {
+    const realIdx  = i + 1;
+    const g        = getGraph(gid);
+    const title    = g ? g.title : gid;
+    const isCurrent = realIdx === graphStack.length - 1;
     if(i > 0){
       const sep = document.createElement('span');
-      sep.className = 'crumb-sep';
-      sep.textContent = '/';
+      sep.className = 'crumb-sep'; sep.textContent = '/';
       nav.appendChild(sep);
     }
     const span = document.createElement('span');
     span.className = 'crumb' + (isCurrent ? ' current' : '');
     span.textContent = title;
-    if(!isCurrent) span.onclick = () => navigateToIndex(i);
+    if(!isCurrent) span.onclick = () => navigateToIndex(realIdx);
     nav.appendChild(span);
   });
 }
@@ -232,9 +221,12 @@ function renderGraph(){
   const graph = getGraph(currentGid());
   if(!graph) return;
 
-  svg.setAttribute('viewBox', computeViewBox(graph));
+  const isSubGraph = graphStack.length > 1;
+  const bounds     = graphBounds(graph);
+  const enc        = isSubGraph ? minEnclosingCircle(graph) : null;
 
-  // arrowhead: context-stroke inherits the line's stroke color
+  svg.setAttribute('viewBox', computeViewBox(bounds, enc));
+
   const defs = svgEl('defs');
   defs.innerHTML = `
     <marker id="arr" markerWidth="12" markerHeight="8"
@@ -243,31 +235,54 @@ function renderGraph(){
     </marker>`;
   svg.appendChild(defs);
 
-  // transparent background rect to catch deselect clicks
-  const bg = svgEl('rect');
-  bg.setAttribute('x', -9999); bg.setAttribute('y', -9999);
-  bg.setAttribute('width', 99999); bg.setAttribute('height', 99999);
-  bg.setAttribute('fill', 'transparent');
-  bg.onclick = () => { activeNodeId = null; renderAll(); };
-  svg.appendChild(bg);
+  // enclosing circle — drawn first so it's behind everything
+  if(enc){
+    const parentNode = getNode(currentGid());
+    const encG = svgEl('g');
 
-  // edges (behind nodes)
+    const circle = svgEl('circle');
+    circle.setAttribute('cx', enc.cx); circle.setAttribute('cy', enc.cy);
+    circle.setAttribute('r', enc.r);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', 'var(--accent)');
+    circle.setAttribute('stroke-width', '1');
+    circle.setAttribute('stroke-dasharray', '6 5');
+    encG.appendChild(circle);
+
+    if(parentNode){
+      // label inside circle near the top — this is the back button
+      const lbl = svgEl('text');
+      lbl.setAttribute('x', enc.cx);
+      lbl.setAttribute('y', enc.cy - enc.r + 20);
+      lbl.setAttribute('text-anchor', 'middle');
+      lbl.setAttribute('dominant-baseline', 'hanging');
+      lbl.setAttribute('font-family', '"JetBrains Mono", monospace');
+      lbl.setAttribute('font-size', '12');
+      lbl.setAttribute('fill', 'var(--accent)');
+      lbl.setAttribute('cursor', 'pointer');
+      lbl.textContent = parentNode.label;
+      lbl.onclick = e => { e.stopPropagation(); navigateToIndex(graphStack.length - 2); };
+      encG.appendChild(lbl);
+    }
+
+    svg.appendChild(encG);
+  }
+
+  // edges
   graph.edges.forEach(edge => {
     const fp = graph.nodes.find(n => n.ref === edge.from);
     const tp = graph.nodes.find(n => n.ref === edge.to);
     if(!fp || !tp || fp.x == null || tp.x == null) return;
 
-    const dx = tp.x - fp.x, dy = tp.y - fp.y;
-    const len = Math.sqrt(dx*dx + dy*dy);
+    const dx = tp.x-fp.x, dy = tp.y-fp.y;
+    const len = Math.sqrt(dx*dx+dy*dy);
     if(len === 0) return;
     const ux = dx/len, uy = dy/len;
 
     const isAmbient = edge.type === 'ambient';
     const line = svgEl('line');
-    line.setAttribute('x1', fp.x + R*ux);
-    line.setAttribute('y1', fp.y + R*uy);
-    line.setAttribute('x2', tp.x - R*ux);
-    line.setAttribute('y2', tp.y - R*uy);
+    line.setAttribute('x1', fp.x+R*ux); line.setAttribute('y1', fp.y+R*uy);
+    line.setAttribute('x2', tp.x-R*ux); line.setAttribute('y2', tp.y-R*uy);
     line.setAttribute('stroke', isAmbient ? 'var(--muted)' : 'var(--ink)');
     line.setAttribute('stroke-width', '1.5');
     line.setAttribute('marker-end', 'url(#arr)');
@@ -275,37 +290,30 @@ function renderGraph(){
     svg.appendChild(line);
   });
 
-  // nodes (in front of edges)
+  // nodes
   graph.nodes.forEach(p => {
     if(p.x == null) return;
     const node = getNode(p.ref);
     if(!node) return;
 
-    const isActive   = node.id === activeNodeId;
-    const drillable  = hasSubGraph(node.id);
-    const hasNotes   = node.notes && node.notes.length > 0;
+    const drillable = hasSubGraph(node.id);
 
     const g = svgEl('g');
     g.setAttribute('transform', `translate(${p.x},${p.y})`);
-    if(drillable || hasNotes) g.style.cursor = 'pointer';
+    if(drillable) g.style.cursor = 'pointer';
 
     const circle = svgEl('circle');
     circle.setAttribute('r', R);
     circle.setAttribute('cx', 0); circle.setAttribute('cy', 0);
     circle.setAttribute('stroke-width', '1.5');
+    circle.setAttribute('fill', 'var(--paper)');
 
-    if(isActive){
-      circle.setAttribute('fill', 'var(--ink)');
-      circle.setAttribute('stroke', 'var(--ink)');
-    } else if(node.type === 'ambient'){
-      circle.setAttribute('fill', 'var(--paper)');
+    if(node.type === 'ambient'){
       circle.setAttribute('stroke', 'var(--muted)');
       circle.setAttribute('stroke-dasharray', '4 3');
     } else if(node.type === 'output'){
-      circle.setAttribute('fill', 'var(--paper)');
       circle.setAttribute('stroke', 'var(--accent)');
     } else {
-      circle.setAttribute('fill', 'var(--paper)');
       circle.setAttribute('stroke', 'var(--ink)');
     }
     g.appendChild(circle);
@@ -318,58 +326,13 @@ function renderGraph(){
     text.setAttribute('font-size', '11');
     text.setAttribute('fill',
       node.type === 'ambient' ? 'var(--muted)' :
-      node.type === 'output'  ? 'var(--accent)' :
-      'var(--ink)');
+      node.type === 'output'  ? 'var(--accent)' : 'var(--ink)');
     text.textContent = node.label;
     g.appendChild(text);
 
-    g.onclick = e => { e.stopPropagation(); handleNodeClick(node.id); };
+    if(drillable) g.onclick = () => navigateTo(node.id);
     svg.appendChild(g);
   });
-}
-
-// ── render: node panel ────────────────────────────────────────────────────────
-
-function renderNodePanel(){
-  const panel      = document.getElementById('node-panel');
-  const titleEl    = document.getElementById('np-title');
-  const notesList  = document.getElementById('np-notes');
-  const exploreBtn = document.getElementById('np-explore');
-
-  if(!activeNodeId){ panel.style.display = 'none'; return; }
-
-  const node = getNode(activeNodeId);
-  if(!node){ panel.style.display = 'none'; return; }
-
-  panel.style.display = 'block';
-  titleEl.textContent = node.label;
-
-  notesList.innerHTML = '';
-  const notes = node.notes || [];
-  if(notes.length === 0){
-    const empty = document.createElement('span');
-    empty.className = 'note-empty';
-    empty.textContent = 'no notes yet';
-    notesList.appendChild(empty);
-  } else {
-    notes.forEach(note => {
-      const li   = document.createElement('li');
-      li.className = 'note-row';
-      const dash = document.createElement('span');
-      dash.className = 'note-dash'; dash.textContent = '—';
-      const txt  = document.createElement('span');
-      txt.textContent = typeof note === 'string' ? note : note.text;
-      li.appendChild(dash); li.appendChild(txt);
-      notesList.appendChild(li);
-    });
-  }
-
-  if(hasSubGraph(activeNodeId)){
-    exploreBtn.style.display = 'block';
-    exploreBtn.onclick = () => navigateTo(activeNodeId);
-  } else {
-    exploreBtn.style.display = 'none';
-  }
 }
 
 // ── render: links ─────────────────────────────────────────────────────────────
@@ -415,25 +378,18 @@ function setupAddLink(){
   };
 }
 
-// ── node click ────────────────────────────────────────────────────────────────
-
-function handleNodeClick(nodeId){
-  activeNodeId = activeNodeId === nodeId ? null : nodeId;
-  renderAll();
-}
-
 // ── main ──────────────────────────────────────────────────────────────────────
 
 function renderAll(){
   renderBreadcrumb();
   renderGraph();
-  renderNodePanel();
 }
 
 async function init(){
   await loadData();
   if(DATA.lastUpdated)
     document.getElementById('last-updated').textContent = 'last updated: ' + DATA.lastUpdated;
+  document.getElementById('h1-home').onclick = () => navigateToIndex(0);
   renderAll();
   renderLinks();
   setupAddLink();
