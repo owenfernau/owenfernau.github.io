@@ -1,34 +1,52 @@
 {
-  "root": "AI Map (Dynamically Updating)",
   "lastUpdated": "June 3, 2026",
-  "cards": [
-    { "id": "algorithms", "title": "algorithms", "topLevel": true, "notes": [] },
-    { "id": "data", "title": "data", "topLevel": true, "notes": [] },
+  "nodeLibrary": {
+    "computing-power": { "id": "computing-power", "label": "computing power", "type": "stack", "notes": [] },
+    "algorithms":      { "id": "algorithms",      "label": "algorithms",      "type": "stack", "notes": [] },
+    "data":            { "id": "data",            "label": "data",            "type": "stack", "notes": [] },
+    "ai-capability":   { "id": "ai-capability",   "label": "AI capability",   "type": "output", "notes": [] },
+    "chips":           { "id": "chips",           "label": "chips",           "type": "stack", "notes": [] },
+    "data-centers":    { "id": "data-centers",    "label": "data centers",    "type": "stack", "notes": [] },
+    "energy":          { "id": "energy",          "label": "energy",          "type": "ambient", "notes": [] }
+  },
+  "graphs": [
+    {
+      "id": "root",
+      "title": "AI Map",
+      "nodes": [
+        { "ref": "data",            "x": 120, "y": 180 },
+        { "ref": "algorithms",      "x": 400, "y": 180 },
+        { "ref": "computing-power", "x": 680, "y": 180 },
+        { "ref": "ai-capability",   "x": 400, "y": 380 }
+      ],
+      "edges": [
+        { "from": "data",            "to": "ai-capability", "type": "input" },
+        { "from": "algorithms",      "to": "ai-capability", "type": "input" },
+        { "from": "computing-power", "to": "ai-capability", "type": "input" }
+      ]
+    },
     {
       "id": "computing-power",
       "title": "computing power",
-      "topLevel": true,
-      "notes": [
-        { "text": "chips", "link": "chips" },
-        { "text": "data centers", "link": "data-centers" },
-        { "text": "energy" }
+      "nodes": [
+        { "ref": "energy",       "x": 400, "y":  80 },
+        { "ref": "chips",        "x": 200, "y": 280 },
+        { "ref": "data-centers", "x": 580, "y": 280 }
+      ],
+      "edges": [
+        { "from": "chips",   "to": "data-centers", "type": "depends-on" },
+        { "from": "energy",  "to": "chips",         "type": "ambient" },
+        { "from": "energy",  "to": "data-centers",  "type": "ambient" }
       ]
-    },
-    { "id": "chips", "title": "chips", "topLevel": false, "notes": [] },
-    {
-      "id": "data-centers",
-      "title": "data centers",
-      "topLevel": false,
-      "notes": []
     }
   ],
   "links": [
-    { "id": "goodfire", "title": "Goodfire — the world inside neural networks", "url": "https://www.goodfire.ai/research/the-world-inside-neural-networks" },
-    { "id": "3b1b", "title": "3Blue1Brown — Neural Networks series", "url": "https://www.3blue1brown.com/topics/neural-networks" },
-    { "id": "karpathy", "title": "Karpathy — Intro to LLMs", "url": "https://www.youtube.com/watch?v=zjkBMFhNj_g" },
+    { "id": "goodfire",        "title": "Goodfire — the world inside neural networks",  "url": "https://www.goodfire.ai/research/the-world-inside-neural-networks" },
+    { "id": "3b1b",            "title": "3Blue1Brown — Neural Networks series",          "url": "https://www.3blue1brown.com/topics/neural-networks" },
+    { "id": "karpathy",        "title": "Karpathy — Intro to LLMs",                     "url": "https://www.youtube.com/watch?v=zjkBMFhNj_g" },
     { "id": "l-1780513955601", "title": "Neural Networks and Deep Learning by Michael Nielsen", "url": "http://neuralnetworksanddeeplearning.com/" },
-    { "id": "l-1780514448082", "title": "Attention is All You Need", "url": "https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf" },
-    { "id": "l-1780514496307", "title": "Big Guide to Fusion", "url": "https://climate.benjames.io/fusion/" },
-    { "id": "l-1780516507348", "title": "UI Experiment: Atlas of Innovation", "url": "https://atlasofinnovation.org/" }
+    { "id": "l-1780514448082", "title": "Attention is All You Need",                    "url": "https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf" },
+    { "id": "l-1780514496307", "title": "Big Guide to Fusion",                          "url": "https://climate.benjames.io/fusion/" },
+    { "id": "l-1780516507348", "title": "UI Experiment: Atlas of Innovation",           "url": "https://atlasofinnovation.org/" }
   ]
 }

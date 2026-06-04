@@ -26,66 +26,55 @@
   .header{
     padding:24px 32px 20px;
     border-bottom:1px solid var(--line);
-    display:flex; align-items:baseline; justify-content:space-between;
+    display:flex; align-items:baseline; gap:16px; justify-content:space-between;
   }
-  .header h1{ font-size:15px; font-weight:700; letter-spacing:-0.01em; }
-  .header .meta{ font-size:11px; color:var(--muted); }
+  .header-left{ display:flex; align-items:baseline; gap:14px; flex:1; min-width:0; }
+  .header h1{ font-size:15px; font-weight:700; letter-spacing:-0.01em; white-space:nowrap; }
+  .meta{ font-size:11px; color:var(--muted); white-space:nowrap; }
 
-  .cards-row{
-    display:flex; gap:10px; padding:20px 32px;
-    border-bottom:1px solid var(--line); flex-wrap:wrap;
+  .breadcrumb{
+    display:flex; align-items:baseline; gap:5px;
+    font-size:12px; color:var(--muted); overflow:hidden; flex-wrap:wrap;
   }
-  .sub-row{
-    display:none; gap:10px; padding:14px 32px;
-    border-bottom:1px solid var(--line); flex-wrap:wrap;
-    background:var(--paper);
-  }
-  .sub-row.open{ display:flex; }
-  .card{
-    border-radius:4px; padding:10px 16px;
-    font-size:12px; line-height:1.3;
-    cursor:pointer; border:1px solid transparent;
-    font-family:inherit; text-align:left;
-    background:var(--line); color:var(--muted);
-    transition:all .15s;
-  }
-  .card.has-notes{ color:var(--accent); border-color:var(--accent); background:transparent; }
-  .card.active{ background:var(--accent); color:var(--paper); border-color:var(--accent); }
-  .card:hover:not(.active){ border-color:var(--muted); color:var(--ink); }
-  .card.has-notes:hover:not(.active){ opacity:.75; }
+  .crumb{ cursor:pointer; }
+  .crumb:hover{ color:var(--ink); }
+  .crumb.current{ color:var(--ink); cursor:default; }
+  .crumb-sep{ color:var(--line); user-select:none; }
 
   .layout{
     display:grid;
     grid-template-columns:1fr 260px;
-    min-height:calc(100vh - 120px);
+    min-height:calc(100vh - 73px);
   }
 
   .main{
     padding:40px 48px;
     border-right:1px solid var(--line);
   }
-  .panel-title{
-    font-size:22px; font-weight:700; letter-spacing:-0.01em;
-    margin-bottom:28px;
+
+  #graph-svg{ width:100%; height:auto; display:block; overflow:visible; }
+
+  .sidebar{ padding:32px 24px; display:flex; flex-direction:column; gap:24px; }
+
+  .node-panel{ padding-bottom:24px; border-bottom:1px solid var(--line); }
+  .np-title{ font-size:14px; font-weight:700; margin-bottom:10px; }
+  .np-explore{
+    margin-top:12px; font-size:11px; color:var(--accent);
+    cursor:pointer; background:none; border:none;
+    font-family:inherit; padding:0; display:block;
   }
-  .panel-title.green{ color:var(--accent); }
+  .np-explore:hover{ opacity:.75; }
 
   .note-list{ list-style:none; }
   .note-row{
-    display:flex; align-items:baseline; gap:10px;
-    padding:8px 0; border-bottom:1px solid var(--line);
-    font-size:14px;
+    display:flex; align-items:baseline; gap:8px;
+    padding:5px 0; border-bottom:1px solid var(--line); font-size:12px;
   }
   .note-row:last-of-type{ border-bottom:none; }
   .note-dash{ color:var(--muted); flex-shrink:0; }
-  .note-text{ flex:1; }
-  .note-row.linked{ cursor:pointer; }
-  .note-row.linked .note-text{ color:var(--accent); }
-  .note-row.linked:hover .note-text{ opacity:.75; }
-  .note-link-arrow{ color:var(--accent); font-size:11px; flex-shrink:0; }
+  .note-empty{ font-size:11px; color:var(--muted); font-style:italic; }
 
-  .sidebar{ padding:32px 24px; }
-  .sidebar-label{
+  .section-label{
     font-size:11px; letter-spacing:.08em; text-transform:uppercase;
     color:var(--muted); margin-bottom:14px;
   }
@@ -97,15 +86,14 @@
   .link-item:last-of-type{ border-bottom:none; }
   .link-item a{ color:var(--ink); text-decoration:none; flex:1; line-height:1.4; }
   .link-item a:hover{ color:var(--accent); }
-  .link-arrow{ color:var(--accent); font-size:11px; flex-shrink:0; }
-  .link-delete{
+  .link-arr{ color:var(--accent); font-size:11px; flex-shrink:0; }
+  .link-del{
     background:none; border:none; color:transparent;
     font-family:inherit; font-size:12px; cursor:pointer; padding:0; flex-shrink:0;
   }
-  .link-item:hover .link-delete{ color:var(--muted); }
-  .link-delete:hover{ color:var(--ink) !important; }
+  .link-item:hover .link-del{ color:var(--muted); }
+  .link-del:hover{ color:var(--ink) !important; }
 
-  .add-link{ margin-top:18px; }
   .add-link input{
     font-family:inherit; font-size:12px; background:transparent;
     border:none; border-bottom:1px solid var(--line);
@@ -118,37 +106,53 @@
 <body>
 
 <div class="header">
-  <h1>AI Map (Dynamically Updating)</h1>
+  <div class="header-left">
+    <h1>AI Map</h1>
+    <nav class="breadcrumb" id="breadcrumb"></nav>
+  </div>
   <span class="meta" id="last-updated"></span>
 </div>
 
-<div class="cards-row" id="cards-row"></div>
-<div class="sub-row" id="sub-row"></div>
-
 <div class="layout">
-  <main class="main" id="main-panel"></main>
-
+  <main class="main">
+    <svg id="graph-svg"></svg>
+  </main>
   <aside class="sidebar">
-    <div class="sidebar-label">links</div>
-    <ul class="link-list" id="link-list"></ul>
-    <div class="add-link" id="add-link-form" style="display:none">
-      <input id="add-link-title" type="text" placeholder="title" autocomplete="off">
-      <input id="add-link-url" type="text" placeholder="url" autocomplete="off">
+    <div id="node-panel" style="display:none" class="node-panel">
+      <div class="np-title" id="np-title"></div>
+      <ul class="note-list" id="np-notes"></ul>
+      <button class="np-explore" id="np-explore" style="display:none">explore →</button>
+    </div>
+
+    <div>
+      <div class="section-label">links</div>
+      <ul class="link-list" id="link-list"></ul>
+      <div class="add-link" id="add-link-form" style="display:none">
+        <input id="add-link-title" type="text" placeholder="title" autocomplete="off">
+        <input id="add-link-url" type="text" placeholder="url" autocomplete="off">
+      </div>
     </div>
   </aside>
 </div>
 
 <script>
 const IS_LOCAL = ['localhost','127.0.0.1'].includes(location.hostname);
-let DATA = { root:'', lastUpdated:'', cards:[], links:[] };
-let activeCardId = null;
-let activeSubCardId = null;
+const R   = 28;  // node circle radius
+const PAD = 72;  // viewBox padding
+const LBL = R + 18; // label y-offset below circle center
+
+let DATA = {};
+let graphStack = ['root'];
+let activeNodeId = null;
+
+// ── data ──────────────────────────────────────────────────────────────────────
 
 async function loadData(){
   const res = await fetch('nodes.json');
   DATA = await res.json();
-  if(!DATA.cards) DATA.cards = [];
-  if(!DATA.links) DATA.links = [];
+  if(!DATA.nodeLibrary) DATA.nodeLibrary = {};
+  if(!DATA.graphs)      DATA.graphs = [];
+  if(!DATA.links)       DATA.links  = [];
 }
 
 async function saveData(){
@@ -159,108 +163,232 @@ async function saveData(){
   await fetch('/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(DATA)});
 }
 
-function renderHeader(){
-  if(DATA.lastUpdated)
-    document.getElementById('last-updated').textContent = 'last updated: ' + DATA.lastUpdated;
-}
+// ── helpers ───────────────────────────────────────────────────────────────────
 
-function hasNotes(card){ return card.notes && card.notes.length > 0; }
-function noteText(n){ return typeof n === 'string' ? n : n.text; }
-function noteLink(n){ return typeof n === 'object' && n.link ? n.link : null; }
+const getGraph    = id => DATA.graphs.find(g => g.id === id);
+const getNode     = id => DATA.nodeLibrary[id];
+const hasSubGraph = id => !!getGraph(id);
+const currentGid  = ()  => graphStack[graphStack.length - 1];
 
-function renderCards(){
-  const row = document.getElementById('cards-row');
-  row.innerHTML = '';
-  const topLevel = DATA.cards.filter(c => c.topLevel);
-  const active = topLevel.filter(c => c.id === activeCardId);
-  const rest = topLevel.filter(c => c.id !== activeCardId);
-  [...active, ...rest].forEach(c => {
-    const btn = document.createElement('button');
-    btn.className = 'card' +
-      (hasNotes(c) ? ' has-notes' : '') +
-      (activeCardId === c.id ? ' active' : '');
-    btn.textContent = c.title;
-    btn.onclick = () => {
-      activeCardId = activeCardId === c.id ? null : c.id;
-      activeSubCardId = null;
-      renderCards(); renderSubRow(); renderPanel();
-    };
-    row.appendChild(btn);
+function svgEl(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+
+function computeViewBox(graph){
+  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+  graph.nodes.forEach(p => {
+    if(p.x == null) return;
+    minX = Math.min(minX, p.x - R);
+    minY = Math.min(minY, p.y - R);
+    maxX = Math.max(maxX, p.x + R);
+    maxY = Math.max(maxY, p.y + R);
   });
+  if(minX === Infinity) return '0 0 800 500';
+  // extra bottom padding for labels below circles
+  return `${minX-PAD} ${minY-PAD} ${maxX-minX+PAD*2} ${maxY-minY+PAD*2+LBL}`;
 }
 
-function renderSubRow(){
-  const row = document.getElementById('sub-row');
-  if(!activeSubCardId){ row.className = 'sub-row'; row.innerHTML = ''; return; }
-  const card = DATA.cards.find(c => c.id === activeSubCardId);
-  if(!card){ row.className = 'sub-row'; return; }
-  row.className = 'sub-row open';
-  row.innerHTML = '';
-  const btn = document.createElement('button');
-  btn.className = 'card active';
-  btn.textContent = card.title;
-  btn.onclick = () => { activeSubCardId = null; renderSubRow(); renderPanel(); };
-  row.appendChild(btn);
+// ── navigation ────────────────────────────────────────────────────────────────
+
+function navigateTo(graphId){
+  graphStack.push(graphId);
+  activeNodeId = null;
+  renderAll();
 }
 
-function renderPanel(){
-  const main = document.getElementById('main-panel');
-  main.innerHTML = '';
-  const cardId = activeSubCardId || activeCardId;
-  if(!cardId) return;
+function navigateToIndex(i){
+  graphStack = graphStack.slice(0, i + 1);
+  activeNodeId = null;
+  renderAll();
+}
 
-  const card = DATA.cards.find(c => c.id === cardId);
-  if(!card) return;
+// ── render: breadcrumb ────────────────────────────────────────────────────────
 
-
-  const list = document.createElement('ul');
-  list.className = 'note-list';
-  (card.notes || []).forEach(note => {
-    const li = document.createElement('li');
-    const link = noteLink(note);
-    li.className = 'note-row' + (link ? ' linked' : '');
-
-    const dash = document.createElement('span');
-    dash.className = 'note-dash';
-    dash.textContent = '—';
-
-    const text = document.createElement('span');
-    text.className = 'note-text';
-    text.textContent = noteText(note);
-
-    li.appendChild(dash);
-    li.appendChild(text);
-
-    if(link){
-      const arrow = document.createElement('span');
-      arrow.className = 'note-link-arrow';
-      arrow.textContent = '→';
-      li.appendChild(arrow);
-      li.onclick = () => { activeSubCardId = link; renderSubRow(); renderPanel(); };
+function renderBreadcrumb(){
+  const nav = document.getElementById('breadcrumb');
+  nav.innerHTML = '';
+  graphStack.forEach((gid, i) => {
+    const g = getGraph(gid);
+    const title = g ? g.title : gid;
+    const isCurrent = i === graphStack.length - 1;
+    if(i > 0){
+      const sep = document.createElement('span');
+      sep.className = 'crumb-sep';
+      sep.textContent = '/';
+      nav.appendChild(sep);
     }
-
-    list.appendChild(li);
+    const span = document.createElement('span');
+    span.className = 'crumb' + (isCurrent ? ' current' : '');
+    span.textContent = title;
+    if(!isCurrent) span.onclick = () => navigateToIndex(i);
+    nav.appendChild(span);
   });
-  main.appendChild(list);
 }
+
+// ── render: SVG graph ─────────────────────────────────────────────────────────
+
+function renderGraph(){
+  const svg = document.getElementById('graph-svg');
+  svg.innerHTML = '';
+
+  const graph = getGraph(currentGid());
+  if(!graph) return;
+
+  svg.setAttribute('viewBox', computeViewBox(graph));
+
+  // arrowhead: context-stroke inherits the line's stroke color
+  const defs = svgEl('defs');
+  defs.innerHTML = `
+    <marker id="arr" markerWidth="12" markerHeight="8"
+      refX="12" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L0,8 L12,4 z" fill="context-stroke"/>
+    </marker>`;
+  svg.appendChild(defs);
+
+  // transparent background rect to catch deselect clicks
+  const bg = svgEl('rect');
+  bg.setAttribute('x', -9999); bg.setAttribute('y', -9999);
+  bg.setAttribute('width', 99999); bg.setAttribute('height', 99999);
+  bg.setAttribute('fill', 'transparent');
+  bg.onclick = () => { activeNodeId = null; renderAll(); };
+  svg.appendChild(bg);
+
+  // edges (behind nodes)
+  graph.edges.forEach(edge => {
+    const fp = graph.nodes.find(n => n.ref === edge.from);
+    const tp = graph.nodes.find(n => n.ref === edge.to);
+    if(!fp || !tp || fp.x == null || tp.x == null) return;
+
+    const dx = tp.x - fp.x, dy = tp.y - fp.y;
+    const len = Math.sqrt(dx*dx + dy*dy);
+    if(len === 0) return;
+    const ux = dx/len, uy = dy/len;
+
+    const isAmbient = edge.type === 'ambient';
+    const line = svgEl('line');
+    line.setAttribute('x1', fp.x + R*ux);
+    line.setAttribute('y1', fp.y + R*uy);
+    line.setAttribute('x2', tp.x - R*ux);
+    line.setAttribute('y2', tp.y - R*uy);
+    line.setAttribute('stroke', isAmbient ? 'var(--muted)' : 'var(--ink)');
+    line.setAttribute('stroke-width', '1.5');
+    line.setAttribute('marker-end', 'url(#arr)');
+    if(isAmbient) line.setAttribute('stroke-dasharray', '5 4');
+    svg.appendChild(line);
+  });
+
+  // nodes (in front of edges)
+  graph.nodes.forEach(p => {
+    if(p.x == null) return;
+    const node = getNode(p.ref);
+    if(!node) return;
+
+    const isActive   = node.id === activeNodeId;
+    const drillable  = hasSubGraph(node.id);
+    const hasNotes   = node.notes && node.notes.length > 0;
+
+    const g = svgEl('g');
+    g.setAttribute('transform', `translate(${p.x},${p.y})`);
+    if(drillable || hasNotes) g.style.cursor = 'pointer';
+
+    const circle = svgEl('circle');
+    circle.setAttribute('r', R);
+    circle.setAttribute('cx', 0); circle.setAttribute('cy', 0);
+    circle.setAttribute('stroke-width', '1.5');
+
+    if(isActive){
+      circle.setAttribute('fill', 'var(--ink)');
+      circle.setAttribute('stroke', 'var(--ink)');
+    } else if(node.type === 'ambient'){
+      circle.setAttribute('fill', 'var(--paper)');
+      circle.setAttribute('stroke', 'var(--muted)');
+      circle.setAttribute('stroke-dasharray', '4 3');
+    } else if(node.type === 'output'){
+      circle.setAttribute('fill', 'var(--paper)');
+      circle.setAttribute('stroke', 'var(--accent)');
+    } else {
+      circle.setAttribute('fill', 'var(--paper)');
+      circle.setAttribute('stroke', 'var(--ink)');
+    }
+    g.appendChild(circle);
+
+    const text = svgEl('text');
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'auto');
+    text.setAttribute('y', LBL);
+    text.setAttribute('font-family', '"JetBrains Mono", monospace');
+    text.setAttribute('font-size', '11');
+    text.setAttribute('fill',
+      node.type === 'ambient' ? 'var(--muted)' :
+      node.type === 'output'  ? 'var(--accent)' :
+      'var(--ink)');
+    text.textContent = node.label;
+    g.appendChild(text);
+
+    g.onclick = e => { e.stopPropagation(); handleNodeClick(node.id); };
+    svg.appendChild(g);
+  });
+}
+
+// ── render: node panel ────────────────────────────────────────────────────────
+
+function renderNodePanel(){
+  const panel      = document.getElementById('node-panel');
+  const titleEl    = document.getElementById('np-title');
+  const notesList  = document.getElementById('np-notes');
+  const exploreBtn = document.getElementById('np-explore');
+
+  if(!activeNodeId){ panel.style.display = 'none'; return; }
+
+  const node = getNode(activeNodeId);
+  if(!node){ panel.style.display = 'none'; return; }
+
+  panel.style.display = 'block';
+  titleEl.textContent = node.label;
+
+  notesList.innerHTML = '';
+  const notes = node.notes || [];
+  if(notes.length === 0){
+    const empty = document.createElement('span');
+    empty.className = 'note-empty';
+    empty.textContent = 'no notes yet';
+    notesList.appendChild(empty);
+  } else {
+    notes.forEach(note => {
+      const li   = document.createElement('li');
+      li.className = 'note-row';
+      const dash = document.createElement('span');
+      dash.className = 'note-dash'; dash.textContent = '—';
+      const txt  = document.createElement('span');
+      txt.textContent = typeof note === 'string' ? note : note.text;
+      li.appendChild(dash); li.appendChild(txt);
+      notesList.appendChild(li);
+    });
+  }
+
+  if(hasSubGraph(activeNodeId)){
+    exploreBtn.style.display = 'block';
+    exploreBtn.onclick = () => navigateTo(activeNodeId);
+  } else {
+    exploreBtn.style.display = 'none';
+  }
+}
+
+// ── render: links ─────────────────────────────────────────────────────────────
 
 function renderLinks(){
   const list = document.getElementById('link-list');
   list.innerHTML = '';
   DATA.links.forEach(lnk => {
-    const li = document.createElement('li');
+    const li  = document.createElement('li');
     li.className = 'link-item';
-    const a = document.createElement('a');
+    const a   = document.createElement('a');
     a.href = lnk.url; a.target = '_blank'; a.rel = 'noopener';
     a.textContent = lnk.title;
-    const arrow = document.createElement('span');
-    arrow.className = 'link-arrow';
-    arrow.textContent = '↗';
-    li.appendChild(a); li.appendChild(arrow);
+    const arr = document.createElement('span');
+    arr.className = 'link-arr'; arr.textContent = '↗';
+    li.appendChild(a); li.appendChild(arr);
     if(IS_LOCAL){
       const del = document.createElement('button');
-      del.className = 'link-delete';
-      del.textContent = '×';
+      del.className = 'link-del'; del.textContent = '×';
       del.onclick = async () => {
         DATA.links = DATA.links.filter(l => l.id !== lnk.id);
         await saveData(); renderLinks();
@@ -287,12 +415,26 @@ function setupAddLink(){
   };
 }
 
+// ── node click ────────────────────────────────────────────────────────────────
+
+function handleNodeClick(nodeId){
+  activeNodeId = activeNodeId === nodeId ? null : nodeId;
+  renderAll();
+}
+
+// ── main ──────────────────────────────────────────────────────────────────────
+
+function renderAll(){
+  renderBreadcrumb();
+  renderGraph();
+  renderNodePanel();
+}
+
 async function init(){
   await loadData();
-  renderHeader();
-  renderCards();
-  renderSubRow();
-  renderPanel();
+  if(DATA.lastUpdated)
+    document.getElementById('last-updated').textContent = 'last updated: ' + DATA.lastUpdated;
+  renderAll();
   renderLinks();
   setupAddLink();
 }
