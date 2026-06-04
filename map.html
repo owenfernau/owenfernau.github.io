@@ -112,9 +112,9 @@
 
 <script>
 const IS_LOCAL = ['localhost','127.0.0.1'].includes(location.hostname);
-const R       = 28;   // node circle radius
+const R       = 34;   // node circle radius
 const PAD     = 72;   // viewBox padding
-const LBL     = R + 18; // label y-offset below circle center
+const LBL     = R + 22; // label y-offset below circle center
 const ENC_PAD = 60;   // padding from node edges to enclosing circle
 
 let DATA = {};
@@ -212,6 +212,40 @@ function renderBreadcrumb(){
   });
 }
 
+// ── invariants ────────────────────────────────────────────────────────────────
+// These must hold at every step of layout work. If something looks wrong here,
+// check these before touching positions or edge routing.
+//
+// 1. ROOT GRAPH STRUCTURE  (nodes.json → graphs[id="root"].edges)
+//    data            → ai-capability   (type: input)
+//    algorithms      → ai-capability   (type: input)
+//    computing-power → ai-capability   (type: input)
+//    Every input node has its OWN individual arrow to ai-capability.
+//    NEVER route one node's arrow through another node, and NEVER let a shared
+//    path segment imply a connection that doesn't exist in the data.
+//
+// 2. GHOST ROW LAYOUT
+//    When drilling into a sub-graph, parent-graph peers render as ghost nodes.
+//    - Input/stack nodes  → y = ghostY          (the base ghost row)
+//    - Output nodes       → y = ghostY - 120    (floated above the row)
+//    The 120px lift is what prevents straight-line edges from input nodes to
+//    ai-capability from passing through intermediate input nodes on the same row.
+//    Do not collapse this offset without re-checking all edge clearances.
+//
+// 3. KINK PATH (circleEdges)
+//    The elbow connector from the enclosing circle to its output target always
+//    uses gp.y (the target ghost node's actual y), NOT a hardcoded row y.
+//    This ensures the arrow lands at the output node regardless of its vertical
+//    offset — keeping invariant #2 intact even if the offset changes.
+//
+// 4. ORIENTATION ANCHOR
+//    The label of the currently selected sub-graph (e.g. "computing power",
+//    "chips") always sits at the same vertical level as its peer ghost nodes
+//    (ghostY + LBLS). This holds at every depth: drilling into chips should
+//    show the chips label level with energy and data centers, just as computing
+//    power is level with data and algorithms. Never place the enclosing label
+//    at a different y than ghostY + LBLS when a parent context exists.
+
 // ── render: SVG graph ─────────────────────────────────────────────────────────
 
 function renderGraph(){
@@ -240,13 +274,17 @@ function renderGraph(){
       });
       const scale = GHOST_MIN / Math.min(...rawDists);
       const nodeMap = {};
+      const ghostY = enc.cy - enc.r - R - 20;
       peers.forEach(p => {
-        const vx = p.x - selfInParent.x, vy = p.y - selfInParent.y;
-        nodeMap[p.ref] = { ref: p.ref, x: enc.cx + vx*scale, y: enc.cy + vy*scale };
+        const vx = p.x - selfInParent.x;
+        const pNode = DATA.nodeLibrary[p.ref];
+        const yOff = (pNode && pNode.type === 'output') ? -120 : 0;
+        nodeMap[p.ref] = { ref: p.ref, x: enc.cx + vx*scale, y: ghostY + yOff };
       });
       ghostData = {
         nodes: Object.values(nodeMap),
         nodeMap,
+        ghostY,
         edges:       parentGraph.edges.filter(e => e.from !== currentGid() && e.to !== currentGid()),
         circleEdges: parentGraph.edges.filter(e => e.from === currentGid() || e.to === currentGid())
       };
@@ -268,6 +306,14 @@ function renderGraph(){
   }
   svg.setAttribute('viewBox', vbStr);
 
+  // scale font size and label offset so text appears the same physical size
+  // regardless of how large the viewBox is (sub-graphs have much larger viewBoxes)
+  const [,, vbw] = vbStr.split(' ').map(Number);
+  const containerW = (svg.parentElement && svg.parentElement.clientWidth) || 900;
+  const vscale = containerW > 0 ? vbw / containerW : 1;
+  const FS   = Math.round(15 * vscale);
+  const LBLS = Math.round(LBL * vscale);
+
   const defs = svgEl('defs');
   defs.innerHTML = `
     <marker id="arr" markerWidth="12" markerHeight="8"
@@ -279,7 +325,7 @@ function renderGraph(){
   // ghost context: parent graph rendered faintly outside the enclosing circle
   if(ghostData){
     const ghostG = svgEl('g');
-    ghostG.setAttribute('opacity', '0.15');
+    ghostG.setAttribute('opacity', '1');
 
     ghostData.edges.forEach(edge => {
       const fp = ghostData.nodeMap[edge.from];
@@ -294,27 +340,32 @@ function renderGraph(){
       line.setAttribute('x2', tp.x-R*ux); line.setAttribute('y2', tp.y-R*uy);
       line.setAttribute('stroke', 'var(--ink)');
       line.setAttribute('stroke-width', '1.5');
+      line.setAttribute('marker-end', 'url(#arr)');
       ghostG.appendChild(line);
     });
 
-    // edges connecting the enclosing circle to ghost nodes
+    // edges connecting the enclosing circle to ghost nodes — kinked path
     ghostData.circleEdges.forEach(edge => {
-      const isFrom  = edge.from === currentGid();
-      const gp      = ghostData.nodeMap[isFrom ? edge.to : edge.from];
+      const isFrom = edge.from === currentGid();
+      const gp     = ghostData.nodeMap[isFrom ? edge.to : edge.from];
       if(!gp) return;
-      const dx = gp.x - enc.cx, dy = gp.y - enc.cy;
-      const dlen = Math.sqrt(dx*dx + dy*dy);
-      if(dlen === 0) return;
-      const ux = dx/dlen, uy = dy/dlen;
-      const px = enc.cx + ux*enc.r, py = enc.cy + uy*enc.r;
-      const line = svgEl('line');
-      line.setAttribute('x1', isFrom ? px+ux*4    : gp.x-ux*R);
-      line.setAttribute('y1', isFrom ? py+uy*4    : gp.y-uy*R);
-      line.setAttribute('x2', isFrom ? gp.x-ux*R  : px-ux*4);
-      line.setAttribute('y2', isFrom ? gp.y-uy*R  : py-uy*4);
-      line.setAttribute('stroke', 'var(--ink)');
-      line.setAttribute('stroke-width', '1.5');
-      ghostG.appendChild(line);
+      const gy   = gp.y;
+      const topY = enc.cy - enc.r - 2;        // just outside circle top
+      const endX = gp.x + (gp.x < enc.cx ? R : -R); // approach from correct side
+      let d;
+      if(isFrom){
+        d = `M ${enc.cx},${topY} L ${enc.cx},${gy} L ${endX},${gy}`;
+      } else {
+        const startX = gp.x + (gp.x < enc.cx ? -R : R);
+        d = `M ${startX},${gy} L ${enc.cx},${gy} L ${enc.cx},${topY}`;
+      }
+      const path = svgEl('path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', 'var(--ink)');
+      path.setAttribute('stroke-width', '1.5');
+      path.setAttribute('marker-end', 'url(#arr)');
+      ghostG.appendChild(path);
     });
 
     ghostData.nodes.forEach(p => {
@@ -335,9 +386,9 @@ function renderGraph(){
       const text = svgEl('text');
       text.setAttribute('text-anchor', 'middle');
       text.setAttribute('dominant-baseline', 'auto');
-      text.setAttribute('y', LBL);
+      text.setAttribute('y', LBLS);
       text.setAttribute('font-family', '"JetBrains Mono", monospace');
-      text.setAttribute('font-size', '11');
+      text.setAttribute('font-size', FS);
       text.setAttribute('fill',
         node.type === 'ambient' ? 'var(--muted)' :
         node.type === 'output'  ? 'var(--accent)' : 'var(--ink)');
@@ -367,11 +418,11 @@ function renderGraph(){
       // label inside circle near the top — this is the back button
       const lbl = svgEl('text');
       lbl.setAttribute('x', enc.cx);
-      lbl.setAttribute('y', enc.cy - enc.r + 20);
+      lbl.setAttribute('y', ghostData ? ghostData.ghostY + LBLS : enc.cy - enc.r + 20);
       lbl.setAttribute('text-anchor', 'middle');
-      lbl.setAttribute('dominant-baseline', 'hanging');
+      lbl.setAttribute('dominant-baseline', ghostData ? 'auto' : 'hanging');
       lbl.setAttribute('font-family', '"JetBrains Mono", monospace');
-      lbl.setAttribute('font-size', '12');
+      lbl.setAttribute('font-size', FS);
       lbl.setAttribute('fill', 'var(--accent)');
       lbl.setAttribute('cursor', 'pointer');
       lbl.textContent = parentNode.label;
@@ -435,9 +486,9 @@ function renderGraph(){
     const text = svgEl('text');
     text.setAttribute('text-anchor', 'middle');
     text.setAttribute('dominant-baseline', 'auto');
-    text.setAttribute('y', LBL);
+    text.setAttribute('y', LBLS);
     text.setAttribute('font-family', '"JetBrains Mono", monospace');
-    text.setAttribute('font-size', '11');
+    text.setAttribute('font-size', FS);
     text.setAttribute('fill',
       node.type === 'ambient' ? 'var(--muted)' :
       node.type === 'output'  ? 'var(--accent)' : 'var(--ink)');
