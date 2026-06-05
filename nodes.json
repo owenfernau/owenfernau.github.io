@@ -40,7 +40,31 @@
     "energy": {
       "id": "energy",
       "label": "energy",
-      "type": "ambient",
+      "type": "stack",
+      "notes": []
+    },
+    "chip-design": {
+      "id": "chip-design",
+      "label": "design",
+      "type": "stack",
+      "notes": []
+    },
+    "fabrication": {
+      "id": "fabrication",
+      "label": "fabrication",
+      "type": "stack",
+      "notes": []
+    },
+    "euv": {
+      "id": "euv",
+      "label": "EUV",
+      "type": "stack",
+      "notes": []
+    },
+    "hbm-memory": {
+      "id": "hbm-memory",
+      "label": "memory",
+      "type": "stack",
       "notes": []
     }
   },
@@ -94,18 +118,18 @@
       "nodes": [
         {
           "ref": "energy",
-          "x": 430,
-          "y": 50
+          "x": 200,
+          "y": 60
         },
         {
           "ref": "chips",
-          "x": 130,
-          "y": 360
+          "x": 200,
+          "y": 380
         },
         {
           "ref": "data-centers",
-          "x": 730,
-          "y": 360
+          "x": 750,
+          "y": 380
         }
       ],
       "edges": [
@@ -116,14 +140,23 @@
         },
         {
           "from": "energy",
-          "to": "chips",
-          "type": "ambient"
-        },
-        {
-          "from": "energy",
           "to": "data-centers",
-          "type": "ambient"
+          "type": "input"
         }
+      ]
+    },
+    {
+      "id": "chips",
+      "title": "chips",
+      "nodes": [
+        { "ref": "euv",        "x": 100, "y": 50  },
+        { "ref": "chip-design","x": 50,  "y": 580 },
+        { "ref": "fabrication","x": 880, "y": 310 },
+        { "ref": "hbm-memory", "x": 1120,"y": 50  }
+      ],
+      "edges": [
+        { "from": "euv",        "to": "fabrication", "type": "depends-on" },
+        { "from": "chip-design","to": "fabrication", "type": "input"      }
       ]
     }
   ],
@@ -167,6 +200,11 @@
       "id": "l-1780599436340",
       "title": "AI + Econ Dwarkesh",
       "url": "https://x.com/dwarkesh_sp/status/2062574759628661215"
+    },
+    {
+      "id": "l-1780636457850",
+      "title": "Value Chain",
+      "url": "https://en.wikipedia.org/wiki/Value_chain"
     }
   ]
 }

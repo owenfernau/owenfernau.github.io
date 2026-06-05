@@ -119,6 +119,24 @@ const ENC_PAD = 60;   // padding from node edges to enclosing circle
 
 let DATA = {};
 let graphStack = ['root'];
+let _animFrame = null;
+
+function animateViewBox(svg, from, to, ms){
+  if(_animFrame){ cancelAnimationFrame(_animFrame); _animFrame = null; }
+  const [fx,fy,fw,fh] = from.split(' ').map(Number);
+  const [tx,ty,tw,th] = to.split(' ').map(Number);
+  const t0 = performance.now();
+  function ease(t){ return 1 - Math.pow(1-t, 3); }
+  function step(now){
+    const p = Math.min((now - t0) / ms, 1);
+    const e = ease(p);
+    svg.setAttribute('viewBox',
+      `${fx+(tx-fx)*e} ${fy+(ty-fy)*e} ${fw+(tw-fw)*e} ${fh+(th-fh)*e}`);
+    if(p < 1) _animFrame = requestAnimationFrame(step);
+    else _animFrame = null;
+  }
+  _animFrame = requestAnimationFrame(step);
+}
 
 // ── data ──────────────────────────────────────────────────────────────────────
 
@@ -237,14 +255,16 @@ function renderBreadcrumb(){
 //    uses gp.y (the target ghost node's actual y), NOT a hardcoded row y.
 //    This ensures the arrow lands at the output node regardless of its vertical
 //    offset — keeping invariant #2 intact even if the offset changes.
+//    circleEdge TARGETS are also elevated (ghostY - 120) for the same reason:
+//    the kink's horizontal segment must not pass through peer ghost nodes.
+//    (e.g. chips→data-centers: data-centers is elevated so the kink clears energy)
 //
 // 4. ORIENTATION ANCHOR
-//    The label of the currently selected sub-graph (e.g. "computing power",
-//    "chips") always sits at the same vertical level as its peer ghost nodes
-//    (ghostY + LBLS). This holds at every depth: drilling into chips should
-//    show the chips label level with energy and data centers, just as computing
-//    power is level with data and algorithms. Never place the enclosing label
-//    at a different y than ghostY + LBLS when a parent context exists.
+//    The label of the currently selected sub-graph (e.g. "chips") is rendered
+//    INSIDE the enclosing ring near the top (enc.cy - enc.r + 20, hanging).
+//    This keeps the space just outside the ring clear for ghost nodes (e.g.
+//    energy directly above chips). Do not move the label to ghostY + LBLS —
+//    that caused label collision when a ghost node appeared directly above.
 
 // ── render: SVG graph ─────────────────────────────────────────────────────────
 
@@ -255,6 +275,7 @@ function renderGraph(){
   const graph = getGraph(currentGid());
   if(!graph) return;
 
+  const prevVB = svg.getAttribute('viewBox');
   const isSubGraph = graphStack.length > 1;
   const bounds     = graphBounds(graph);
   const enc        = isSubGraph ? minEnclosingCircle(graph) : null;
@@ -275,10 +296,17 @@ function renderGraph(){
       const scale = GHOST_MIN / Math.min(...rawDists);
       const nodeMap = {};
       const ghostY = enc.cy - enc.r - R - 20;
+      // elevate any node that is a direct circleEdge target so kink paths
+      // don't pass through peer ghost nodes (same invariant as output nodes)
+      const circleTargets = new Set(
+        parentGraph.edges
+          .filter(e => e.from === currentGid() || e.to === currentGid())
+          .map(e => e.from === currentGid() ? e.to : e.from)
+      );
       peers.forEach(p => {
         const vx = p.x - selfInParent.x;
         const pNode = DATA.nodeLibrary[p.ref];
-        const yOff = (pNode && pNode.type === 'output') ? -120 : 0;
+        const yOff = (pNode && pNode.type === 'output') || circleTargets.has(p.ref) ? -120 : 0;
         nodeMap[p.ref] = { ref: p.ref, x: enc.cx + vx*scale, y: ghostY + yOff };
       });
       ghostData = {
@@ -288,6 +316,51 @@ function renderGraph(){
         edges:       parentGraph.edges.filter(e => e.from !== currentGid() && e.to !== currentGid()),
         circleEdges: parentGraph.edges.filter(e => e.from === currentGid() || e.to === currentGid())
       };
+    }
+  }
+
+  // level 2: grandparent context + parent ring
+  let ghostData2 = null;
+  let parentRingR = null;
+  if(ghostData && graphStack.length >= 3){
+    const grandGid   = graphStack[graphStack.length - 3];
+    const parentGid2 = graphStack[graphStack.length - 2];
+    const grandGraph = getGraph(grandGid);
+    const selfInGrand = grandGraph && grandGraph.nodes.find(n => n.ref === parentGid2);
+    if(grandGraph && selfInGrand && selfInGrand.x != null){
+      const maxL1Dist = ghostData.nodes.reduce((mx, p) => {
+        const dx = p.x - enc.cx, dy = p.y - enc.cy;
+        return Math.max(mx, Math.sqrt(dx*dx + dy*dy));
+      }, 0);
+      parentRingR = maxL1Dist + R + 60;
+      const GHOST_MIN_2 = parentRingR + R + 60;
+      const grandPeers = grandGraph.nodes.filter(n => n.ref !== parentGid2 && n.x != null);
+      const rawDists2  = grandPeers.map(p => {
+        const vx = p.x - selfInGrand.x, vy = p.y - selfInGrand.y;
+        return Math.sqrt(vx*vx + vy*vy) || 1;
+      });
+      if(rawDists2.length){
+        const scale2 = GHOST_MIN_2 / Math.min(...rawDists2);
+        const ghostY2 = enc.cy - parentRingR - R - 20;
+        const circleTargets2 = new Set(
+          grandGraph.edges
+            .filter(e => e.from === parentGid2 || e.to === parentGid2)
+            .map(e => e.from === parentGid2 ? e.to : e.from)
+        );
+        const nodeMap2 = {};
+        grandPeers.forEach(p => {
+          const vx = p.x - selfInGrand.x;
+          const pNode = DATA.nodeLibrary[p.ref];
+          const yOff = (pNode && pNode.type === 'output') || circleTargets2.has(p.ref) ? -120 : 0;
+          nodeMap2[p.ref] = { ref: p.ref, x: enc.cx + vx*scale2, y: ghostY2 + yOff };
+        });
+        ghostData2 = {
+          nodes: Object.values(nodeMap2), nodeMap: nodeMap2,
+          ghostY: ghostY2, parentGid: parentGid2,
+          edges:       grandGraph.edges.filter(e => e.from !== parentGid2 && e.to !== parentGid2),
+          circleEdges: grandGraph.edges.filter(e => e.from === parentGid2 || e.to === parentGid2)
+        };
+      }
     }
   }
 
@@ -304,7 +377,28 @@ function renderGraph(){
     });
     vbStr = `${vx} ${vy} ${x2-vx} ${y2-vy}`;
   }
+  if(ghostData2){
+    const [vx0, vy0, vw0, vh0] = vbStr.split(' ').map(Number);
+    let vx = vx0, vy = vy0, x2 = vx0+vw0, y2 = vy0+vh0;
+    ghostData2.nodes.forEach(p => {
+      vx = Math.min(vx, p.x - R - PAD);
+      vy = Math.min(vy, p.y - R - PAD);
+      x2 = Math.max(x2, p.x + R + PAD);
+      y2 = Math.max(y2, p.y + R + PAD + LBL);
+    });
+    if(parentRingR !== null){
+      vx = Math.min(vx, enc.cx - parentRingR - PAD);
+      vy = Math.min(vy, enc.cy - parentRingR - PAD);
+      x2 = Math.max(x2, enc.cx + parentRingR + PAD);
+      y2 = Math.max(y2, enc.cy + parentRingR + PAD);
+    }
+    vbStr = `${vx} ${vy} ${x2-vx} ${y2-vy}`;
+  }
   svg.setAttribute('viewBox', vbStr);
+  if(prevVB && prevVB !== vbStr){
+    svg.setAttribute('viewBox', prevVB);
+    animateViewBox(svg, prevVB, vbStr, 380);
+  }
 
   // scale font size and label offset so text appears the same physical size
   // regardless of how large the viewBox is (sub-graphs have much larger viewBoxes)
@@ -321,6 +415,99 @@ function renderGraph(){
       <path d="M0,0 L0,8 L12,4 z" fill="context-stroke"/>
     </marker>`;
   svg.appendChild(defs);
+
+  // parent ring: larger dashed circle grouping the level-1 ghost nodes under
+  // the parent sub-graph label (e.g. "computing power" ring when inside chips)
+  if(ghostData2 && parentRingR !== null){
+    const prG = svgEl('g');
+    const prCircle = svgEl('circle');
+    prCircle.setAttribute('cx', enc.cx); prCircle.setAttribute('cy', enc.cy);
+    prCircle.setAttribute('r', parentRingR);
+    prCircle.setAttribute('fill', 'none');
+    prCircle.setAttribute('stroke', 'var(--muted)');
+    prCircle.setAttribute('stroke-width', '1');
+    prCircle.setAttribute('stroke-dasharray', '6 5');
+    prG.appendChild(prCircle);
+    const prNode = getNode(ghostData2.parentGid);
+    if(prNode){
+      const prLbl = svgEl('text');
+      prLbl.setAttribute('x', enc.cx);
+      prLbl.setAttribute('y', enc.cy - parentRingR + 20);
+      prLbl.setAttribute('text-anchor', 'middle');
+      prLbl.setAttribute('dominant-baseline', 'hanging');
+      prLbl.setAttribute('font-family', '"JetBrains Mono", monospace');
+      prLbl.setAttribute('font-size', FS);
+      prLbl.setAttribute('fill', 'var(--muted)');
+      prLbl.setAttribute('cursor', 'pointer');
+      prLbl.textContent = prNode.label;
+      prLbl.onclick = e => { e.stopPropagation(); navigateToIndex(graphStack.length - 2); };
+      prG.appendChild(prLbl);
+    }
+    svg.appendChild(prG);
+
+    // level 2 ghost nodes + edges (grandparent context, faded)
+    const g2 = svgEl('g');
+    g2.setAttribute('opacity', '0.45');
+
+    ghostData2.edges.forEach(edge => {
+      const fp = ghostData2.nodeMap[edge.from];
+      const tp = ghostData2.nodeMap[edge.to];
+      if(!fp || !tp) return;
+      const ddx = tp.x-fp.x, ddy = tp.y-fp.y;
+      const len = Math.sqrt(ddx*ddx+ddy*ddy);
+      if(len === 0) return;
+      const ux = ddx/len, uy = ddy/len;
+      const line = svgEl('line');
+      line.setAttribute('x1', fp.x+R*ux); line.setAttribute('y1', fp.y+R*uy);
+      line.setAttribute('x2', tp.x-R*ux); line.setAttribute('y2', tp.y-R*uy);
+      line.setAttribute('stroke', 'var(--ink)');
+      line.setAttribute('stroke-width', '1.5');
+      line.setAttribute('marker-end', 'url(#arr)');
+      g2.appendChild(line);
+    });
+
+    ghostData2.circleEdges.forEach(edge => {
+      const isFrom = edge.from === ghostData2.parentGid;
+      const gp     = ghostData2.nodeMap[isFrom ? edge.to : edge.from];
+      if(!gp) return;
+      const dx2 = gp.x - enc.cx, dy2 = gp.y - enc.cy;
+      const dlen2 = Math.sqrt(dx2*dx2 + dy2*dy2) || 1;
+      const ux2 = dx2/dlen2, uy2 = dy2/dlen2;
+      const line2 = svgEl('line');
+      line2.setAttribute('x1', enc.cx + ux2*(parentRingR+2));
+      line2.setAttribute('y1', enc.cy + uy2*(parentRingR+2));
+      line2.setAttribute('x2', gp.x - ux2*R);
+      line2.setAttribute('y2', gp.y - uy2*R);
+      line2.setAttribute('stroke', 'var(--ink)');
+      line2.setAttribute('stroke-width', '1.5');
+      line2.setAttribute('marker-end', 'url(#arr)');
+      g2.appendChild(line2);
+    });
+
+    ghostData2.nodes.forEach(p => {
+      const node = getNode(p.ref);
+      if(!node) return;
+      const g = svgEl('g');
+      g.setAttribute('transform', `translate(${p.x},${p.y})`);
+      const circle = svgEl('circle');
+      circle.setAttribute('r', R); circle.setAttribute('cx', 0); circle.setAttribute('cy', 0);
+      circle.setAttribute('stroke-width', '1.5'); circle.setAttribute('fill', 'var(--paper)');
+      circle.setAttribute('stroke', node.type === 'output' ? 'var(--accent)' : 'var(--ink)');
+      g.appendChild(circle);
+      const text = svgEl('text');
+      const lblAbove2 = enc && p.y < enc.cy - enc.r;
+      text.setAttribute('text-anchor', 'middle'); text.setAttribute('dominant-baseline', 'auto');
+      text.setAttribute('y', lblAbove2 ? -LBLS : LBLS);
+      text.setAttribute('font-family', '"JetBrains Mono", monospace');
+      text.setAttribute('font-size', FS);
+      text.setAttribute('fill', node.type === 'output' ? 'var(--accent)' : 'var(--ink)');
+      text.textContent = node.label;
+      g.appendChild(text);
+      g2.appendChild(g);
+    });
+
+    svg.appendChild(g2);
+  }
 
   // ghost context: parent graph rendered faintly outside the enclosing circle
   if(ghostData){
@@ -344,28 +531,23 @@ function renderGraph(){
       ghostG.appendChild(line);
     });
 
-    // edges connecting the enclosing circle to ghost nodes — kinked path
+    // edges connecting the enclosing circle to ghost nodes — direct diagonal
     ghostData.circleEdges.forEach(edge => {
       const isFrom = edge.from === currentGid();
       const gp     = ghostData.nodeMap[isFrom ? edge.to : edge.from];
       if(!gp) return;
-      const gy   = gp.y;
-      const topY = enc.cy - enc.r - 2;        // just outside circle top
-      const endX = gp.x + (gp.x < enc.cx ? R : -R); // approach from correct side
-      let d;
-      if(isFrom){
-        d = `M ${enc.cx},${topY} L ${enc.cx},${gy} L ${endX},${gy}`;
-      } else {
-        const startX = gp.x + (gp.x < enc.cx ? -R : R);
-        d = `M ${startX},${gy} L ${enc.cx},${gy} L ${enc.cx},${topY}`;
-      }
-      const path = svgEl('path');
-      path.setAttribute('d', d);
-      path.setAttribute('fill', 'none');
-      path.setAttribute('stroke', 'var(--ink)');
-      path.setAttribute('stroke-width', '1.5');
-      path.setAttribute('marker-end', 'url(#arr)');
-      ghostG.appendChild(path);
+      const dx = gp.x - enc.cx, dy = gp.y - enc.cy;
+      const dlen = Math.sqrt(dx*dx + dy*dy) || 1;
+      const ux = dx/dlen, uy = dy/dlen;
+      const line = svgEl('line');
+      line.setAttribute('x1', enc.cx + ux*(enc.r+2));
+      line.setAttribute('y1', enc.cy + uy*(enc.r+2));
+      line.setAttribute('x2', gp.x - ux*R);
+      line.setAttribute('y2', gp.y - uy*R);
+      line.setAttribute('stroke', 'var(--ink)');
+      line.setAttribute('stroke-width', '1.5');
+      line.setAttribute('marker-end', 'url(#arr)');
+      ghostG.appendChild(line);
     });
 
     ghostData.nodes.forEach(p => {
@@ -384,9 +566,10 @@ function renderGraph(){
       if(node.type === 'ambient') circle.setAttribute('stroke-dasharray', '4 3');
       g.appendChild(circle);
       const text = svgEl('text');
+      const lblAbove = enc && p.y < enc.cy - enc.r;
       text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('dominant-baseline', 'auto');
-      text.setAttribute('y', LBLS);
+      text.setAttribute('dominant-baseline', lblAbove ? 'auto' : 'auto');
+      text.setAttribute('y', lblAbove ? -LBLS : LBLS);
       text.setAttribute('font-family', '"JetBrains Mono", monospace');
       text.setAttribute('font-size', FS);
       text.setAttribute('fill',
@@ -418,9 +601,9 @@ function renderGraph(){
       // label inside circle near the top — this is the back button
       const lbl = svgEl('text');
       lbl.setAttribute('x', enc.cx);
-      lbl.setAttribute('y', ghostData ? ghostData.ghostY + LBLS : enc.cy - enc.r + 20);
+      lbl.setAttribute('y', enc.cy - enc.r + 20);
       lbl.setAttribute('text-anchor', 'middle');
-      lbl.setAttribute('dominant-baseline', ghostData ? 'auto' : 'hanging');
+      lbl.setAttribute('dominant-baseline', 'hanging');
       lbl.setAttribute('font-family', '"JetBrains Mono", monospace');
       lbl.setAttribute('font-size', FS);
       lbl.setAttribute('fill', 'var(--accent)');
