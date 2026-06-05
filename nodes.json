@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "June 4, 2026",
+  "lastUpdated": "June 5, 2026",
   "nodeLibrary": {
     "computing-power": {
       "id": "computing-power",
@@ -80,18 +80,18 @@
         },
         {
           "ref": "algorithms",
-          "x": 260,
-          "y": 280
+          "x": 387.15785217285156,
+          "y": 111.13980865478516
         },
         {
           "ref": "computing-power",
-          "x": 700,
-          "y": 230
+          "x": 625.4759521484375,
+          "y": 196.27993774414062
         },
         {
           "ref": "ai-capability",
-          "x": 380,
-          "y": 400
+          "x": 410.763916015625,
+          "y": 253.7003936767578
         }
       ],
       "edges": [
@@ -118,18 +118,18 @@
       "nodes": [
         {
           "ref": "energy",
-          "x": 200,
-          "y": 60
+          "x": 373.2150421142578,
+          "y": 50.89023017883301
         },
         {
           "ref": "chips",
-          "x": 200,
-          "y": 380
+          "x": 367.6443634033203,
+          "y": 234.36045837402344
         },
         {
           "ref": "data-centers",
-          "x": 750,
-          "y": 380
+          "x": 647.2343139648438,
+          "y": 169.72560119628906
         }
       ],
       "edges": [
@@ -143,21 +143,75 @@
           "to": "data-centers",
           "type": "input"
         }
-      ]
+      ],
+      "ghostPositions": {
+        "algorithms": {
+          "x": -140.3663201042823,
+          "y": -56.19800551430919
+        },
+        "data": {
+          "x": -424.57019400809526,
+          "y": -276.3472472001765
+        }
+      }
     },
     {
       "id": "chips",
       "title": "chips",
       "nodes": [
-        { "ref": "euv",        "x": 100, "y": 50  },
-        { "ref": "chip-design","x": 50,  "y": 580 },
-        { "ref": "fabrication","x": 880, "y": 310 },
-        { "ref": "hbm-memory", "x": 1120,"y": 50  }
+        {
+          "ref": "euv",
+          "x": -932.0874328613281,
+          "y": -120.49360847473145
+        },
+        {
+          "ref": "chip-design",
+          "x": -814.3005695343018,
+          "y": 96.36998748779297
+        },
+        {
+          "ref": "fabrication",
+          "x": -547.2354125976562,
+          "y": -143.12550354003906
+        },
+        {
+          "ref": "hbm-memory",
+          "x": -443.89859771728516,
+          "y": 169.7768783569336
+        }
       ],
       "edges": [
-        { "from": "euv",        "to": "fabrication", "type": "depends-on" },
-        { "from": "chip-design","to": "fabrication", "type": "input"      }
-      ]
+        {
+          "from": "euv",
+          "to": "fabrication",
+          "type": "depends-on"
+        },
+        {
+          "from": "chip-design",
+          "to": "fabrication",
+          "type": "input"
+        }
+      ],
+      "ghostPositions": {
+        "energy": {
+          "x": -243.83173773865303,
+          "y": -278.2254405197408
+        },
+        "data-centers": {
+          "x": -663.6379674934235,
+          "y": -624.3927989181783
+        }
+      },
+      "ghostPositions2": {
+        "algorithms": {
+          "x": -1907.1415438066806,
+          "y": -705.7725149642172
+        },
+        "data": {
+          "x": -2463.44183174244,
+          "y": -893.0330182107139
+        }
+      }
     }
   ],
   "links": [
