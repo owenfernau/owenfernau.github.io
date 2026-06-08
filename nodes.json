@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "June 5, 2026",
+  "lastUpdated": "June 8, 2026",
   "nodeLibrary": {
     "computing-power": {
       "id": "computing-power",
@@ -23,7 +23,8 @@
       "id": "ai-capability",
       "label": "AI capability",
       "type": "output",
-      "notes": []
+      "notes": [],
+      "content": "OS is chasing closed weights"
     },
     "chips": {
       "id": "chips",
@@ -66,6 +67,49 @@
       "label": "memory",
       "type": "stack",
       "notes": []
+    },
+    "generation": {
+      "id": "generation",
+      "label": "generation",
+      "type": "stack",
+      "notes": []
+    },
+    "transmission": {
+      "id": "transmission",
+      "label": "transmission",
+      "type": "stack",
+      "notes": []
+    },
+    "distribution": {
+      "id": "distribution",
+      "label": "distribution",
+      "type": "stack",
+      "notes": []
+    },
+    "national-debt": {
+      "id": "national-debt",
+      "label": "national debt",
+      "type": "stack",
+      "notes": []
+    },
+    "ai-economic-impact": {
+      "id": "ai-economic-impact",
+      "label": "economic impact",
+      "type": "stack",
+      "notes": []
+    },
+    "info-delivery": {
+      "id": "info-delivery",
+      "label": "information delivery systems",
+      "type": "stack",
+      "notes": []
+    },
+    "education": {
+      "id": "education",
+      "label": "education",
+      "type": "stack",
+      "notes": [],
+      "content": "asdfasdf"
     }
   },
   "graphs": [
@@ -75,23 +119,43 @@
       "nodes": [
         {
           "ref": "data",
-          "x": 80,
-          "y": 190
+          "x": 160.7376937866211,
+          "y": 107.50714111328125
         },
         {
           "ref": "algorithms",
-          "x": 387.15785217285156,
-          "y": 111.13980865478516
+          "x": 601.4773101806641,
+          "y": 262.0088577270508
         },
         {
           "ref": "computing-power",
-          "x": 625.4759521484375,
-          "y": 196.27993774414062
+          "x": 580.3551635742188,
+          "y": 97.15088653564453
         },
         {
           "ref": "ai-capability",
           "x": 410.763916015625,
           "y": 253.7003936767578
+        },
+        {
+          "ref": "national-debt",
+          "x": -281.63861083984375,
+          "y": 165.9852294921875
+        },
+        {
+          "ref": "ai-economic-impact",
+          "x": -15.447220802307129,
+          "y": 373.81134033203125
+        },
+        {
+          "ref": "info-delivery",
+          "x": 200,
+          "y": 520
+        },
+        {
+          "ref": "education",
+          "x": -350,
+          "y": 420
         }
       ],
       "edges": [
@@ -108,6 +172,16 @@
         {
           "from": "computing-power",
           "to": "ai-capability",
+          "type": "input"
+        },
+        {
+          "from": "ai-capability",
+          "to": "ai-economic-impact",
+          "type": "input"
+        },
+        {
+          "from": "national-debt",
+          "to": "ai-economic-impact",
           "type": "input"
         }
       ]
@@ -152,6 +226,22 @@
         "data": {
           "x": -424.57019400809526,
           "y": -276.3472472001765
+        },
+        "ai-economic-impact": {
+          "x": -484.2589178188857,
+          "y": -4.590847120002394
+        },
+        "info-delivery": {
+          "x": -395.212361580343,
+          "y": 154.84181870488774
+        },
+        "education": {
+          "x": -566.8863828727735,
+          "y": -165.39911757440916
+        },
+        "national-debt": {
+          "x": -754.5553103554332,
+          "y": -22.612313375190382
         }
       }
     },
@@ -171,8 +261,8 @@
         },
         {
           "ref": "fabrication",
-          "x": -547.2354125976562,
-          "y": -143.12550354003906
+          "x": -570.520263671875,
+          "y": -122.62509536743164
         },
         {
           "ref": "hbm-memory",
@@ -210,6 +300,53 @@
         "data": {
           "x": -2463.44183174244,
           "y": -893.0330182107139
+        }
+      }
+    },
+    {
+      "id": "energy",
+      "title": "energy",
+      "nodes": [
+        {
+          "ref": "generation",
+          "x": 150,
+          "y": 200
+        },
+        {
+          "ref": "transmission",
+          "x": 400,
+          "y": 100
+        },
+        {
+          "ref": "distribution",
+          "x": 650,
+          "y": 200
+        }
+      ],
+      "edges": [
+        {
+          "from": "generation",
+          "to": "transmission",
+          "type": "input"
+        },
+        {
+          "from": "transmission",
+          "to": "distribution",
+          "type": "input"
+        }
+      ],
+      "ghostPositions2": {
+        "data": {
+          "x": -1824.9825261486967,
+          "y": -163.50010433224327
+        },
+        "ai-economic-impact": {
+          "x": -3429.401619244072,
+          "y": -111.2537511828292
+        },
+        "national-debt": {
+          "x": -4213.698185199799,
+          "y": -848.507855797087
         }
       }
     }
@@ -259,6 +396,16 @@
       "id": "l-1780636457850",
       "title": "Value Chain",
       "url": "https://en.wikipedia.org/wiki/Value_chain"
+    },
+    {
+      "id": "l-1780702560392",
+      "title": "Learning Mech Interp",
+      "url": "https://learnmechinterp.mcgee.cat/"
+    },
+    {
+      "id": "l-1780955362036",
+      "title": "3rd Wave of Philantropy",
+      "url": "https://nanransohoff.substack.com/p/the-third-wave-of-american-philanthropy"
     }
   ]
 }

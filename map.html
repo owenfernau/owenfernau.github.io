@@ -47,7 +47,7 @@
 
   .layout{
     display:grid;
-    grid-template-columns:1fr 260px;
+    grid-template-columns:1fr 390px;
     min-height:calc(100vh - 73px);
   }
 
@@ -55,7 +55,21 @@
 
   #graph-svg{ width:100%; height:auto; display:block; overflow:visible; }
 
-  .sidebar{ padding:32px 24px; }
+  .sidebar{ padding:32px 24px; overflow-y:auto; }
+
+  .node-panel-title{
+    font-size:14px; font-weight:700; letter-spacing:-0.01em;
+    color:var(--ink); margin-bottom:20px; line-height:1.4;
+  }
+  #node-content{
+    width:100%; min-height:220px; resize:vertical;
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size:12px; line-height:1.7; background:transparent;
+    border:none; border-bottom:1px solid var(--line);
+    color:var(--ink); outline:none; padding:4px 0 12px;
+  }
+  #node-content::placeholder{ color:var(--muted); }
+  #node-content:focus{ border-bottom-color:var(--accent); }
 
   .section-label{
     font-size:11px; letter-spacing:.08em; text-transform:uppercase;
@@ -110,11 +124,22 @@
     <svg id="graph-svg"></svg>
   </main>
   <aside class="sidebar">
-    <div class="section-label">links</div>
-    <ul class="link-list" id="link-list"></ul>
-    <div class="add-link" id="add-link-form" style="display:none">
-      <input id="add-link-title" type="text" placeholder="title" autocomplete="off">
-      <input id="add-link-url" type="text" placeholder="url" autocomplete="off">
+    <div id="default-panel">
+      <div class="section-label">notes</div>
+      <ul class="link-list" id="note-list"></ul>
+      <div class="add-link" id="add-note-form" style="display:none">
+        <input id="add-note-text" type="text" placeholder="note" autocomplete="off">
+      </div>
+      <div class="section-label" style="margin-top:28px">links</div>
+      <ul class="link-list" id="link-list"></ul>
+      <div class="add-link" id="add-link-form" style="display:none">
+        <input id="add-link-title" type="text" placeholder="title" autocomplete="off">
+        <input id="add-link-url" type="text" placeholder="url" autocomplete="off">
+      </div>
+    </div>
+    <div id="node-panel" style="display:none">
+      <div class="node-panel-title" id="node-panel-title"></div>
+      <textarea id="node-content" placeholder="sketch..."></textarea>
     </div>
   </aside>
 </div>
@@ -123,13 +148,14 @@
 const IS_LOCAL = ['localhost','127.0.0.1'].includes(location.hostname);
 const R       = 34;   // node circle radius
 const PAD     = 72;   // viewBox padding
-const LBL     = R + 11; // label y-offset below circle center
+const LBL     = R + 18; // label y-offset: top of text below circle center (dominant-baseline:hanging)
 const ENC_PAD = 60;   // padding from node edges to enclosing circle
 
 let DATA = {};
 let graphStack = ['root'];
 let _animFrame = null;
 let editMode = false;
+let selectedNodeId = null;
 
 function animateViewBox(svg, from, to, ms){
   if(_animFrame){ cancelAnimationFrame(_animFrame); _animFrame = null; }
@@ -207,11 +233,13 @@ function computeViewBox(bounds, enc){
 // ── navigation ────────────────────────────────────────────────────────────────
 
 function navigateTo(graphId){
+  selectedNodeId = null;
   graphStack.push(graphId);
   renderAll();
 }
 
 function navigateToIndex(i){
+  selectedNodeId = null;
   graphStack = graphStack.slice(0, i+1);
   renderAll();
 }
@@ -312,6 +340,20 @@ function makeDraggable(el, p, onDrop){
     document.addEventListener('mouseup', onUp);
   });
   el.addEventListener('click', e => { if(dragging) e.stopImmediatePropagation(); });
+}
+
+function makeEdge(x1, y1, x2, y2, stroke, dasharray){
+  const mx = (x1+x2)/2, my = (y1+y2)/2;
+  const el = svgEl('path');
+  el.setAttribute('d', `M${x1},${y1} L${mx},${my} L${x2},${y2}`);
+  el.setAttribute('stroke', stroke);
+  el.setAttribute('stroke-width', '1.5');
+  el.setAttribute('fill', 'none');
+  el.setAttribute('marker-start', 'url(#arr-fwd)');
+  el.setAttribute('marker-mid', 'url(#arr)');
+  el.setAttribute('marker-end', 'url(#arr)');
+  if(dasharray) el.setAttribute('stroke-dasharray', dasharray);
+  return el;
 }
 
 // ── render: SVG graph ─────────────────────────────────────────────────────────
@@ -433,23 +475,22 @@ function renderGraph(){
     });
     vbStr = `${vx} ${vy} ${x2-vx} ${y2-vy}`;
   }
-  if(ghostData2){
-    const [vx0, vy0, vw0, vh0] = vbStr.split(' ').map(Number);
-    let vx = vx0, vy = vy0, x2 = vx0+vw0, y2 = vy0+vh0;
-    ghostData2.nodes.forEach(p => {
-      vx = Math.min(vx, p.x - R - PAD);
-      vy = Math.min(vy, p.y - R - PAD);
-      x2 = Math.max(x2, p.x + R + PAD);
-      y2 = Math.max(y2, p.y + R + PAD + LBL);
-    });
-    if(parentRingR !== null){
-      vx = Math.min(vx, enc.cx - parentRingR - PAD);
-      vy = Math.min(vy, enc.cy - parentRingR - PAD);
-      x2 = Math.max(x2, enc.cx + parentRingR + PAD);
-      y2 = Math.max(y2, enc.cy + parentRingR + PAD);
+  // ghostData2 nodes are rendered but intentionally excluded from the initial viewBox —
+  // expanding to the grandparent context would zoom way out to include distant floating nodes
+
+  // if a node is selected, pan to center it in the current viewport
+  if(selectedNodeId){
+    const selPos =
+      graph.nodes.find(n => n.ref === selectedNodeId) ||
+      (ghostData  && ghostData.nodeMap[selectedNodeId])  ||
+      (ghostData2 && ghostData2.nodeMap[selectedNodeId]);
+    if(selPos && selPos.x != null){
+      const [vx, vy, vw, vh] = vbStr.split(' ').map(Number);
+      const zw = vw * 0.4, zh = vh * 0.4;
+      vbStr = `${selPos.x - zw/2} ${selPos.y - zh/2} ${zw} ${zh}`;
     }
-    vbStr = `${vx} ${vy} ${x2-vx} ${y2-vy}`;
   }
+
   svg.setAttribute('viewBox', vbStr);
   if(prevVB && prevVB !== vbStr){
     svg.setAttribute('viewBox', prevVB);
@@ -461,16 +502,29 @@ function renderGraph(){
   const [,, vbw] = vbStr.split(' ').map(Number);
   const containerW = (svg.parentElement && svg.parentElement.clientWidth) || 900;
   const vscale = containerW > 0 ? vbw / containerW : 1;
-  const FS   = Math.round(15 * vscale);
-  const LBLS = Math.round(LBL * vscale);
+  const FS   = Math.min(Math.round(15 * vscale), Math.round(R * 0.65));
+  const LBLS = Math.round(R + 6 * vscale); // R (circle bottom) + 6px visual gap, constant across zoom levels
 
   const defs = svgEl('defs');
   defs.innerHTML = `
     <marker id="arr" markerWidth="12" markerHeight="8"
       refX="12" refY="4" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M0,0 L0,8 L12,4 z" fill="context-stroke"/>
+    </marker>
+    <marker id="arr-fwd" markerWidth="12" markerHeight="8"
+      refX="0" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L0,8 L12,4 z" fill="context-stroke"/>
     </marker>`;
   svg.appendChild(defs);
+
+  const [bgX, bgY, bgW, bgH] = vbStr.split(' ').map(Number);
+  const bgRect = svgEl('rect');
+  bgRect.setAttribute('x', bgX); bgRect.setAttribute('y', bgY);
+  bgRect.setAttribute('width', bgW); bgRect.setAttribute('height', bgH);
+  bgRect.setAttribute('fill', 'transparent');
+  bgRect.setAttribute('cursor', 'grab');
+  bgRect.classList.add('pan-bg');
+  svg.appendChild(bgRect);
 
   // parent ring: larger dashed circle grouping the level-1 ghost nodes under
   // the parent sub-graph label (e.g. "computing power" ring when inside chips)
@@ -513,13 +567,7 @@ function renderGraph(){
       const len = Math.sqrt(ddx*ddx+ddy*ddy);
       if(len === 0) return;
       const ux = ddx/len, uy = ddy/len;
-      const line = svgEl('line');
-      line.setAttribute('x1', fp.x+R*ux); line.setAttribute('y1', fp.y+R*uy);
-      line.setAttribute('x2', tp.x-R*ux); line.setAttribute('y2', tp.y-R*uy);
-      line.setAttribute('stroke', 'var(--ink)');
-      line.setAttribute('stroke-width', '1.5');
-      line.setAttribute('marker-end', 'url(#arr)');
-      g2.appendChild(line);
+      g2.appendChild(makeEdge(fp.x+R*ux, fp.y+R*uy, tp.x-R*ux, tp.y-R*uy, 'var(--ink)'));
     });
 
     ghostData2.circleEdges.forEach(edge => {
@@ -529,15 +577,7 @@ function renderGraph(){
       const dx2 = gp.x - enc.cx, dy2 = gp.y - enc.cy;
       const dlen2 = Math.sqrt(dx2*dx2 + dy2*dy2) || 1;
       const ux2 = dx2/dlen2, uy2 = dy2/dlen2;
-      const line2 = svgEl('line');
-      line2.setAttribute('x1', enc.cx + ux2*(parentRingR+2));
-      line2.setAttribute('y1', enc.cy + uy2*(parentRingR+2));
-      line2.setAttribute('x2', gp.x - ux2*R);
-      line2.setAttribute('y2', gp.y - uy2*R);
-      line2.setAttribute('stroke', 'var(--ink)');
-      line2.setAttribute('stroke-width', '1.5');
-      line2.setAttribute('marker-end', 'url(#arr)');
-      g2.appendChild(line2);
+      g2.appendChild(makeEdge(enc.cx+ux2*(parentRingR+2), enc.cy+uy2*(parentRingR+2), gp.x-ux2*R, gp.y-uy2*R, 'var(--ink)'));
     });
 
     ghostData2.nodes.forEach(p => {
@@ -545,19 +585,24 @@ function renderGraph(){
       if(!node) return;
       const g = svgEl('g');
       g.setAttribute('transform', `translate(${p.x},${p.y})`);
+      const ghost2Drillable = hasSubGraph(node.id);
       if(editMode && IS_LOCAL) g.style.cursor = 'grab';
+      else if(ghost2Drillable) g.style.cursor = 'pointer';
       const circle = svgEl('circle');
+      const isSelG2 = node.id === selectedNodeId;
       circle.setAttribute('r', R); circle.setAttribute('cx', 0); circle.setAttribute('cy', 0);
-      circle.setAttribute('stroke-width', '1.5'); circle.setAttribute('fill', 'var(--paper)');
-      circle.setAttribute('stroke', node.type === 'output' ? 'var(--accent)' : 'var(--ink)');
+      circle.setAttribute('stroke-width', isSelG2 ? '2.5' : '1.5');
+      circle.setAttribute('fill', isSelG2 ? 'var(--accent)' : 'var(--paper)');
+      circle.setAttribute('stroke', hasSubGraph(node.id) ? 'var(--accent)' : (isSelG2 ? 'var(--accent)' : 'var(--ink)'));
       g.appendChild(circle);
       const text = svgEl('text');
       const lblAbove2 = enc && p.y < enc.cy - enc.r;
-      text.setAttribute('text-anchor', 'middle'); text.setAttribute('dominant-baseline', 'auto');
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', lblAbove2 ? 'auto' : 'hanging');
       text.setAttribute('y', lblAbove2 ? -LBLS : LBLS);
       text.setAttribute('font-family', '"JetBrains Mono", monospace');
       text.setAttribute('font-size', FS);
-      text.setAttribute('fill', node.type === 'output' ? 'var(--accent)' : 'var(--ink)');
+      text.setAttribute('fill', hasSubGraph(node.id) ? 'var(--accent)' : 'var(--ink)');
       text.textContent = node.label;
       g.appendChild(text);
       if(editMode && IS_LOCAL){
@@ -567,6 +612,11 @@ function renderGraph(){
           cur.ghostPositions2[p.ref] = { x: p.x, y: p.y };
           await saveData();
         });
+      } else if(ghost2Drillable){
+        g.onclick = () => { graphStack = [...graphStack.slice(0, -2), node.id]; renderAll(); };
+      } else {
+        g.style.cursor = 'pointer';
+        g.onclick = () => { selectedNodeId = selectedNodeId === node.id ? null : node.id; renderGraph(); renderNotes(); };
       }
       g2.appendChild(g);
     });
@@ -587,13 +637,7 @@ function renderGraph(){
       const len = Math.sqrt(ddx*ddx+ddy*ddy);
       if(len === 0) return;
       const ux = ddx/len, uy = ddy/len;
-      const line = svgEl('line');
-      line.setAttribute('x1', fp.x+R*ux); line.setAttribute('y1', fp.y+R*uy);
-      line.setAttribute('x2', tp.x-R*ux); line.setAttribute('y2', tp.y-R*uy);
-      line.setAttribute('stroke', 'var(--ink)');
-      line.setAttribute('stroke-width', '1.5');
-      line.setAttribute('marker-end', 'url(#arr)');
-      ghostG.appendChild(line);
+      ghostG.appendChild(makeEdge(fp.x+R*ux, fp.y+R*uy, tp.x-R*ux, tp.y-R*uy, 'var(--ink)'));
     });
 
     // edges connecting the enclosing circle to ghost nodes — direct diagonal
@@ -604,15 +648,7 @@ function renderGraph(){
       const dx = gp.x - enc.cx, dy = gp.y - enc.cy;
       const dlen = Math.sqrt(dx*dx + dy*dy) || 1;
       const ux = dx/dlen, uy = dy/dlen;
-      const line = svgEl('line');
-      line.setAttribute('x1', enc.cx + ux*(enc.r+2));
-      line.setAttribute('y1', enc.cy + uy*(enc.r+2));
-      line.setAttribute('x2', gp.x - ux*R);
-      line.setAttribute('y2', gp.y - uy*R);
-      line.setAttribute('stroke', 'var(--ink)');
-      line.setAttribute('stroke-width', '1.5');
-      line.setAttribute('marker-end', 'url(#arr)');
-      ghostG.appendChild(line);
+      ghostG.appendChild(makeEdge(enc.cx+ux*(enc.r+2), enc.cy+uy*(enc.r+2), gp.x-ux*R, gp.y-uy*R, 'var(--ink)'));
     });
 
     ghostData.nodes.forEach(p => {
@@ -620,27 +656,32 @@ function renderGraph(){
       if(!node) return;
       const g = svgEl('g');
       g.setAttribute('transform', `translate(${p.x},${p.y})`);
+      const ghostDrillable = hasSubGraph(node.id);
       if(editMode && IS_LOCAL) g.style.cursor = 'grab';
+      else if(ghostDrillable) g.style.cursor = 'pointer';
       const circle = svgEl('circle');
       circle.setAttribute('r', R);
       circle.setAttribute('cx', 0); circle.setAttribute('cy', 0);
       circle.setAttribute('stroke-width', '1.5');
       circle.setAttribute('fill', 'var(--paper)');
+      const isSelG = node.id === selectedNodeId;
+      circle.setAttribute('fill', isSelG ? 'var(--accent)' : 'var(--paper)');
+      circle.setAttribute('stroke-width', isSelG ? '2.5' : '1.5');
       circle.setAttribute('stroke',
         node.type === 'ambient' ? 'var(--muted)' :
-        node.type === 'output'  ? 'var(--accent)' : 'var(--ink)');
+        hasSubGraph(node.id)    ? 'var(--accent)' : (isSelG ? 'var(--accent)' : 'var(--ink)'));
       if(node.type === 'ambient') circle.setAttribute('stroke-dasharray', '4 3');
       g.appendChild(circle);
       const text = svgEl('text');
       const lblAbove = enc && p.y < enc.cy - enc.r;
       text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('dominant-baseline', lblAbove ? 'auto' : 'auto');
+      text.setAttribute('dominant-baseline', lblAbove ? 'auto' : 'hanging');
       text.setAttribute('y', lblAbove ? -LBLS : LBLS);
       text.setAttribute('font-family', '"JetBrains Mono", monospace');
       text.setAttribute('font-size', FS);
       text.setAttribute('fill',
         node.type === 'ambient' ? 'var(--muted)' :
-        node.type === 'output'  ? 'var(--accent)' : 'var(--ink)');
+        hasSubGraph(node.id)    ? 'var(--accent)' : 'var(--ink)');
       text.textContent = node.label;
       g.appendChild(text);
       if(editMode && IS_LOCAL){
@@ -650,6 +691,11 @@ function renderGraph(){
           cur.ghostPositions[p.ref] = { x: p.x, y: p.y };
           await saveData();
         });
+      } else if(ghostDrillable){
+        g.onclick = () => { graphStack = [...graphStack.slice(0, -1), node.id]; renderAll(); };
+      } else {
+        g.style.cursor = 'pointer';
+        g.onclick = () => { selectedNodeId = selectedNodeId === node.id ? null : node.id; renderGraph(); renderNotes(); };
       }
       ghostG.appendChild(g);
     });
@@ -702,14 +748,9 @@ function renderGraph(){
     const ux = dx/len, uy = dy/len;
 
     const isAmbient = edge.type === 'ambient';
-    const line = svgEl('line');
-    line.setAttribute('x1', fp.x+R*ux); line.setAttribute('y1', fp.y+R*uy);
-    line.setAttribute('x2', tp.x-R*ux); line.setAttribute('y2', tp.y-R*uy);
-    line.setAttribute('stroke', isAmbient ? 'var(--muted)' : 'var(--ink)');
-    line.setAttribute('stroke-width', '1.5');
-    line.setAttribute('marker-end', 'url(#arr)');
-    if(isAmbient) line.setAttribute('stroke-dasharray', '5 4');
-    svg.appendChild(line);
+    svg.appendChild(makeEdge(fp.x+R*ux, fp.y+R*uy, tp.x-R*ux, tp.y-R*uy,
+      isAmbient ? 'var(--muted)' : 'var(--ink)',
+      isAmbient ? '5 4' : null));
   });
 
   // nodes
@@ -731,28 +772,29 @@ function renderGraph(){
     const circle = svgEl('circle');
     circle.setAttribute('r', R);
     circle.setAttribute('cx', 0); circle.setAttribute('cy', 0);
-    circle.setAttribute('stroke-width', '1.5');
-    circle.setAttribute('fill', 'var(--paper)');
+    const isSel = node.id === selectedNodeId;
+    circle.setAttribute('stroke-width', isSel ? '2.5' : '1.5');
+    circle.setAttribute('fill', isSel ? 'var(--accent)' : 'var(--paper)');
 
     if(node.type === 'ambient'){
       circle.setAttribute('stroke', 'var(--muted)');
       circle.setAttribute('stroke-dasharray', '4 3');
-    } else if(node.type === 'output'){
+    } else if(hasSubGraph(node.id)){
       circle.setAttribute('stroke', 'var(--accent)');
     } else {
-      circle.setAttribute('stroke', 'var(--ink)');
+      circle.setAttribute('stroke', isSel ? 'var(--accent)' : 'var(--ink)');
     }
     g.appendChild(circle);
 
     const text = svgEl('text');
     text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('dominant-baseline', 'auto');
+    text.setAttribute('dominant-baseline', 'hanging');
     text.setAttribute('y', LBLS);
     text.setAttribute('font-family', '"JetBrains Mono", monospace');
     text.setAttribute('font-size', FS);
     text.setAttribute('fill',
       node.type === 'ambient' ? 'var(--muted)' :
-      node.type === 'output'  ? 'var(--accent)' : 'var(--ink)');
+      hasSubGraph(node.id)    ? 'var(--accent)' : 'var(--ink)');
     text.textContent = node.label;
     g.appendChild(text);
 
@@ -760,8 +802,90 @@ function renderGraph(){
       makeDraggable(g, p, saveData);
     } else if(drillable){
       g.onclick = () => navigateTo(node.id);
+    } else {
+      g.style.cursor = 'pointer';
+      g.onclick = () => {
+        selectedNodeId = selectedNodeId === node.id ? null : node.id;
+        renderGraph(); renderNotes();
+      };
     }
     svg.appendChild(g);
+  });
+}
+
+// ── render: notes ─────────────────────────────────────────────────────────────
+
+function renderNoteList(listEl, notes, onDelete){
+  listEl.innerHTML = '';
+  (notes || []).forEach(n => {
+    const li = document.createElement('li');
+    li.className = 'link-item';
+    const span = document.createElement('span');
+    span.style.flex = '1'; span.style.lineHeight = '1.5';
+    span.textContent = n.text;
+    li.appendChild(span);
+    if(IS_LOCAL){
+      const del = document.createElement('button');
+      del.className = 'link-del'; del.textContent = '×';
+      del.onclick = () => onDelete(n.id);
+      li.appendChild(del);
+    }
+    listEl.appendChild(li);
+  });
+}
+
+function renderNotes(){
+  const defaultPanel = document.getElementById('default-panel');
+  const nodePanel    = document.getElementById('node-panel');
+
+  if(selectedNodeId){
+    defaultPanel.style.display = 'none';
+    nodePanel.style.display = 'block';
+    const node = getNode(selectedNodeId);
+    if(!node) return;
+    document.getElementById('node-panel-title').textContent = node.label;
+    const ta = document.getElementById('node-content');
+    if(ta.dataset.nodeId !== selectedNodeId){
+      ta.value = node.content || '';
+      ta.dataset.nodeId = selectedNodeId;
+    }
+  } else {
+    nodePanel.style.display = 'none';
+    defaultPanel.style.display = 'block';
+    const graph = getGraph(currentGid());
+    renderNoteList(
+      document.getElementById('note-list'),
+      graph && graph.notes,
+      async id => { graph.notes = graph.notes.filter(x => x.id !== id); await saveData(); renderNotes(); }
+    );
+  }
+}
+
+function setupAddNote(){
+  if(!IS_LOCAL) return;
+  document.getElementById('add-note-form').style.display = 'block';
+  const input = document.getElementById('add-note-text');
+  input.onkeydown = async e => {
+    if(e.key !== 'Enter') return;
+    const text = input.value.trim();
+    if(!text) return;
+    const graph = getGraph(currentGid());
+    if(!graph) return;
+    if(!graph.notes) graph.notes = [];
+    graph.notes.push({ id: 'n-' + Date.now(), text });
+    await saveData(); renderNotes(); input.value = '';
+  };
+}
+
+let _contentSaveTimer = null;
+function setupNodeContent(){
+  const ta = document.getElementById('node-content');
+  ta.addEventListener('input', () => {
+    if(_contentSaveTimer) clearTimeout(_contentSaveTimer);
+    _contentSaveTimer = setTimeout(async () => {
+      const node = getNode(selectedNodeId);
+      if(node){ node.content = ta.value; await saveData(); }
+    }, 600);
   });
 }
 
@@ -813,6 +937,7 @@ function setupAddLink(){
 function renderAll(){
   renderBreadcrumb();
   renderGraph();
+  renderNotes();
 }
 
 async function init(){
@@ -820,9 +945,58 @@ async function init(){
   if(DATA.lastUpdated)
     document.getElementById('last-updated').textContent = 'last updated: ' + DATA.lastUpdated;
   document.getElementById('h1-home').onclick = () => navigateToIndex(0);
+
+  // pan-on-drag for the SVG background
+  const svg = document.getElementById('graph-svg');
+  svg.addEventListener('mousedown', e => {
+    if(!e.target.classList.contains('pan-bg')) return;
+    e.preventDefault();
+    let panned = false;
+    const startClient = { x: e.clientX, y: e.clientY };
+    const startVB = svg.getAttribute('viewBox').split(' ').map(Number);
+    svg.style.cursor = 'grabbing';
+    const onMove = ev => {
+      const dx = ev.clientX - startClient.x, dy = ev.clientY - startClient.y;
+      if(!panned && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) panned = true;
+      if(panned){
+        if(_animFrame){ cancelAnimationFrame(_animFrame); _animFrame = null; }
+        const rect = svg.getBoundingClientRect();
+        const sx = startVB[2] / rect.width, sy = startVB[3] / rect.height;
+        svg.setAttribute('viewBox',
+          `${startVB[0] - dx*sx} ${startVB[1] - dy*sy} ${startVB[2]} ${startVB[3]}`);
+      }
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      svg.style.cursor = '';
+      if(!panned){ selectedNodeId = null; renderGraph(); renderNotes(); }
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // scroll to zoom, centered on cursor
+  svg.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = svg.getBoundingClientRect();
+    const vb = svg.getAttribute('viewBox').split(' ').map(Number);
+    const mx = vb[0] + (e.clientX - rect.left) / rect.width  * vb[2];
+    const my = vb[1] + (e.clientY - rect.top)  / rect.height * vb[3];
+    const scale = e.deltaY > 0 ? 1.06 : 0.94;
+    const nw = vb[2] * scale, nh = vb[3] * scale;
+    const nx = mx - (mx - vb[0]) * scale;
+    const ny = my - (my - vb[1]) * scale;
+    if(_animFrame){ cancelAnimationFrame(_animFrame); _animFrame = null; }
+    svg.setAttribute('viewBox', `${nx} ${ny} ${nw} ${nh}`);
+  }, { passive: false });
+
   renderAll();
   renderLinks();
   setupAddLink();
+  renderNotes();
+  setupAddNote();
+  setupNodeContent();
   if(IS_LOCAL){
     const btn = document.getElementById('edit-toggle');
     btn.style.display = '';
