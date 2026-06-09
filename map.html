@@ -51,11 +51,11 @@
     min-height:calc(100vh - 73px);
   }
 
-  .main{ padding:40px 48px; border-right:1px solid var(--line); }
+  .main{ padding:40px 48px; border-right:1px solid var(--line); position:relative; }
 
   #graph-svg{ width:100%; height:auto; display:block; overflow:visible; }
 
-  .sidebar{ padding:32px 24px; overflow-y:auto; }
+  .sidebar{ padding:32px 24px; overflow-y:auto; background:var(--paper); position:relative; z-index:1; }
 
   .node-panel-title{
     font-size:14px; font-weight:700; letter-spacing:-0.01em;
@@ -106,6 +106,18 @@
   }
   .edit-toggle:hover{ color:var(--ink); border-color:var(--ink); }
   .edit-toggle.active{ color:var(--accent); border-color:var(--accent); }
+
+  .zoom-controls{
+    position:fixed; bottom:24px; right:24px;
+    display:flex; flex-direction:column; gap:4px; z-index:10;
+  }
+  .zoom-btn{
+    background:var(--paper); border:1px solid var(--line); color:var(--muted);
+    font-family:inherit; font-size:16px; line-height:1; cursor:pointer;
+    width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+    user-select:none;
+  }
+  .zoom-btn:hover{ color:var(--ink); border-color:var(--ink); }
 </style>
 </head>
 <body>
@@ -122,6 +134,10 @@
 <div class="layout">
   <main class="main">
     <svg id="graph-svg"></svg>
+    <div class="zoom-controls">
+      <button class="zoom-btn" id="zoom-in">+</button>
+      <button class="zoom-btn" id="zoom-out">−</button>
+    </div>
   </main>
   <aside class="sidebar">
     <div id="default-panel">
@@ -486,7 +502,7 @@ function renderGraph(){
       (ghostData2 && ghostData2.nodeMap[selectedNodeId]);
     if(selPos && selPos.x != null){
       const [vx, vy, vw, vh] = vbStr.split(' ').map(Number);
-      const zw = vw * 0.4, zh = vh * 0.4;
+      const zw = vw * 0.70, zh = vh * 0.70;
       vbStr = `${selPos.x - zw/2} ${selPos.y - zh/2} ${zw} ${zh}`;
     }
   }
@@ -1009,7 +1025,18 @@ async function init(){
   }
 }
 
-init();
+function zoomViewBox(factor){
+    const svg = document.getElementById('graph-svg');
+    const vb = svg.getAttribute('viewBox').split(' ').map(Number);
+    const cx = vb[0] + vb[2]/2, cy = vb[1] + vb[3]/2;
+    const nw = vb[2]*factor, nh = vb[3]*factor;
+    if(_animFrame){ cancelAnimationFrame(_animFrame); _animFrame = null; }
+    svg.setAttribute('viewBox', `${cx - nw/2} ${cy - nh/2} ${nw} ${nh}`);
+  }
+  document.getElementById('zoom-in').onclick  = () => zoomViewBox(0.8);
+  document.getElementById('zoom-out').onclick = () => zoomViewBox(1.25);
+
+  init();
 </script>
 </body>
 </html>
