@@ -215,6 +215,38 @@ hr {
     margin: 0.3em 0 0.6em;
 }
 
+.link-check {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 1em;
+    height: 1em;
+    border: 1px solid #000;
+    font-size: 14px;
+    line-height: 1;
+    vertical-align: middle;
+    margin-right: 0.5em;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.link-check:hover {
+    background-color: #000;
+}
+
+.link-check:checked::before {
+    content: "✓";
+    display: inline-block;
+    color: #000;
+}
+
+.link-check:checked:hover::before {
+    color: #eaebea;
+}
+
 .node-action {
     margin-left: 1em;
     font-size: 12px;

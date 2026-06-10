@@ -273,6 +273,51 @@
 			}
 		});
 
+		// Links: checkable items move to a "Checked" subsection
+		(() => {
+			const linksTitle = document.querySelector('.node-title[data-slug="links"]');
+			const linksList = linksTitle?.closest('li')?.querySelector(':scope > ul.sub-list');
+			if (!linksList) return;
+
+			const linkItems = [...linksList.querySelectorAll(':scope > li')].filter(li => li.querySelector('a'));
+
+			const checkedLi = document.createElement('li');
+			checkedLi.className = 'expandable';
+			checkedLi.innerHTML = '<span class="arrow"></span> <span>Checked</span><ul class="sub-list"></ul>';
+			linksList.appendChild(checkedLi);
+			const checkedList = checkedLi.querySelector('ul.sub-list');
+
+			const CHECKED_KEY = 'mapCheckedLinks';
+			let checked;
+			try { checked = new Set(JSON.parse(localStorage.getItem(CHECKED_KEY) || '[]')); }
+			catch { checked = new Set(); }
+
+			linkItems.forEach(li => {
+				const a = li.querySelector('a');
+				const checkbox = document.createElement('input');
+				checkbox.type = 'checkbox';
+				checkbox.className = 'link-check';
+				li.insertBefore(checkbox, a);
+
+				checkbox.addEventListener('click', e => e.stopPropagation());
+				checkbox.addEventListener('change', () => {
+					if (checkbox.checked) {
+						checked.add(a.href);
+						checkedList.appendChild(li);
+					} else {
+						checked.delete(a.href);
+						linksList.insertBefore(li, checkedLi);
+					}
+					localStorage.setItem(CHECKED_KEY, JSON.stringify([...checked]));
+				});
+
+				if (checked.has(a.href)) {
+					checkbox.checked = true;
+					checkedList.appendChild(li);
+				}
+			});
+		})();
+
 		document.querySelectorAll('.expandable').forEach(item => {
 			item.addEventListener('click', function(e) {
 				if (e.target.tagName !== 'A' && e.target.tagName !== 'TEXTAREA') {
