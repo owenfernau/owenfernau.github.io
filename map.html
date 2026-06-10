@@ -21,38 +21,54 @@
 	<ul class="bio-list">
 		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="ai-capability">AI Capability</span>
 				<ul class="sub-list">
-					<li> ○ <span class="node-title" data-slug="data">Data</span></li>
-					<li> ○ <span class="node-title" data-slug="algorithms">Algorithms</span></li>
+					<li> <span class="node-title" data-slug="data">Data</span></li>
+					<li> <span class="node-title" data-slug="algorithms">Algorithms</span></li>
 					<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="computing-power">Computing Power</span>
 							<ul class="sub-list">
 								<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="energy">Energy</span>
 										<ul class="sub-list">
-											<li> ○ <span class="node-title" data-slug="generation">Generation</span></li>
-											<li> ○ <span class="node-title" data-slug="transmission">Transmission</span></li>
-											<li> ○ <span class="node-title" data-slug="distribution">Distribution</span></li>
+											<li> <span class="node-title" data-slug="generation">Generation</span></li>
+											<li> <span class="node-title" data-slug="transmission">Transmission</span></li>
+											<li> <span class="node-title" data-slug="distribution">Distribution</span></li>
 										</ul>
 									</li>
 								<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="chips">Chips</span>
 										<ul class="sub-list">
-											<li> ○ <span class="node-title" data-slug="euv">EUV</span></li>
-											<li> ○ <span class="node-title" data-slug="chip-design">Chip Design</span></li>
-											<li> ○ <span class="node-title" data-slug="fabrication">Fabrication</span></li>
-											<li> ○ <span class="node-title" data-slug="hbm-memory">HBM Memory</span></li>
+											<li> <span class="node-title" data-slug="euv">EUV</span></li>
+											<li> <span class="node-title" data-slug="chip-design">Chip Design</span></li>
+											<li> <span class="node-title" data-slug="fabrication">Fabrication</span></li>
+											<li> <span class="node-title" data-slug="hbm-memory">HBM Memory</span></li>
 										</ul>
 									</li>
-								<li> ○ <span class="node-title" data-slug="data-centers">Data Centers</span></li>
+								<li> <span class="node-title" data-slug="data-centers">Data Centers</span></li>
 							</ul>
 						</li>
 				</ul>
 			</li>
 		<br>
-		<li> ○ <span class="node-title" data-slug="national-debt">National Debt</span></li>
+		<li> <span class="node-title" data-slug="national-debt">National Debt</span></li>
 		<br>
-		<li> ○ <span class="node-title" data-slug="ai-economic-impact">AI Economic Impact</span></li>
+		<li> <span class="node-title" data-slug="ai-economic-impact">AI Economic Impact</span></li>
 		<br>
-		<li> ○ <span class="node-title" data-slug="info-delivery">Information Delivery Systems</span></li>
+		<li> <span class="node-title" data-slug="info-delivery">Information Delivery Systems</span></li>
 		<br>
-		<li> ○ <span class="node-title" data-slug="education">Education</span></li>
+		<li> <span class="node-title" data-slug="education">Education</span></li>
+		<br>
+		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="links">Links</span>
+				<ul class="sub-list">
+					<li> <a href="https://www.goodfire.ai/research/the-world-inside-neural-networks" target="_blank">Goodfire — the world inside neural networks</a></li>
+					<li> <a href="https://www.3blue1brown.com/topics/neural-networks" target="_blank">3Blue1Brown — Neural Networks series</a></li>
+					<li> <a href="https://www.youtube.com/watch?v=zjkBMFhNj_g" target="_blank">Karpathy — Intro to LLMs</a></li>
+					<li> <a href="http://neuralnetworksanddeeplearning.com/" target="_blank">Neural Networks and Deep Learning by Michael Nielsen</a></li>
+					<li> <a href="https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf" target="_blank">Attention is All You Need</a></li>
+					<li> <a href="https://climate.benjames.io/fusion/" target="_blank">Big Guide to Fusion</a></li>
+					<li> <a href="https://atlasofinnovation.org/" target="_blank">UI Experiment: Atlas of Innovation</a></li>
+					<li> <a href="https://x.com/dwarkesh_sp/status/2062574759628661215" target="_blank">AI + Econ Dwarkesh</a></li>
+					<li> <a href="https://en.wikipedia.org/wiki/Value_chain" target="_blank">Value Chain</a></li>
+					<li> <a href="https://learnmechinterp.mcgee.cat/" target="_blank">Learning Mech Interp</a></li>
+					<li> <a href="https://nanransohoff.substack.com/p/the-third-wave-of-american-philanthropy" target="_blank">3rd Wave of Philantropy</a></li>
+				</ul>
+			</li>
 	</ul>
 	<br>
 	<hr>
@@ -86,11 +102,18 @@
 			editLi.appendChild(textarea);
 			subList.insertBefore(editLi, subList.firstChild);
 
+			const autoResize = () => {
+				textarea.style.height = 'auto';
+				textarea.style.height = textarea.scrollHeight + 'px';
+			};
+			textarea.addEventListener('input', autoResize);
+
 			fetch(`map/notes-src/${slug}.md`)
 				.then(r => r.ok ? r.text() : '')
 				.then(raw => {
 					const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
 					textarea.value = (fm ? fm[1] : raw).trim();
+					autoResize();
 				});
 
 			if (IS_LOCAL) {
@@ -105,6 +128,51 @@
 						});
 					}, 600);
 				});
+
+				const addLi = document.createElement('li');
+				addLi.className = 'add-node';
+				const addBtn = document.createElement('span');
+				addBtn.className = 'add-node-btn';
+				addLi.appendChild(addBtn);
+				subList.appendChild(addLi);
+
+				if (slug === 'links') {
+					addBtn.textContent = '+ add link';
+					addBtn.addEventListener('click', e => {
+						e.stopPropagation();
+						const title = prompt('Link title:');
+						if (!title) return;
+						const url = prompt('Link URL:');
+						if (!url) return;
+						fetch('/add-link', {
+							method: 'POST',
+							headers: {'Content-Type': 'application/json'},
+							body: JSON.stringify({ title, url })
+						})
+							.then(r => r.json())
+							.then(data => {
+								if (data.ok) location.reload();
+								else alert('Error: ' + data.error);
+							});
+					});
+				} else {
+					addBtn.textContent = '+ add sub-note';
+					addBtn.addEventListener('click', e => {
+						e.stopPropagation();
+						const label = prompt('New sub-note title:');
+						if (!label) return;
+						fetch('/add-node', {
+							method: 'POST',
+							headers: {'Content-Type': 'application/json'},
+							body: JSON.stringify({ parentSlug: slug, label })
+						})
+							.then(r => r.json())
+							.then(data => {
+								if (data.ok) location.reload();
+								else alert('Error: ' + data.error);
+							});
+					});
+				}
 			}
 		});
 
@@ -113,6 +181,12 @@
 				if (e.target.tagName !== 'A' && e.target.tagName !== 'TEXTAREA') {
 					e.stopPropagation();
 					this.classList.toggle('open');
+					if (this.classList.contains('open')) {
+						this.querySelectorAll(':scope > .sub-list > .note-edit > .note-textarea').forEach(t => {
+							t.style.height = 'auto';
+							t.style.height = t.scrollHeight + 'px';
+						});
+					}
 				}
 			});
 		});

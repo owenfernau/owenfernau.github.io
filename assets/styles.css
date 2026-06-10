@@ -195,10 +195,27 @@ hr {
 .note-edit {
     padding-left: 0 !important;
     text-indent: 0 !important;
-    margin: 0.3em 0 1em;
+    margin: 0.3em 0 0.6em;
 }
 
-.sub-list:has(> .note-edit:last-child) {
+.add-node {
+    padding-left: 0 !important;
+    text-indent: 0 !important;
+    margin: 0 0 1em;
+}
+
+.add-node-btn {
+    cursor: pointer;
+    color: #6c6c63;
+    font-size: 12px;
+}
+
+.add-node-btn:hover {
+    text-decoration: underline;
+}
+
+.sub-list:has(> .note-edit:last-child),
+.sub-list:has(> .add-node:last-child) {
     padding-bottom: 0.01px;
 }
 
@@ -207,7 +224,8 @@ hr {
     width: 100%;
     max-width: 70ch;
     min-height: 4em;
-    resize: vertical;
+    resize: none;
+    overflow: hidden;
     font-family: "IBM Plex Mono", monospace;
     font-size: 13px;
     line-height: 1.5;
