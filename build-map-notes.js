@@ -72,6 +72,17 @@ function renderBlock(block, titleMap) {
   return `<p>${renderInline(text, titleMap)}</p>`;
 }
 
+function extractLinks(body, titleMap) {
+  const links = new Set();
+  const re = /\[\[([^\]|#]+)/g;
+  let m;
+  while ((m = re.exec(body))) {
+    const slug = m[1].trim();
+    if (titleMap[slug]) links.add(slug);
+  }
+  return [...links];
+}
+
 function markdownToHtml(body, titleMap) {
   return body.split(/\n\s*\n/)
     .map(b => b.trim())
@@ -91,6 +102,9 @@ function main() {
   }
 
   const manifest = {};
+  const backlinks = {};
+  for (const slug of Object.keys(titleMap)) backlinks[slug] = new Set();
+
   for (const file of files) {
     const slug = file.replace(/\.md$/, '');
     const { meta, body } = parseFrontmatter(fs.readFileSync(path.join(SRC_DIR, file), 'utf8'));
@@ -98,7 +112,14 @@ function main() {
     const html = markdownToHtml(body, titleMap);
     const page = TEMPLATE.replace(/\{\{TITLE\}\}/g, title).replace('{{CONTENT}}', html);
     fs.writeFileSync(path.join(OUT_DIR, `${slug}.html`), page);
-    manifest[slug] = title;
+
+    const links = extractLinks(body, titleMap);
+    for (const link of links) backlinks[link].add(slug);
+    manifest[slug] = { title, links };
+  }
+
+  for (const slug of Object.keys(manifest)) {
+    manifest[slug].backlinks = [...backlinks[slug]];
   }
 
   fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));

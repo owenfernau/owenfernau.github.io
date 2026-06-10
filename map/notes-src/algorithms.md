@@ -1,4 +1,5 @@
 ---
 title: Algorithms
 ---
-*Notes coming soon.*
+
+More important in finetuning than pretraining

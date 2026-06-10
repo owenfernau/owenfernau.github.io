@@ -1,4 +1,5 @@
 ---
 title: Computing Power
 ---
-*Notes coming soon.*
+
+More important in pretraining than finetuning

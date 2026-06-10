@@ -45,17 +45,28 @@ function findMatchingClose(html, openIdx, tagName) {
   throw new Error(`no matching close found for <${tagName}> at ${openIdx}`);
 }
 
-function addNode(parentSlug, label) {
-  label = label.trim();
-  if (!label) throw new Error('label required');
-
-  let slug = slugify(label);
+function uniqueSlug(label) {
+  const slug = slugify(label);
   if (!slug) throw new Error('label must contain letters or numbers');
   let unique = slug, n = 2;
   while (fs.existsSync(path.join(SRC_DIR, `${unique}.md`))) {
     unique = `${slug}-${n++}`;
   }
-  slug = unique;
+  return unique;
+}
+
+function writeStub(slug, label) {
+  fs.writeFileSync(
+    path.join(SRC_DIR, `${slug}.md`),
+    `---\ntitle: ${label}\n---\n\n*Notes coming soon.*\n`
+  );
+}
+
+function addNode(parentSlug, label) {
+  label = label.trim();
+  if (!label) throw new Error('label required');
+
+  const slug = uniqueSlug(label);
 
   const html = fs.readFileSync(MAP_HTML, 'utf8');
 
@@ -98,11 +109,7 @@ function addNode(parentSlug, label) {
   }
 
   fs.writeFileSync(MAP_HTML, newHtml);
-
-  fs.writeFileSync(
-    path.join(SRC_DIR, `${slug}.md`),
-    `---\ntitle: ${label}\n---\n\n*Notes coming soon.*\n`
-  );
+  writeStub(slug, label);
 
   return slug;
 }

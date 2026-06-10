@@ -46,11 +46,17 @@
 				</ul>
 			</li>
 		<br>
-		<li> <span class="node-title" data-slug="national-debt">National Debt</span></li>
+		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="national-debt">National Debt</span>
+			<ul class="sub-list">
+				<li> <span class="node-title" data-slug="treasuries">Treasuries</span></li>
+			</ul>
+		</li>
 		<br>
 		<li> <span class="node-title" data-slug="ai-economic-impact">AI Economic Impact</span></li>
 		<br>
 		<li> <span class="node-title" data-slug="info-delivery">Information Delivery Systems</span></li>
+		<br>
+		<li> <span class="node-title" data-slug="finance">Finance</span></li>
 		<br>
 		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="links">Links</span>
 				<ul class="sub-list">
@@ -65,6 +71,7 @@
 					<li> <a href="https://en.wikipedia.org/wiki/Value_chain" target="_blank">Value Chain</a></li>
 					<li> <a href="https://learnmechinterp.mcgee.cat/" target="_blank">Learning Mech Interp</a></li>
 					<li> <a href="https://nanransohoff.substack.com/p/the-third-wave-of-american-philanthropy" target="_blank">3rd Wave of Philantropy</a></li>
+				<li> <a href="https://x.com/adiix_official/status/2064404496332001341" target="_blank">Investing Efficiency</a></li>
 				</ul>
 			</li>
 	</ul>
@@ -74,6 +81,76 @@
 
 	<script>
 		const IS_LOCAL = ['localhost','127.0.0.1'].includes(location.hostname);
+
+		const OPEN_KEY = 'mapOpenSlugs';
+		function getOpenSlugs() {
+			try { return new Set(JSON.parse(sessionStorage.getItem(OPEN_KEY) || '[]')); }
+			catch { return new Set(); }
+		}
+		function setSlugOpen(slug, open) {
+			const slugs = getOpenSlugs();
+			if (open) slugs.add(slug); else slugs.delete(slug);
+			sessionStorage.setItem(OPEN_KEY, JSON.stringify([...slugs]));
+		}
+
+		const manifestPromise = fetch('map/notes/manifest.json')
+			.then(r => r.ok ? r.json() : {})
+			.catch(() => ({}));
+
+		function jumpToNode(slug) {
+			const target = document.querySelector(`.bio-list .node-title[data-slug="${slug}"]`);
+			if (!target) return;
+			let li = target.closest('li');
+			while (li) {
+				if (li.classList.contains('expandable')) {
+					li.classList.add('open');
+					const s = li.querySelector(':scope > .node-title')?.dataset.slug;
+					if (s) setSlugOpen(s, true);
+					li.querySelectorAll(':scope > .sub-list > .note-edit > .note-textarea').forEach(t => {
+						t.style.height = 'auto';
+						t.style.height = t.scrollHeight + 'px';
+					});
+				}
+				li = li.parentElement.closest('li');
+			}
+			target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		}
+
+		function showAddForm(li, btn, placeholders, onSubmit) {
+			btn.style.display = 'none';
+			const inputs = placeholders.map(ph => {
+				const input = document.createElement('input');
+				input.type = 'text';
+				input.className = 'add-node-input';
+				input.placeholder = ph;
+				li.insertBefore(input, btn);
+				input.addEventListener('click', e => e.stopPropagation());
+				return input;
+			});
+
+			function cleanup() {
+				inputs.forEach(i => i.remove());
+				btn.style.display = '';
+			}
+
+			inputs.forEach((input, i) => {
+				input.addEventListener('keydown', e => {
+					e.stopPropagation();
+					if (e.key === 'Escape') cleanup();
+					if (e.key === 'Enter') {
+						if (i < inputs.length - 1) {
+							inputs[i + 1].focus();
+						} else {
+							const values = inputs.map(inp => inp.value.trim());
+							if (values.every(v => v)) onSubmit(values);
+							else cleanup();
+						}
+					}
+				});
+			});
+
+			inputs[0].focus();
+		}
 
 		document.querySelectorAll('.bio-list .node-title[data-slug]').forEach(title => {
 			const slug = title.dataset.slug;
@@ -89,6 +166,49 @@
 				subList = document.createElement('ul');
 				subList.className = 'sub-list';
 				li.appendChild(subList);
+			}
+
+			let addBtn = null;
+			if (IS_LOCAL) {
+				addBtn = document.createElement('span');
+				addBtn.className = 'node-action';
+				li.insertBefore(addBtn, subList);
+
+				if (slug === 'links') {
+					addBtn.textContent = '+ add link';
+					addBtn.addEventListener('click', e => {
+						e.stopPropagation();
+						showAddForm(li, addBtn, ['Title', 'URL'], ([linkTitle, url]) => {
+							fetch('/add-link', {
+								method: 'POST',
+								headers: {'Content-Type': 'application/json'},
+								body: JSON.stringify({ title: linkTitle, url })
+							})
+								.then(r => r.json())
+								.then(data => {
+									if (data.ok) location.reload();
+									else alert('Error: ' + data.error);
+								});
+						});
+					});
+				} else {
+					addBtn.textContent = '+ add sub-note';
+					addBtn.addEventListener('click', e => {
+						e.stopPropagation();
+						showAddForm(li, addBtn, ['Title'], ([label]) => {
+							fetch('/add-node', {
+								method: 'POST',
+								headers: {'Content-Type': 'application/json'},
+								body: JSON.stringify({ parentSlug: slug, label })
+							})
+								.then(r => r.json())
+								.then(data => {
+									if (data.ok) location.reload();
+									else alert('Error: ' + data.error);
+								});
+						});
+					});
+				}
 			}
 
 			if (slug !== 'links') {
@@ -111,8 +231,29 @@
 					.then(r => r.ok ? r.text() : '')
 					.then(raw => {
 						const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
-						textarea.value = (fm ? fm[1] : raw).trim();
+						const content = (fm ? fm[1] : raw).trim();
+						if (!content || content.toUpperCase() === 'TK') {
+							if (!IS_LOCAL) { editLi.remove(); return; }
+
+							editLi.style.display = 'none';
+							const promptBtn = document.createElement('span');
+							promptBtn.className = 'node-action';
+							promptBtn.textContent = '+ add note';
+							li.insertBefore(promptBtn, addBtn);
+
+							promptBtn.addEventListener('click', e => {
+								e.stopPropagation();
+								promptBtn.remove();
+								editLi.style.display = '';
+								textarea.focus();
+								autoResize();
+								redrawConnectors();
+							});
+							return;
+						}
+						textarea.value = content;
 						autoResize();
+						redrawConnectors();
 					});
 
 				if (IS_LOCAL) {
@@ -128,53 +269,7 @@
 						}, 600);
 					});
 				}
-			}
 
-			if (IS_LOCAL) {
-				const addLi = document.createElement('li');
-				addLi.className = 'add-node';
-				const addBtn = document.createElement('span');
-				addBtn.className = 'add-node-btn';
-				addLi.appendChild(addBtn);
-				subList.appendChild(addLi);
-
-				if (slug === 'links') {
-					addBtn.textContent = '+ add link';
-					addBtn.addEventListener('click', e => {
-						e.stopPropagation();
-						const title = prompt('Link title:');
-						if (!title) return;
-						const url = prompt('Link URL:');
-						if (!url) return;
-						fetch('/add-link', {
-							method: 'POST',
-							headers: {'Content-Type': 'application/json'},
-							body: JSON.stringify({ title, url })
-						})
-							.then(r => r.json())
-							.then(data => {
-								if (data.ok) location.reload();
-								else alert('Error: ' + data.error);
-							});
-					});
-				} else {
-					addBtn.textContent = '+ add sub-note';
-					addBtn.addEventListener('click', e => {
-						e.stopPropagation();
-						const label = prompt('New sub-note title:');
-						if (!label) return;
-						fetch('/add-node', {
-							method: 'POST',
-							headers: {'Content-Type': 'application/json'},
-							body: JSON.stringify({ parentSlug: slug, label })
-						})
-							.then(r => r.json())
-							.then(data => {
-								if (data.ok) location.reload();
-								else alert('Error: ' + data.error);
-							});
-					});
-				}
 			}
 		});
 
@@ -183,14 +278,113 @@
 				if (e.target.tagName !== 'A' && e.target.tagName !== 'TEXTAREA') {
 					e.stopPropagation();
 					this.classList.toggle('open');
+					const slug = this.querySelector(':scope > .node-title')?.dataset.slug;
+					if (slug) setSlugOpen(slug, this.classList.contains('open'));
 					if (this.classList.contains('open')) {
 						this.querySelectorAll(':scope > .sub-list > .note-edit > .note-textarea').forEach(t => {
 							t.style.height = 'auto';
 							t.style.height = t.scrollHeight + 'px';
 						});
 					}
+					redrawConnectors();
 				}
 			});
+		});
+
+		const openSlugs = getOpenSlugs();
+		document.querySelectorAll('.bio-list .node-title[data-slug]').forEach(title => {
+			if (!openSlugs.has(title.dataset.slug)) return;
+			const li = title.closest('li.expandable');
+			if (!li) return;
+			li.classList.add('open');
+			li.querySelectorAll(':scope > .sub-list > .note-edit > .note-textarea').forEach(t => {
+				t.style.height = 'auto';
+				t.style.height = t.scrollHeight + 'px';
+			});
+		});
+
+		// links/backlinks ([[wikilinks]]) and connector lines between them
+		const bioList = document.querySelector('.bio-list');
+		const connectors = [];
+
+		function redrawConnectors() {
+			const listRect = bioList.getBoundingClientRect();
+			connectors.forEach(({ fromEl, toEl, lineEl, elbowA, elbowB }) => {
+				if (!fromEl.offsetParent || !toEl.offsetParent) {
+					lineEl.style.display = elbowA.style.display = elbowB.style.display = 'none';
+					return;
+				}
+				const r1 = fromEl.getBoundingClientRect();
+				const r2 = toEl.getBoundingClientRect();
+				const l1 = fromEl.closest('li').getBoundingClientRect();
+				const l2 = toEl.closest('li').getBoundingClientRect();
+
+				const y1 = (r1.top + r1.bottom) / 2 - listRect.top;
+				const y2 = (r2.top + r2.bottom) / 2 - listRect.top;
+				const x1 = l1.left - listRect.left;
+				const x2 = l2.left - listRect.left;
+
+				lineEl.style.display = 'block';
+				lineEl.style.top = Math.min(y1, y2) + 'px';
+				lineEl.style.height = Math.abs(y2 - y1) + 'px';
+
+				elbowA.style.display = 'block';
+				elbowA.style.top = y1 + 'px';
+				elbowA.style.width = (x1 + 14) + 'px';
+
+				elbowB.style.display = 'block';
+				elbowB.style.top = y2 + 'px';
+				elbowB.style.width = (x2 + 14) + 'px';
+			});
+		}
+		window.addEventListener('resize', redrawConnectors);
+
+		manifestPromise.then(manifest => {
+			document.querySelectorAll('.bio-list .node-title[data-slug]').forEach(title => {
+				const slug = title.dataset.slug;
+				const entry = manifest[slug];
+				if (!entry || (!entry.links.length && !entry.backlinks.length)) return;
+
+				const subList = title.closest('li').querySelector(':scope > ul.sub-list');
+				const editLi = subList.querySelector(':scope > .note-edit');
+
+				const linksLi = document.createElement('li');
+				linksLi.className = 'note-links';
+
+				const items = [
+					...entry.links.map(s => ({ dir: '→', slug: s })),
+					...entry.backlinks.map(s => ({ dir: '←', slug: s })),
+				];
+				items.forEach(({ dir, slug: targetSlug }) => {
+					const span = document.createElement('span');
+					span.className = 'note-link';
+					span.textContent = `${dir} ${(manifest[targetSlug] || {}).title || targetSlug}`;
+					span.addEventListener('click', e => {
+						e.stopPropagation();
+						jumpToNode(targetSlug);
+					});
+					linksLi.appendChild(span);
+
+					if (dir === '←') {
+						const toEl = document.querySelector(`.bio-list .node-title[data-slug="${targetSlug}"]`);
+						if (toEl) {
+							const lineEl = document.createElement('div');
+							lineEl.className = 'note-connector';
+							const elbowA = document.createElement('div');
+							elbowA.className = 'note-connector-elbow';
+							const elbowB = document.createElement('div');
+							elbowB.className = 'note-connector-elbow';
+							bioList.append(lineEl, elbowA, elbowB);
+							connectors.push({ fromEl: title, toEl, lineEl, elbowA, elbowB });
+						}
+					}
+				});
+
+				subList.insertBefore(linksLi, editLi ? editLi.nextSibling : subList.firstChild);
+			});
+
+			requestAnimationFrame(redrawConnectors);
+			setTimeout(redrawConnectors, 300);
 		});
 	</script>
 </body>

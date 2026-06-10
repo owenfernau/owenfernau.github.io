@@ -48,7 +48,7 @@ http.createServer((req, res) => {
         const raw = fs.readFileSync(srcPath, 'utf8');
         const match = raw.match(/^---\r?\n([\s\S]*?\r?\n)---\r?\n/);
         const frontmatter = match ? match[0] : '---\ntitle: ' + slug + '\n---\n';
-        fs.writeFileSync(srcPath, frontmatter + '\n' + content.trim() + '\n');
+        fs.writeFileSync(srcPath, frontmatter + '\n' + (content.trim() || 'TK') + '\n');
 
         execFileSync('node', ['build-map-notes.js'], { cwd: ROOT });
 
