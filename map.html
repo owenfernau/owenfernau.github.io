@@ -52,8 +52,6 @@
 		<br>
 		<li> <span class="node-title" data-slug="info-delivery">Information Delivery Systems</span></li>
 		<br>
-		<li> <span class="node-title" data-slug="education">Education</span></li>
-		<br>
 		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="links">Links</span>
 				<ul class="sub-list">
 					<li> <a href="https://www.goodfire.ai/research/the-world-inside-neural-networks" target="_blank">Goodfire — the world inside neural networks</a></li>
@@ -93,42 +91,46 @@
 				li.appendChild(subList);
 			}
 
-			const editLi = document.createElement('li');
-			editLi.className = 'note-edit';
-			const textarea = document.createElement('textarea');
-			textarea.className = 'note-textarea';
-			textarea.placeholder = 'Write notes...';
-			textarea.readOnly = !IS_LOCAL;
-			editLi.appendChild(textarea);
-			subList.insertBefore(editLi, subList.firstChild);
+			if (slug !== 'links') {
+				const editLi = document.createElement('li');
+				editLi.className = 'note-edit';
+				const textarea = document.createElement('textarea');
+				textarea.className = 'note-textarea';
+				textarea.placeholder = 'Write notes...';
+				textarea.readOnly = !IS_LOCAL;
+				editLi.appendChild(textarea);
+				subList.insertBefore(editLi, subList.firstChild);
 
-			const autoResize = () => {
-				textarea.style.height = 'auto';
-				textarea.style.height = textarea.scrollHeight + 'px';
-			};
-			textarea.addEventListener('input', autoResize);
+				const autoResize = () => {
+					textarea.style.height = 'auto';
+					textarea.style.height = textarea.scrollHeight + 'px';
+				};
+				textarea.addEventListener('input', autoResize);
 
-			fetch(`map/notes-src/${slug}.md`)
-				.then(r => r.ok ? r.text() : '')
-				.then(raw => {
-					const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
-					textarea.value = (fm ? fm[1] : raw).trim();
-					autoResize();
-				});
+				fetch(`map/notes-src/${slug}.md`)
+					.then(r => r.ok ? r.text() : '')
+					.then(raw => {
+						const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
+						textarea.value = (fm ? fm[1] : raw).trim();
+						autoResize();
+					});
+
+				if (IS_LOCAL) {
+					let timer;
+					textarea.addEventListener('input', () => {
+						clearTimeout(timer);
+						timer = setTimeout(() => {
+							fetch('/save-note', {
+								method: 'POST',
+								headers: {'Content-Type': 'application/json'},
+								body: JSON.stringify({ slug, content: textarea.value })
+							});
+						}, 600);
+					});
+				}
+			}
 
 			if (IS_LOCAL) {
-				let timer;
-				textarea.addEventListener('input', () => {
-					clearTimeout(timer);
-					timer = setTimeout(() => {
-						fetch('/save-note', {
-							method: 'POST',
-							headers: {'Content-Type': 'application/json'},
-							body: JSON.stringify({ slug, content: textarea.value })
-						});
-					}, 600);
-				});
-
 				const addLi = document.createElement('li');
 				addLi.className = 'add-node';
 				const addBtn = document.createElement('span');
