@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const PORT = 3001;
 const ROOT = __dirname;
@@ -24,6 +25,32 @@ http.createServer((req, res) => {
       try {
         const data = JSON.parse(body);
         fs.writeFileSync(path.join(ROOT, 'nodes.json'), JSON.stringify(data, null, 2));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end('{"ok":true}');
+      } catch(e) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/save-note') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+      try {
+        const { slug, content } = JSON.parse(body);
+        if (!/^[a-z0-9-]+$/.test(slug)) throw new Error('invalid slug');
+
+        const srcPath = path.join(ROOT, 'map', 'notes-src', `${slug}.md`);
+        const raw = fs.readFileSync(srcPath, 'utf8');
+        const match = raw.match(/^---\r?\n([\s\S]*?\r?\n)---\r?\n/);
+        const frontmatter = match ? match[0] : '---\ntitle: ' + slug + '\n---\n';
+        fs.writeFileSync(srcPath, frontmatter + '\n' + content.trim() + '\n');
+
+        execFileSync('node', ['build-map-notes.js'], { cwd: ROOT });
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end('{"ok":true}');
       } catch(e) {

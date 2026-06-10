@@ -188,6 +188,42 @@ hr {
     padding-bottom: 0.5em;
 }
 
+.node-title {
+    cursor: pointer;
+}
+
+.note-edit {
+    padding-left: 0 !important;
+    text-indent: 0 !important;
+    margin: 0.3em 0 1em;
+}
+
+.sub-list:has(> .note-edit:last-child) {
+    padding-bottom: 0.01px;
+}
+
+.note-textarea {
+    display: block;
+    width: 100%;
+    max-width: 70ch;
+    min-height: 4em;
+    resize: vertical;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: inherit;
+    background: #fff;
+    border: 1px solid #000;
+    padding: 0.5em;
+    box-sizing: border-box;
+}
+
+.note-textarea[readonly] {
+    background: transparent;
+    border-color: #c9c9c0;
+    resize: none;
+}
+
 /* Lightbox modal */
 .lightbox {
     display: none;

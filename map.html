@@ -1,1042 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Map — Owen Fernau</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --paper:#e6e6e0; --ink:#191916; --muted:#6c6c63;
-    --line:#c9c9c0; --accent:#2f7a3a;
-  }
-  @media(prefers-color-scheme:dark){
-    :root{ --paper:#16161a; --ink:#e7e7e0; --muted:#9a9a90; --line:#33332f; --accent:#7fc98b; }
-  }
-  *{ box-sizing:border-box; margin:0; padding:0; }
-  body{
-    background:var(--paper); color:var(--ink);
-    font-family:"JetBrains Mono", ui-monospace, monospace;
-    line-height:1.6; -webkit-font-smoothing:antialiased;
-    min-height:100vh;
-  }
-
-  .header{
-    padding:24px 32px 20px;
-    border-bottom:1px solid var(--line);
-    display:flex; align-items:baseline; gap:16px; justify-content:space-between;
-  }
-  .header-left{ display:flex; align-items:baseline; gap:14px; flex:1; min-width:0; }
-  .header h1{
-    font-size:15px; font-weight:700; letter-spacing:-0.01em; white-space:nowrap;
-    cursor:pointer;
-  }
-  .header h1:hover{ opacity:.7; }
-  .meta{ font-size:11px; color:var(--muted); white-space:nowrap; }
-
-  .breadcrumb{
-    display:flex; align-items:baseline; gap:5px;
-    font-size:12px; color:var(--muted); overflow:hidden; flex-wrap:wrap;
-  }
-  .crumb{ cursor:pointer; }
-  .crumb:hover{ color:var(--ink); }
-  .crumb.current{ color:var(--ink); cursor:default; }
-  .crumb-sep{ color:var(--line); user-select:none; }
-
-  .layout{
-    display:grid;
-    grid-template-columns:1fr 390px;
-    min-height:calc(100vh - 73px);
-  }
-
-  .main{ padding:40px 48px; border-right:1px solid var(--line); position:relative; }
-
-  #graph-svg{ width:100%; height:auto; display:block; overflow:visible; }
-
-  .sidebar{ padding:32px 24px; overflow-y:auto; background:var(--paper); position:relative; z-index:1; }
-
-  .node-panel-title{
-    font-size:14px; font-weight:700; letter-spacing:-0.01em;
-    color:var(--ink); margin-bottom:20px; line-height:1.4;
-  }
-  #node-content{
-    width:100%; min-height:220px; resize:vertical;
-    font-family:"JetBrains Mono", ui-monospace, monospace;
-    font-size:12px; line-height:1.7; background:transparent;
-    border:none; border-bottom:1px solid var(--line);
-    color:var(--ink); outline:none; padding:4px 0 12px;
-  }
-  #node-content::placeholder{ color:var(--muted); }
-  #node-content:focus{ border-bottom-color:var(--accent); }
-
-  .section-label{
-    font-size:11px; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--muted); margin-bottom:14px;
-  }
-  .link-list{ list-style:none; }
-  .link-item{
-    display:flex; align-items:baseline; gap:6px;
-    padding:7px 0; border-bottom:1px solid var(--line); font-size:12px;
-  }
-  .link-item:last-of-type{ border-bottom:none; }
-  .link-item a{ color:var(--ink); text-decoration:none; flex:1; line-height:1.4; }
-  .link-item a:hover{ color:var(--accent); }
-  .link-arr{ color:var(--accent); font-size:11px; flex-shrink:0; }
-  .link-del{
-    background:none; border:none; color:transparent;
-    font-family:inherit; font-size:12px; cursor:pointer; padding:0; flex-shrink:0;
-  }
-  .link-item:hover .link-del{ color:var(--muted); }
-  .link-del:hover{ color:var(--ink) !important; }
-
-  .add-link input{
-    font-family:inherit; font-size:12px; background:transparent;
-    border:none; border-bottom:1px solid var(--line);
-    color:var(--ink); outline:none; width:100%; padding:4px 0; margin-bottom:8px;
-  }
-  .add-link input::placeholder{ color:var(--muted); }
-  .add-link input:focus{ border-bottom-color:var(--accent); }
-
-  .edit-toggle{
-    background:none; border:1px solid var(--line); color:var(--muted);
-    font-family:inherit; font-size:11px; cursor:pointer; padding:3px 8px;
-    letter-spacing:.04em; flex-shrink:0;
-  }
-  .edit-toggle:hover{ color:var(--ink); border-color:var(--ink); }
-  .edit-toggle.active{ color:var(--accent); border-color:var(--accent); }
-
-  .zoom-controls{
-    position:fixed; bottom:24px; right:24px;
-    display:flex; flex-direction:column; gap:4px; z-index:10;
-  }
-  .zoom-btn{
-    background:var(--paper); border:1px solid var(--line); color:var(--muted);
-    font-family:inherit; font-size:16px; line-height:1; cursor:pointer;
-    width:32px; height:32px; display:flex; align-items:center; justify-content:center;
-    user-select:none;
-  }
-  .zoom-btn:hover{ color:var(--ink); border-color:var(--ink); }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<div class="header">
-  <div class="header-left">
-    <h1 id="h1-home">AI Map</h1>
-    <nav class="breadcrumb" id="breadcrumb"></nav>
-  </div>
-  <span class="meta" id="last-updated"></span>
-  <button class="edit-toggle" id="edit-toggle" style="display:none">edit</button>
-</div>
-
-<div class="layout">
-  <main class="main">
-    <svg id="graph-svg"></svg>
-    <div class="zoom-controls">
-      <button class="zoom-btn" id="zoom-in">+</button>
-      <button class="zoom-btn" id="zoom-out">−</button>
-    </div>
-  </main>
-  <aside class="sidebar">
-    <div id="default-panel">
-      <div class="section-label">notes</div>
-      <ul class="link-list" id="note-list"></ul>
-      <div class="add-link" id="add-note-form" style="display:none">
-        <input id="add-note-text" type="text" placeholder="note" autocomplete="off">
-      </div>
-      <div class="section-label" style="margin-top:28px">links</div>
-      <ul class="link-list" id="link-list"></ul>
-      <div class="add-link" id="add-link-form" style="display:none">
-        <input id="add-link-title" type="text" placeholder="title" autocomplete="off">
-        <input id="add-link-url" type="text" placeholder="url" autocomplete="off">
-      </div>
-    </div>
-    <div id="node-panel" style="display:none">
-      <div class="node-panel-title" id="node-panel-title"></div>
-      <textarea id="node-content" placeholder="sketch..."></textarea>
-    </div>
-  </aside>
-</div>
-
-<script>
-const IS_LOCAL = ['localhost','127.0.0.1'].includes(location.hostname);
-const R       = 34;   // node circle radius
-const PAD     = 72;   // viewBox padding
-const LBL     = R + 18; // label y-offset: top of text below circle center (dominant-baseline:hanging)
-const ENC_PAD = 60;   // padding from node edges to enclosing circle
-
-let DATA = {};
-let graphStack = ['root'];
-let _animFrame = null;
-let editMode = false;
-let selectedNodeId = null;
-
-function animateViewBox(svg, from, to, ms){
-  if(_animFrame){ cancelAnimationFrame(_animFrame); _animFrame = null; }
-  const [fx,fy,fw,fh] = from.split(' ').map(Number);
-  const [tx,ty,tw,th] = to.split(' ').map(Number);
-  const t0 = performance.now();
-  function ease(t){ return 1 - Math.pow(1-t, 3); }
-  function step(now){
-    const p = Math.min((now - t0) / ms, 1);
-    const e = ease(p);
-    svg.setAttribute('viewBox',
-      `${fx+(tx-fx)*e} ${fy+(ty-fy)*e} ${fw+(tw-fw)*e} ${fh+(th-fh)*e}`);
-    if(p < 1) _animFrame = requestAnimationFrame(step);
-    else _animFrame = null;
-  }
-  _animFrame = requestAnimationFrame(step);
-}
-
-// ── data ──────────────────────────────────────────────────────────────────────
-
-async function loadData(){
-  const res = await fetch('nodes.json');
-  DATA = await res.json();
-  if(!DATA.nodeLibrary) DATA.nodeLibrary = {};
-  if(!DATA.graphs)      DATA.graphs = [];
-  if(!DATA.links)       DATA.links  = [];
-}
-
-async function saveData(){
-  if(!IS_LOCAL) return;
-  const now = new Date();
-  DATA.lastUpdated = now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  document.getElementById('last-updated').textContent = 'last updated: ' + DATA.lastUpdated;
-  await fetch('/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(DATA)});
-}
-
-// ── helpers ───────────────────────────────────────────────────────────────────
-
-const getGraph    = id => DATA.graphs.find(g => g.id === id);
-const getNode     = id => DATA.nodeLibrary[id];
-const hasSubGraph = id => !!getGraph(id);
-const currentGid  = ()  => graphStack[graphStack.length - 1];
-
-function svgEl(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
-
-function graphBounds(graph){
-  let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
-  graph.nodes.forEach(p => {
-    if(p.x == null) return;
-    minX = Math.min(minX, p.x-R); minY = Math.min(minY, p.y-R);
-    maxX = Math.max(maxX, p.x+R); maxY = Math.max(maxY, p.y+R);
-  });
-  return { minX, minY, maxX, maxY, valid: minX !== Infinity };
-}
-
-function minEnclosingCircle(graph){
-  const pts = graph.nodes.filter(p => p.x != null);
-  if(!pts.length) return null;
-  const cx = pts.reduce((s,p) => s+p.x, 0) / pts.length;
-  const cy = pts.reduce((s,p) => s+p.y, 0) / pts.length;
-  const r  = Math.max(...pts.map(p => Math.sqrt((p.x-cx)**2+(p.y-cy)**2))) + R + ENC_PAD;
-  return { cx, cy, r };
-}
-
-function computeViewBox(bounds, enc){
-  if(!bounds.valid) return '0 0 800 500';
-  if(enc){
-    const { cx, cy, r } = enc;
-    return `${cx-r-PAD} ${cy-r-PAD} ${(r+PAD)*2} ${(r+PAD)*2}`;
-  }
-  const { minX, minY, maxX, maxY } = bounds;
-  return `${minX-PAD} ${minY-PAD} ${maxX-minX+PAD*2} ${maxY-minY+PAD*2+LBL}`;
-}
-
-// ── navigation ────────────────────────────────────────────────────────────────
-
-function navigateTo(graphId){
-  selectedNodeId = null;
-  graphStack.push(graphId);
-  renderAll();
-}
-
-function navigateToIndex(i){
-  selectedNodeId = null;
-  graphStack = graphStack.slice(0, i+1);
-  renderAll();
-}
-
-// ── render: breadcrumb ────────────────────────────────────────────────────────
-// h1 handles root; breadcrumb only shows levels below root
-
-function renderBreadcrumb(){
-  const nav = document.getElementById('breadcrumb');
-  nav.innerHTML = '';
-  graphStack.slice(1).forEach((gid, i) => {
-    const realIdx  = i + 1;
-    const g        = getGraph(gid);
-    const title    = g ? g.title : gid;
-    const isCurrent = realIdx === graphStack.length - 1;
-    if(i > 0){
-      const sep = document.createElement('span');
-      sep.className = 'crumb-sep'; sep.textContent = '/';
-      nav.appendChild(sep);
-    }
-    const span = document.createElement('span');
-    span.className = 'crumb' + (isCurrent ? ' current' : '');
-    span.textContent = title;
-    if(!isCurrent) span.onclick = () => navigateToIndex(realIdx);
-    nav.appendChild(span);
-  });
-}
-
-// ── invariants ────────────────────────────────────────────────────────────────
-// These must hold at every step of layout work. If something looks wrong here,
-// check these before touching positions or edge routing.
-//
-// 1. ROOT GRAPH STRUCTURE  (nodes.json → graphs[id="root"].edges)
-//    data            → ai-capability   (type: input)
-//    algorithms      → ai-capability   (type: input)
-//    computing-power → ai-capability   (type: input)
-//    Every input node has its OWN individual arrow to ai-capability.
-//    NEVER route one node's arrow through another node, and NEVER let a shared
-//    path segment imply a connection that doesn't exist in the data.
-//
-// 2. GHOST ROW LAYOUT
-//    When drilling into a sub-graph, parent-graph peers render as ghost nodes.
-//    - Input/stack nodes  → y = ghostY          (the base ghost row)
-//    - Output nodes       → y = ghostY - 120    (floated above the row)
-//    The 120px lift is what prevents straight-line edges from input nodes to
-//    ai-capability from passing through intermediate input nodes on the same row.
-//    Do not collapse this offset without re-checking all edge clearances.
-//
-// 3. KINK PATH (circleEdges)
-//    The elbow connector from the enclosing circle to its output target always
-//    uses gp.y (the target ghost node's actual y), NOT a hardcoded row y.
-//    This ensures the arrow lands at the output node regardless of its vertical
-//    offset — keeping invariant #2 intact even if the offset changes.
-//    circleEdge TARGETS are also elevated (ghostY - 120) for the same reason:
-//    the kink's horizontal segment must not pass through peer ghost nodes.
-//    (e.g. chips→data-centers: data-centers is elevated so the kink clears energy)
-//
-// 4. ORIENTATION ANCHOR
-//    The label of the currently selected sub-graph (e.g. "chips") is rendered
-//    INSIDE the enclosing ring near the top (enc.cy - enc.r + 20, hanging).
-//    This keeps the space just outside the ring clear for ghost nodes (e.g.
-//    energy directly above chips). Do not move the label to ghostY + LBLS —
-//    that caused label collision when a ghost node appeared directly above.
-
-// ── drag helpers ─────────────────────────────────────────────────────────────
-
-function svgPoint(svg, e){
-  const pt = svg.createSVGPoint();
-  pt.x = e.clientX; pt.y = e.clientY;
-  return pt.matrixTransform(svg.getScreenCTM().inverse());
-}
-
-function makeDraggable(el, p, onDrop){
-  let dragging = false;
-  let startSVG = null, startPos = null;
-  const svg = document.getElementById('graph-svg');
-  el.addEventListener('mousedown', e => {
-    e.preventDefault();
-    dragging = false;
-    startSVG = svgPoint(svg, e);
-    startPos = { x: p.x, y: p.y };
-    const onMove = ev => {
-      const cur = svgPoint(svg, ev);
-      const dx = cur.x - startSVG.x, dy = cur.y - startSVG.y;
-      if(!dragging && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) dragging = true;
-      if(dragging){
-        p.x = startPos.x + dx;
-        p.y = startPos.y + dy;
-        el.setAttribute('transform', `translate(${p.x},${p.y})`);
-      }
-    };
-    const onUp = async () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      if(dragging){ await onDrop(); renderGraph(); }
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  });
-  el.addEventListener('click', e => { if(dragging) e.stopImmediatePropagation(); });
-}
-
-function makeEdge(x1, y1, x2, y2, stroke, dasharray){
-  const mx = (x1+x2)/2, my = (y1+y2)/2;
-  const el = svgEl('path');
-  el.setAttribute('d', `M${x1},${y1} L${mx},${my} L${x2},${y2}`);
-  el.setAttribute('stroke', stroke);
-  el.setAttribute('stroke-width', '1.5');
-  el.setAttribute('fill', 'none');
-  el.setAttribute('marker-start', 'url(#arr-fwd)');
-  el.setAttribute('marker-mid', 'url(#arr)');
-  el.setAttribute('marker-end', 'url(#arr)');
-  if(dasharray) el.setAttribute('stroke-dasharray', dasharray);
-  return el;
-}
-
-// ── render: SVG graph ─────────────────────────────────────────────────────────
-
-function renderGraph(){
-  const svg = document.getElementById('graph-svg');
-  svg.innerHTML = '';
-
-  const graph = getGraph(currentGid());
-  if(!graph) return;
-
-  const prevVB = svg.getAttribute('viewBox');
-  const isSubGraph = graphStack.length > 1;
-  const bounds     = graphBounds(graph);
-  const enc        = isSubGraph ? minEnclosingCircle(graph) : null;
-
-  // collect ghost context: sibling nodes projected outside the enclosing circle
-  let ghostData = null;
-  if(isSubGraph && enc){
-    const parentGid    = graphStack[graphStack.length - 2];
-    const parentGraph  = getGraph(parentGid);
-    const selfInParent = parentGraph && parentGraph.nodes.find(n => n.ref === currentGid());
-    if(parentGraph && selfInParent && selfInParent.x != null){
-      const GHOST_MIN = enc.r + R + 60;
-      const peers = parentGraph.nodes.filter(n => n.ref !== currentGid() && n.x != null);
-      const rawDists = peers.map(p => {
-        const vx = p.x - selfInParent.x, vy = p.y - selfInParent.y;
-        return Math.sqrt(vx*vx + vy*vy) || 1;
-      });
-      const scale = GHOST_MIN / Math.min(...rawDists);
-      const nodeMap = {};
-      const ghostY = enc.cy - enc.r - R - 20;
-      // elevate any node that is a direct circleEdge target so kink paths
-      // don't pass through peer ghost nodes (same invariant as output nodes)
-      const circleTargets = new Set(
-        parentGraph.edges
-          .filter(e => e.from === currentGid() || e.to === currentGid())
-          .map(e => e.from === currentGid() ? e.to : e.from)
-      );
-      const ghostOverrides = (getGraph(currentGid()) && getGraph(currentGid()).ghostPositions) || {};
-      peers.forEach(p => {
-        const vx = p.x - selfInParent.x;
-        const pNode = DATA.nodeLibrary[p.ref];
-        const yOff = (pNode && pNode.type === 'output') || circleTargets.has(p.ref) ? -120 : 0;
-        const ov = ghostOverrides[p.ref];
-        nodeMap[p.ref] = ov
-          ? { ref: p.ref, x: ov.x, y: ov.y }
-          : { ref: p.ref, x: enc.cx + vx*scale, y: ghostY + yOff };
-      });
-      ghostData = {
-        nodes: Object.values(nodeMap),
-        nodeMap,
-        ghostY,
-        edges:       parentGraph.edges.filter(e => e.from !== currentGid() && e.to !== currentGid()),
-        circleEdges: parentGraph.edges.filter(e => e.from === currentGid() || e.to === currentGid())
-      };
-    }
-  }
-
-  // level 2: grandparent context + parent ring
-  let ghostData2 = null;
-  let parentRingR = null;
-  if(ghostData && graphStack.length >= 3){
-    const grandGid   = graphStack[graphStack.length - 3];
-    const parentGid2 = graphStack[graphStack.length - 2];
-    const grandGraph = getGraph(grandGid);
-    const selfInGrand = grandGraph && grandGraph.nodes.find(n => n.ref === parentGid2);
-    if(grandGraph && selfInGrand && selfInGrand.x != null){
-      const maxL1Dist = ghostData.nodes.reduce((mx, p) => {
-        const dx = p.x - enc.cx, dy = p.y - enc.cy;
-        return Math.max(mx, Math.sqrt(dx*dx + dy*dy));
-      }, 0);
-      parentRingR = maxL1Dist + R + 60;
-      const GHOST_MIN_2 = parentRingR + R + 60;
-      const grandPeers = grandGraph.nodes.filter(n => n.ref !== parentGid2 && n.x != null);
-      const rawDists2  = grandPeers.map(p => {
-        const vx = p.x - selfInGrand.x, vy = p.y - selfInGrand.y;
-        return Math.sqrt(vx*vx + vy*vy) || 1;
-      });
-      if(rawDists2.length){
-        const scale2 = GHOST_MIN_2 / Math.min(...rawDists2);
-        const ghostY2 = enc.cy - parentRingR - R - 20;
-        const circleTargets2 = new Set(
-          grandGraph.edges
-            .filter(e => e.from === parentGid2 || e.to === parentGid2)
-            .map(e => e.from === parentGid2 ? e.to : e.from)
-        );
-        const nodeMap2 = {};
-        const ghostOverrides2 = (getGraph(currentGid()) && getGraph(currentGid()).ghostPositions2) || {};
-        grandPeers.forEach(p => {
-          const vx = p.x - selfInGrand.x;
-          const pNode = DATA.nodeLibrary[p.ref];
-          const yOff = (pNode && pNode.type === 'output') || circleTargets2.has(p.ref) ? -120 : 0;
-          const ov2 = ghostOverrides2[p.ref];
-          nodeMap2[p.ref] = ov2
-            ? { ref: p.ref, x: ov2.x, y: ov2.y }
-            : { ref: p.ref, x: enc.cx + vx*scale2, y: ghostY2 + yOff };
-        });
-        ghostData2 = {
-          nodes: Object.values(nodeMap2), nodeMap: nodeMap2,
-          ghostY: ghostY2, parentGid: parentGid2,
-          edges:       grandGraph.edges.filter(e => e.from !== parentGid2 && e.to !== parentGid2),
-          circleEdges: grandGraph.edges.filter(e => e.from === parentGid2 || e.to === parentGid2)
-        };
-      }
-    }
-  }
-
-  // expand viewBox to include ghost nodes
-  let vbStr = computeViewBox(bounds, enc);
-  if(ghostData){
-    const [vx0, vy0, vw0, vh0] = vbStr.split(' ').map(Number);
-    let vx = vx0, vy = vy0, x2 = vx0+vw0, y2 = vy0+vh0;
-    ghostData.nodes.forEach(p => {
-      vx = Math.min(vx, p.x - R - PAD);
-      vy = Math.min(vy, p.y - R - PAD);
-      x2 = Math.max(x2, p.x + R + PAD);
-      y2 = Math.max(y2, p.y + R + PAD + LBL);
-    });
-    vbStr = `${vx} ${vy} ${x2-vx} ${y2-vy}`;
-  }
-  // ghostData2 nodes are rendered but intentionally excluded from the initial viewBox —
-  // expanding to the grandparent context would zoom way out to include distant floating nodes
-
-  // if a node is selected, pan to center it in the current viewport
-  if(selectedNodeId){
-    const selPos =
-      graph.nodes.find(n => n.ref === selectedNodeId) ||
-      (ghostData  && ghostData.nodeMap[selectedNodeId])  ||
-      (ghostData2 && ghostData2.nodeMap[selectedNodeId]);
-    if(selPos && selPos.x != null){
-      const [vx, vy, vw, vh] = vbStr.split(' ').map(Number);
-      const zw = vw * 0.70, zh = vh * 0.70;
-      vbStr = `${selPos.x - zw/2} ${selPos.y - zh/2} ${zw} ${zh}`;
-    }
-  }
-
-  svg.setAttribute('viewBox', vbStr);
-  if(prevVB && prevVB !== vbStr){
-    svg.setAttribute('viewBox', prevVB);
-    animateViewBox(svg, prevVB, vbStr, 380);
-  }
-
-  // scale font size and label offset so text appears the same physical size
-  // regardless of how large the viewBox is (sub-graphs have much larger viewBoxes)
-  const [,, vbw] = vbStr.split(' ').map(Number);
-  const containerW = (svg.parentElement && svg.parentElement.clientWidth) || 900;
-  const vscale = containerW > 0 ? vbw / containerW : 1;
-  const FS   = Math.min(Math.round(15 * vscale), Math.round(R * 0.65));
-  const LBLS = Math.round(R + 6 * vscale); // R (circle bottom) + 6px visual gap, constant across zoom levels
-
-  const defs = svgEl('defs');
-  defs.innerHTML = `
-    <marker id="arr" markerWidth="12" markerHeight="8"
-      refX="12" refY="4" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M0,0 L0,8 L12,4 z" fill="context-stroke"/>
-    </marker>
-    <marker id="arr-fwd" markerWidth="12" markerHeight="8"
-      refX="0" refY="4" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M0,0 L0,8 L12,4 z" fill="context-stroke"/>
-    </marker>`;
-  svg.appendChild(defs);
-
-  const [bgX, bgY, bgW, bgH] = vbStr.split(' ').map(Number);
-  const bgRect = svgEl('rect');
-  bgRect.setAttribute('x', bgX); bgRect.setAttribute('y', bgY);
-  bgRect.setAttribute('width', bgW); bgRect.setAttribute('height', bgH);
-  bgRect.setAttribute('fill', 'transparent');
-  bgRect.setAttribute('cursor', 'grab');
-  bgRect.classList.add('pan-bg');
-  svg.appendChild(bgRect);
-
-  // parent ring: larger dashed circle grouping the level-1 ghost nodes under
-  // the parent sub-graph label (e.g. "computing power" ring when inside chips)
-  if(ghostData2 && parentRingR !== null){
-    const prG = svgEl('g');
-    const prCircle = svgEl('circle');
-    prCircle.setAttribute('cx', enc.cx); prCircle.setAttribute('cy', enc.cy);
-    prCircle.setAttribute('r', parentRingR);
-    prCircle.setAttribute('fill', 'none');
-    prCircle.setAttribute('stroke', 'var(--muted)');
-    prCircle.setAttribute('stroke-width', '1');
-    prCircle.setAttribute('stroke-dasharray', '6 5');
-    prG.appendChild(prCircle);
-    const prNode = getNode(ghostData2.parentGid);
-    if(prNode){
-      const prLbl = svgEl('text');
-      prLbl.setAttribute('x', enc.cx);
-      prLbl.setAttribute('y', enc.cy - parentRingR + 20);
-      prLbl.setAttribute('text-anchor', 'middle');
-      prLbl.setAttribute('dominant-baseline', 'hanging');
-      prLbl.setAttribute('font-family', '"JetBrains Mono", monospace');
-      prLbl.setAttribute('font-size', FS);
-      prLbl.setAttribute('fill', 'var(--muted)');
-      prLbl.setAttribute('cursor', 'pointer');
-      prLbl.textContent = prNode.label;
-      prLbl.onclick = e => { e.stopPropagation(); navigateToIndex(graphStack.length - 2); };
-      prG.appendChild(prLbl);
-    }
-    svg.appendChild(prG);
-
-    // level 2 ghost nodes + edges (grandparent context, faded)
-    const g2 = svgEl('g');
-    g2.setAttribute('opacity', '0.45');
-
-    ghostData2.edges.forEach(edge => {
-      const fp = ghostData2.nodeMap[edge.from];
-      const tp = ghostData2.nodeMap[edge.to];
-      if(!fp || !tp) return;
-      const ddx = tp.x-fp.x, ddy = tp.y-fp.y;
-      const len = Math.sqrt(ddx*ddx+ddy*ddy);
-      if(len === 0) return;
-      const ux = ddx/len, uy = ddy/len;
-      g2.appendChild(makeEdge(fp.x+R*ux, fp.y+R*uy, tp.x-R*ux, tp.y-R*uy, 'var(--ink)'));
-    });
-
-    ghostData2.circleEdges.forEach(edge => {
-      const isFrom = edge.from === ghostData2.parentGid;
-      const gp     = ghostData2.nodeMap[isFrom ? edge.to : edge.from];
-      if(!gp) return;
-      const dx2 = gp.x - enc.cx, dy2 = gp.y - enc.cy;
-      const dlen2 = Math.sqrt(dx2*dx2 + dy2*dy2) || 1;
-      const ux2 = dx2/dlen2, uy2 = dy2/dlen2;
-      g2.appendChild(makeEdge(enc.cx+ux2*(parentRingR+2), enc.cy+uy2*(parentRingR+2), gp.x-ux2*R, gp.y-uy2*R, 'var(--ink)'));
-    });
-
-    ghostData2.nodes.forEach(p => {
-      const node = getNode(p.ref);
-      if(!node) return;
-      const g = svgEl('g');
-      g.setAttribute('transform', `translate(${p.x},${p.y})`);
-      const ghost2Drillable = hasSubGraph(node.id);
-      if(editMode && IS_LOCAL) g.style.cursor = 'grab';
-      else if(ghost2Drillable) g.style.cursor = 'pointer';
-      const circle = svgEl('circle');
-      const isSelG2 = node.id === selectedNodeId;
-      circle.setAttribute('r', R); circle.setAttribute('cx', 0); circle.setAttribute('cy', 0);
-      circle.setAttribute('stroke-width', isSelG2 ? '2.5' : '1.5');
-      circle.setAttribute('fill', isSelG2 ? 'var(--accent)' : 'var(--paper)');
-      circle.setAttribute('stroke', hasSubGraph(node.id) ? 'var(--accent)' : (isSelG2 ? 'var(--accent)' : 'var(--ink)'));
-      g.appendChild(circle);
-      const text = svgEl('text');
-      const lblAbove2 = enc && p.y < enc.cy - enc.r;
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('dominant-baseline', lblAbove2 ? 'auto' : 'hanging');
-      text.setAttribute('y', lblAbove2 ? -LBLS : LBLS);
-      text.setAttribute('font-family', '"JetBrains Mono", monospace');
-      text.setAttribute('font-size', FS);
-      text.setAttribute('fill', hasSubGraph(node.id) ? 'var(--accent)' : 'var(--ink)');
-      text.textContent = node.label;
-      g.appendChild(text);
-      if(editMode && IS_LOCAL){
-        makeDraggable(g, p, async () => {
-          const cur = getGraph(currentGid());
-          if(!cur.ghostPositions2) cur.ghostPositions2 = {};
-          cur.ghostPositions2[p.ref] = { x: p.x, y: p.y };
-          await saveData();
-        });
-      } else if(ghost2Drillable){
-        g.onclick = () => { graphStack = [...graphStack.slice(0, -2), node.id]; renderAll(); };
-      } else {
-        g.style.cursor = 'pointer';
-        g.onclick = () => { selectedNodeId = selectedNodeId === node.id ? null : node.id; renderGraph(); renderNotes(); };
-      }
-      g2.appendChild(g);
-    });
-
-    svg.appendChild(g2);
-  }
-
-  // ghost context: parent graph rendered faintly outside the enclosing circle
-  if(ghostData){
-    const ghostG = svgEl('g');
-    ghostG.setAttribute('opacity', '1');
-
-    ghostData.edges.forEach(edge => {
-      const fp = ghostData.nodeMap[edge.from];
-      const tp = ghostData.nodeMap[edge.to];
-      if(!fp || !tp) return;
-      const ddx = tp.x-fp.x, ddy = tp.y-fp.y;
-      const len = Math.sqrt(ddx*ddx+ddy*ddy);
-      if(len === 0) return;
-      const ux = ddx/len, uy = ddy/len;
-      ghostG.appendChild(makeEdge(fp.x+R*ux, fp.y+R*uy, tp.x-R*ux, tp.y-R*uy, 'var(--ink)'));
-    });
-
-    // edges connecting the enclosing circle to ghost nodes — direct diagonal
-    ghostData.circleEdges.forEach(edge => {
-      const isFrom = edge.from === currentGid();
-      const gp     = ghostData.nodeMap[isFrom ? edge.to : edge.from];
-      if(!gp) return;
-      const dx = gp.x - enc.cx, dy = gp.y - enc.cy;
-      const dlen = Math.sqrt(dx*dx + dy*dy) || 1;
-      const ux = dx/dlen, uy = dy/dlen;
-      ghostG.appendChild(makeEdge(enc.cx+ux*(enc.r+2), enc.cy+uy*(enc.r+2), gp.x-ux*R, gp.y-uy*R, 'var(--ink)'));
-    });
-
-    ghostData.nodes.forEach(p => {
-      const node = getNode(p.ref);
-      if(!node) return;
-      const g = svgEl('g');
-      g.setAttribute('transform', `translate(${p.x},${p.y})`);
-      const ghostDrillable = hasSubGraph(node.id);
-      if(editMode && IS_LOCAL) g.style.cursor = 'grab';
-      else if(ghostDrillable) g.style.cursor = 'pointer';
-      const circle = svgEl('circle');
-      circle.setAttribute('r', R);
-      circle.setAttribute('cx', 0); circle.setAttribute('cy', 0);
-      circle.setAttribute('stroke-width', '1.5');
-      circle.setAttribute('fill', 'var(--paper)');
-      const isSelG = node.id === selectedNodeId;
-      circle.setAttribute('fill', isSelG ? 'var(--accent)' : 'var(--paper)');
-      circle.setAttribute('stroke-width', isSelG ? '2.5' : '1.5');
-      circle.setAttribute('stroke',
-        node.type === 'ambient' ? 'var(--muted)' :
-        hasSubGraph(node.id)    ? 'var(--accent)' : (isSelG ? 'var(--accent)' : 'var(--ink)'));
-      if(node.type === 'ambient') circle.setAttribute('stroke-dasharray', '4 3');
-      g.appendChild(circle);
-      const text = svgEl('text');
-      const lblAbove = enc && p.y < enc.cy - enc.r;
-      text.setAttribute('text-anchor', 'middle');
-      text.setAttribute('dominant-baseline', lblAbove ? 'auto' : 'hanging');
-      text.setAttribute('y', lblAbove ? -LBLS : LBLS);
-      text.setAttribute('font-family', '"JetBrains Mono", monospace');
-      text.setAttribute('font-size', FS);
-      text.setAttribute('fill',
-        node.type === 'ambient' ? 'var(--muted)' :
-        hasSubGraph(node.id)    ? 'var(--accent)' : 'var(--ink)');
-      text.textContent = node.label;
-      g.appendChild(text);
-      if(editMode && IS_LOCAL){
-        makeDraggable(g, p, async () => {
-          const cur = getGraph(currentGid());
-          if(!cur.ghostPositions) cur.ghostPositions = {};
-          cur.ghostPositions[p.ref] = { x: p.x, y: p.y };
-          await saveData();
-        });
-      } else if(ghostDrillable){
-        g.onclick = () => { graphStack = [...graphStack.slice(0, -1), node.id]; renderAll(); };
-      } else {
-        g.style.cursor = 'pointer';
-        g.onclick = () => { selectedNodeId = selectedNodeId === node.id ? null : node.id; renderGraph(); renderNotes(); };
-      }
-      ghostG.appendChild(g);
-    });
-
-    svg.appendChild(ghostG);
-  }
-
-  // enclosing circle — drawn first so it's behind everything
-  if(enc){
-    const parentNode = getNode(currentGid());
-    const encG = svgEl('g');
-
-    const circle = svgEl('circle');
-    circle.setAttribute('cx', enc.cx); circle.setAttribute('cy', enc.cy);
-    circle.setAttribute('r', enc.r);
-    circle.setAttribute('fill', 'none');
-    circle.setAttribute('stroke', 'var(--accent)');
-    circle.setAttribute('stroke-width', '1');
-    circle.setAttribute('stroke-dasharray', '6 5');
-    encG.appendChild(circle);
-
-    if(parentNode){
-      // label inside circle near the top — this is the back button
-      const lbl = svgEl('text');
-      lbl.setAttribute('x', enc.cx);
-      lbl.setAttribute('y', enc.cy - enc.r + 20);
-      lbl.setAttribute('text-anchor', 'middle');
-      lbl.setAttribute('dominant-baseline', 'hanging');
-      lbl.setAttribute('font-family', '"JetBrains Mono", monospace');
-      lbl.setAttribute('font-size', FS);
-      lbl.setAttribute('fill', 'var(--accent)');
-      lbl.setAttribute('cursor', 'pointer');
-      lbl.textContent = parentNode.label;
-      lbl.onclick = e => { e.stopPropagation(); navigateToIndex(graphStack.length - 2); };
-      encG.appendChild(lbl);
-    }
-
-    svg.appendChild(encG);
-  }
-
-  // edges
-  graph.edges.forEach(edge => {
-    const fp = graph.nodes.find(n => n.ref === edge.from);
-    const tp = graph.nodes.find(n => n.ref === edge.to);
-    if(!fp || !tp || fp.x == null || tp.x == null) return;
-
-    const dx = tp.x-fp.x, dy = tp.y-fp.y;
-    const len = Math.sqrt(dx*dx+dy*dy);
-    if(len === 0) return;
-    const ux = dx/len, uy = dy/len;
-
-    const isAmbient = edge.type === 'ambient';
-    svg.appendChild(makeEdge(fp.x+R*ux, fp.y+R*uy, tp.x-R*ux, tp.y-R*uy,
-      isAmbient ? 'var(--muted)' : 'var(--ink)',
-      isAmbient ? '5 4' : null));
-  });
-
-  // nodes
-  graph.nodes.forEach(p => {
-    if(p.x == null) return;
-    const node = getNode(p.ref);
-    if(!node) return;
-
-    const drillable = hasSubGraph(node.id);
-
-    const g = svgEl('g');
-    g.setAttribute('transform', `translate(${p.x},${p.y})`);
-    if(editMode && IS_LOCAL){
-      g.style.cursor = 'grab';
-    } else if(drillable){
-      g.style.cursor = 'pointer';
-    }
-
-    const circle = svgEl('circle');
-    circle.setAttribute('r', R);
-    circle.setAttribute('cx', 0); circle.setAttribute('cy', 0);
-    const isSel = node.id === selectedNodeId;
-    circle.setAttribute('stroke-width', isSel ? '2.5' : '1.5');
-    circle.setAttribute('fill', isSel ? 'var(--accent)' : 'var(--paper)');
-
-    if(node.type === 'ambient'){
-      circle.setAttribute('stroke', 'var(--muted)');
-      circle.setAttribute('stroke-dasharray', '4 3');
-    } else if(hasSubGraph(node.id)){
-      circle.setAttribute('stroke', 'var(--accent)');
-    } else {
-      circle.setAttribute('stroke', isSel ? 'var(--accent)' : 'var(--ink)');
-    }
-    g.appendChild(circle);
-
-    const text = svgEl('text');
-    text.setAttribute('text-anchor', 'middle');
-    text.setAttribute('dominant-baseline', 'hanging');
-    text.setAttribute('y', LBLS);
-    text.setAttribute('font-family', '"JetBrains Mono", monospace');
-    text.setAttribute('font-size', FS);
-    text.setAttribute('fill',
-      node.type === 'ambient' ? 'var(--muted)' :
-      hasSubGraph(node.id)    ? 'var(--accent)' : 'var(--ink)');
-    text.textContent = node.label;
-    g.appendChild(text);
-
-    if(editMode && IS_LOCAL){
-      makeDraggable(g, p, saveData);
-    } else if(drillable){
-      g.onclick = () => navigateTo(node.id);
-    } else {
-      g.style.cursor = 'pointer';
-      g.onclick = () => {
-        selectedNodeId = selectedNodeId === node.id ? null : node.id;
-        renderGraph(); renderNotes();
-      };
-    }
-    svg.appendChild(g);
-  });
-}
-
-// ── render: notes ─────────────────────────────────────────────────────────────
-
-function renderNoteList(listEl, notes, onDelete){
-  listEl.innerHTML = '';
-  (notes || []).forEach(n => {
-    const li = document.createElement('li');
-    li.className = 'link-item';
-    const span = document.createElement('span');
-    span.style.flex = '1'; span.style.lineHeight = '1.5';
-    span.textContent = n.text;
-    li.appendChild(span);
-    if(IS_LOCAL){
-      const del = document.createElement('button');
-      del.className = 'link-del'; del.textContent = '×';
-      del.onclick = () => onDelete(n.id);
-      li.appendChild(del);
-    }
-    listEl.appendChild(li);
-  });
-}
-
-function renderNotes(){
-  const defaultPanel = document.getElementById('default-panel');
-  const nodePanel    = document.getElementById('node-panel');
-
-  if(selectedNodeId){
-    defaultPanel.style.display = 'none';
-    nodePanel.style.display = 'block';
-    const node = getNode(selectedNodeId);
-    if(!node) return;
-    document.getElementById('node-panel-title').textContent = node.label;
-    const ta = document.getElementById('node-content');
-    if(ta.dataset.nodeId !== selectedNodeId){
-      ta.value = node.content || '';
-      ta.dataset.nodeId = selectedNodeId;
-    }
-  } else {
-    nodePanel.style.display = 'none';
-    defaultPanel.style.display = 'block';
-    const graph = getGraph(currentGid());
-    renderNoteList(
-      document.getElementById('note-list'),
-      graph && graph.notes,
-      async id => { graph.notes = graph.notes.filter(x => x.id !== id); await saveData(); renderNotes(); }
-    );
-  }
-}
-
-function setupAddNote(){
-  if(!IS_LOCAL) return;
-  document.getElementById('add-note-form').style.display = 'block';
-  const input = document.getElementById('add-note-text');
-  input.onkeydown = async e => {
-    if(e.key !== 'Enter') return;
-    const text = input.value.trim();
-    if(!text) return;
-    const graph = getGraph(currentGid());
-    if(!graph) return;
-    if(!graph.notes) graph.notes = [];
-    graph.notes.push({ id: 'n-' + Date.now(), text });
-    await saveData(); renderNotes(); input.value = '';
-  };
-}
-
-let _contentSaveTimer = null;
-function setupNodeContent(){
-  const ta = document.getElementById('node-content');
-  ta.addEventListener('input', () => {
-    if(_contentSaveTimer) clearTimeout(_contentSaveTimer);
-    _contentSaveTimer = setTimeout(async () => {
-      const node = getNode(selectedNodeId);
-      if(node){ node.content = ta.value; await saveData(); }
-    }, 600);
-  });
-}
-
-// ── render: links ─────────────────────────────────────────────────────────────
-
-function renderLinks(){
-  const list = document.getElementById('link-list');
-  list.innerHTML = '';
-  DATA.links.forEach(lnk => {
-    const li  = document.createElement('li');
-    li.className = 'link-item';
-    const a   = document.createElement('a');
-    a.href = lnk.url; a.target = '_blank'; a.rel = 'noopener';
-    a.textContent = lnk.title;
-    const arr = document.createElement('span');
-    arr.className = 'link-arr'; arr.textContent = '↗';
-    li.appendChild(a); li.appendChild(arr);
-    if(IS_LOCAL){
-      const del = document.createElement('button');
-      del.className = 'link-del'; del.textContent = '×';
-      del.onclick = async () => {
-        DATA.links = DATA.links.filter(l => l.id !== lnk.id);
-        await saveData(); renderLinks();
-      };
-      li.appendChild(del);
-    }
-    list.appendChild(li);
-  });
-}
-
-function setupAddLink(){
-  if(!IS_LOCAL) return;
-  document.getElementById('add-link-form').style.display = 'block';
-  const titleIn = document.getElementById('add-link-title');
-  const urlIn   = document.getElementById('add-link-url');
-  urlIn.onkeydown = async e => {
-    if(e.key !== 'Enter') return;
-    const title = titleIn.value.trim();
-    let url = urlIn.value.trim();
-    if(!title || !url) return;
-    if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
-    DATA.links.push({id:'l-'+Date.now(), title, url});
-    await saveData(); renderLinks(); titleIn.value = ''; urlIn.value = ''; titleIn.focus();
-  };
-}
-
-// ── main ──────────────────────────────────────────────────────────────────────
-
-function renderAll(){
-  renderBreadcrumb();
-  renderGraph();
-  renderNotes();
-}
-
-async function init(){
-  await loadData();
-  if(DATA.lastUpdated)
-    document.getElementById('last-updated').textContent = 'last updated: ' + DATA.lastUpdated;
-  document.getElementById('h1-home').onclick = () => navigateToIndex(0);
-
-  // pan-on-drag for the SVG background
-  const svg = document.getElementById('graph-svg');
-  svg.addEventListener('mousedown', e => {
-    if(!e.target.classList.contains('pan-bg')) return;
-    e.preventDefault();
-    let panned = false;
-    const startClient = { x: e.clientX, y: e.clientY };
-    const startVB = svg.getAttribute('viewBox').split(' ').map(Number);
-    svg.style.cursor = 'grabbing';
-    const onMove = ev => {
-      const dx = ev.clientX - startClient.x, dy = ev.clientY - startClient.y;
-      if(!panned && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) panned = true;
-      if(panned){
-        if(_animFrame){ cancelAnimationFrame(_animFrame); _animFrame = null; }
-        const rect = svg.getBoundingClientRect();
-        const sx = startVB[2] / rect.width, sy = startVB[3] / rect.height;
-        svg.setAttribute('viewBox',
-          `${startVB[0] - dx*sx} ${startVB[1] - dy*sy} ${startVB[2]} ${startVB[3]}`);
-      }
-    };
-    const onUp = () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      svg.style.cursor = '';
-      if(!panned){ selectedNodeId = null; renderGraph(); renderNotes(); }
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  });
-
-  // scroll to zoom, centered on cursor
-  svg.addEventListener('wheel', e => {
-    e.preventDefault();
-    const rect = svg.getBoundingClientRect();
-    const vb = svg.getAttribute('viewBox').split(' ').map(Number);
-    const mx = vb[0] + (e.clientX - rect.left) / rect.width  * vb[2];
-    const my = vb[1] + (e.clientY - rect.top)  / rect.height * vb[3];
-    const scale = e.deltaY > 0 ? 1.06 : 0.94;
-    const nw = vb[2] * scale, nh = vb[3] * scale;
-    const nx = mx - (mx - vb[0]) * scale;
-    const ny = my - (my - vb[1]) * scale;
-    if(_animFrame){ cancelAnimationFrame(_animFrame); _animFrame = null; }
-    svg.setAttribute('viewBox', `${nx} ${ny} ${nw} ${nh}`);
-  }, { passive: false });
-
-  renderAll();
-  renderLinks();
-  setupAddLink();
-  renderNotes();
-  setupAddNote();
-  setupNodeContent();
-  if(IS_LOCAL){
-    const btn = document.getElementById('edit-toggle');
-    btn.style.display = '';
-    btn.onclick = () => {
-      editMode = !editMode;
-      btn.textContent = editMode ? 'done' : 'edit';
-      btn.classList.toggle('active', editMode);
-      renderGraph();
-    };
-  }
-}
-
-function zoomViewBox(factor){
-    const svg = document.getElementById('graph-svg');
-    const vb = svg.getAttribute('viewBox').split(' ').map(Number);
-    const cx = vb[0] + vb[2]/2, cy = vb[1] + vb[3]/2;
-    const nw = vb[2]*factor, nh = vb[3]*factor;
-    if(_animFrame){ cancelAnimationFrame(_animFrame); _animFrame = null; }
-    svg.setAttribute('viewBox', `${cx - nw/2} ${cy - nh/2} ${nw} ${nh}`);
-  }
-  document.getElementById('zoom-in').onclick  = () => zoomViewBox(0.8);
-  document.getElementById('zoom-out').onclick = () => zoomViewBox(1.25);
-
-  init();
-</script>
+	<div class="header-container">
+    	<a href="index.html" class="button">Owen Fernau</a>
+    	<a href="notes.html" class="button notes">notes</a>
+	</div>
+	<hr>
+	<br>
+	<div class="page-title">Map</div>
+	<br>
+	<ul class="bio-list">
+		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="ai-capability">AI Capability</span>
+				<ul class="sub-list">
+					<li> ○ <span class="node-title" data-slug="data">Data</span></li>
+					<li> ○ <span class="node-title" data-slug="algorithms">Algorithms</span></li>
+					<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="computing-power">Computing Power</span>
+							<ul class="sub-list">
+								<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="energy">Energy</span>
+										<ul class="sub-list">
+											<li> ○ <span class="node-title" data-slug="generation">Generation</span></li>
+											<li> ○ <span class="node-title" data-slug="transmission">Transmission</span></li>
+											<li> ○ <span class="node-title" data-slug="distribution">Distribution</span></li>
+										</ul>
+									</li>
+								<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="chips">Chips</span>
+										<ul class="sub-list">
+											<li> ○ <span class="node-title" data-slug="euv">EUV</span></li>
+											<li> ○ <span class="node-title" data-slug="chip-design">Chip Design</span></li>
+											<li> ○ <span class="node-title" data-slug="fabrication">Fabrication</span></li>
+											<li> ○ <span class="node-title" data-slug="hbm-memory">HBM Memory</span></li>
+										</ul>
+									</li>
+								<li> ○ <span class="node-title" data-slug="data-centers">Data Centers</span></li>
+							</ul>
+						</li>
+				</ul>
+			</li>
+		<br>
+		<li> ○ <span class="node-title" data-slug="national-debt">National Debt</span></li>
+		<br>
+		<li> ○ <span class="node-title" data-slug="ai-economic-impact">AI Economic Impact</span></li>
+		<br>
+		<li> ○ <span class="node-title" data-slug="info-delivery">Information Delivery Systems</span></li>
+		<br>
+		<li> ○ <span class="node-title" data-slug="education">Education</span></li>
+	</ul>
+	<br>
+	<hr>
+	<p class="email-text">email: owenfernau at gmail.com</p>
+
+	<script>
+		const IS_LOCAL = ['localhost','127.0.0.1'].includes(location.hostname);
+
+		document.querySelectorAll('.bio-list .node-title[data-slug]').forEach(title => {
+			const slug = title.dataset.slug;
+			const li = title.closest('li');
+
+			let subList = li.querySelector(':scope > ul.sub-list');
+			if (!subList) {
+				li.classList.add('expandable');
+				const arrow = document.createElement('span');
+				arrow.className = 'arrow';
+				li.insertBefore(arrow, title);
+				li.insertBefore(document.createTextNode(' '), title);
+				subList = document.createElement('ul');
+				subList.className = 'sub-list';
+				li.appendChild(subList);
+			}
+
+			const editLi = document.createElement('li');
+			editLi.className = 'note-edit';
+			const textarea = document.createElement('textarea');
+			textarea.className = 'note-textarea';
+			textarea.placeholder = 'Write notes...';
+			textarea.readOnly = !IS_LOCAL;
+			editLi.appendChild(textarea);
+			subList.insertBefore(editLi, subList.firstChild);
+
+			fetch(`map/notes-src/${slug}.md`)
+				.then(r => r.ok ? r.text() : '')
+				.then(raw => {
+					const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
+					textarea.value = (fm ? fm[1] : raw).trim();
+				});
+
+			if (IS_LOCAL) {
+				let timer;
+				textarea.addEventListener('input', () => {
+					clearTimeout(timer);
+					timer = setTimeout(() => {
+						fetch('/save-note', {
+							method: 'POST',
+							headers: {'Content-Type': 'application/json'},
+							body: JSON.stringify({ slug, content: textarea.value })
+						});
+					}, 600);
+				});
+			}
+		});
+
+		document.querySelectorAll('.expandable').forEach(item => {
+			item.addEventListener('click', function(e) {
+				if (e.target.tagName !== 'A' && e.target.tagName !== 'TEXTAREA') {
+					e.stopPropagation();
+					this.classList.toggle('open');
+				}
+			});
+		});
+	</script>
 </body>
 </html>
