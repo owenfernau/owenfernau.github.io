@@ -122,6 +122,8 @@ function main() {
     manifest[slug].backlinks = [...backlinks[slug]];
   }
 
+  manifest._meta = { generatedAt: new Date().toISOString().slice(0, 10) };
+
   fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
 
   console.log(`Built ${files.length} map note(s).`);

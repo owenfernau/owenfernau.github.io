@@ -1,5 +1,5 @@
 ---
-title: AI Economic Impact
+title: AI Safety
 ---
 
 Can USG require someone to "work" at frontier labs?

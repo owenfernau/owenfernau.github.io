@@ -94,7 +94,7 @@
     },
     "ai-economic-impact": {
       "id": "ai-economic-impact",
-      "label": "economic impact",
+      "label": "AI safety",
       "type": "stack",
       "notes": []
     },

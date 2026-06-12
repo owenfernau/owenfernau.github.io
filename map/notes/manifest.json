@@ -5,7 +5,7 @@
     "backlinks": []
   },
   "ai-economic-impact": {
-    "title": "AI Economic Impact",
+    "title": "AI Safety",
     "links": [],
     "backlinks": []
   },
@@ -97,5 +97,8 @@
     "title": "Treasuries",
     "links": [],
     "backlinks": []
+  },
+  "_meta": {
+    "generatedAt": "2026-06-12"
   }
 }

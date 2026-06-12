@@ -47,6 +47,13 @@ body {
     text-align: left;
 }
 
+.page-subtitle {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 12px;
+    color: #6c6c63;
+    margin: 0.4em 0 0;
+}
+
 /* Button styling */
 .button {
     font-family: "IBM Plex Mono", monospace;

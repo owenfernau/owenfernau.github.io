@@ -17,6 +17,7 @@
 	<hr>
 	<br>
 	<div class="page-title">Map</div>
+	<p class="page-subtitle">Working notes aiming to be evergreen. Last updated: <span id="map-updated"></span></p>
 	<br>
 	<ul class="bio-list">
 		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="ai-capability">AI Capability</span>
@@ -52,7 +53,7 @@
 			</ul>
 		</li>
 		<br>
-		<li> <span class="node-title" data-slug="ai-economic-impact">AI Economic Impact</span></li>
+		<li> <span class="node-title" data-slug="ai-economic-impact">AI Safety</span></li>
 		<br>
 		<li> <span class="node-title" data-slug="info-delivery">Information Delivery Systems</span></li>
 		<br>
@@ -96,6 +97,15 @@
 		const manifestPromise = fetch('map/notes/manifest.json')
 			.then(r => r.ok ? r.json() : {})
 			.catch(() => ({}));
+
+		manifestPromise.then(manifest => {
+			const generatedAt = manifest._meta?.generatedAt;
+			const updatedEl = document.getElementById('map-updated');
+			if (generatedAt && updatedEl) {
+				updatedEl.textContent = new Date(`${generatedAt}T00:00:00`)
+					.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+			}
+		});
 
 		function jumpToNode(slug) {
 			const target = document.querySelector(`.bio-list .node-title[data-slug="${slug}"]`);
@@ -152,6 +162,7 @@
 			inputs[0].focus();
 		}
 
+		const notePromises = [];
 		document.querySelectorAll('.bio-list .node-title[data-slug]').forEach(title => {
 			const slug = title.dataset.slug;
 			const li = title.closest('li');
@@ -230,7 +241,7 @@
 					textarea.addEventListener('input', autoResize);
 				}
 
-				fetch(`map/notes-src/${slug}.md`)
+				notePromises.push(fetch(`map/notes-src/${slug}.md`)
 					.then(r => r.ok ? r.text() : '')
 					.then(raw => {
 						const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
@@ -258,9 +269,11 @@
 							textarea.value = content;
 							autoResize();
 						} else {
+							const lines = content.split(/\r?\n\s*\r?\n/).map(p => p.trim()).filter(p => p && !/^\[\[.*\]\]$/.test(p));
+							if (!lines.length) { editLi.remove(); return; }
 							const list = document.createElement('ul');
 							list.className = 'note-content';
-							content.split(/\r?\n\s*\r?\n/).map(p => p.trim()).filter(Boolean).forEach(p => {
+							lines.forEach(p => {
 								const item = document.createElement('li');
 								item.className = 'note-line';
 								item.textContent = p;
@@ -269,7 +282,7 @@
 							editLi.appendChild(list);
 						}
 						redrawConnectors();
-					});
+					}));
 
 				if (IS_LOCAL) {
 					let timer;
@@ -446,6 +459,23 @@
 			requestAnimationFrame(redrawConnectors);
 			setTimeout(redrawConnectors, 300);
 		});
+
+		if (!IS_LOCAL) {
+			Promise.all([manifestPromise, ...notePromises]).then(() => {
+				document.querySelectorAll('.bio-list li.expandable').forEach(li => {
+					const subList = li.querySelector(':scope > ul.sub-list');
+					if (!subList || subList.children.length > 0) return;
+
+					li.classList.remove('expandable');
+					const arrow = li.querySelector(':scope > .arrow');
+					const spacer = arrow?.nextSibling;
+					if (spacer?.nodeType === Node.TEXT_NODE) spacer.remove();
+					arrow?.remove();
+					subList.remove();
+				});
+				redrawConnectors();
+			});
+		}
 	</script>
 </body>
 </html>
