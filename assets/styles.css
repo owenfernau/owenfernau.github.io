@@ -307,10 +307,23 @@ hr {
     box-sizing: border-box;
 }
 
-.note-textarea[readonly] {
-    background: transparent;
-    border-color: #c9c9c0;
-    resize: none;
+.note-content {
+    list-style: none;
+    max-width: 70ch;
+    padding: 0.5em;
+    margin: 0;
+    background: #fff;
+    box-sizing: border-box;
+}
+
+.note-content > li.note-line {
+    padding-left: 1.5em;
+    text-indent: -1.5em;
+    margin: 0.3em 0;
+}
+
+.note-content > li.note-line::before {
+    content: "– ";
 }
 
 /* Lightbox modal */

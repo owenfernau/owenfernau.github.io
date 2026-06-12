@@ -214,18 +214,21 @@
 			if (slug !== 'links') {
 				const editLi = document.createElement('li');
 				editLi.className = 'note-edit';
+				subList.insertBefore(editLi, subList.firstChild);
+
 				const textarea = document.createElement('textarea');
 				textarea.className = 'note-textarea';
 				textarea.placeholder = 'Write notes...';
-				textarea.readOnly = !IS_LOCAL;
-				editLi.appendChild(textarea);
-				subList.insertBefore(editLi, subList.firstChild);
 
 				const autoResize = () => {
 					textarea.style.height = 'auto';
 					textarea.style.height = textarea.scrollHeight + 'px';
 				};
-				textarea.addEventListener('input', autoResize);
+
+				if (IS_LOCAL) {
+					editLi.appendChild(textarea);
+					textarea.addEventListener('input', autoResize);
+				}
 
 				fetch(`map/notes-src/${slug}.md`)
 					.then(r => r.ok ? r.text() : '')
@@ -251,8 +254,20 @@
 							});
 							return;
 						}
-						textarea.value = content;
-						autoResize();
+						if (IS_LOCAL) {
+							textarea.value = content;
+							autoResize();
+						} else {
+							const list = document.createElement('ul');
+							list.className = 'note-content';
+							content.split(/\r?\n\s*\r?\n/).map(p => p.trim()).filter(Boolean).forEach(p => {
+								const item = document.createElement('li');
+								item.className = 'note-line';
+								item.textContent = p;
+								list.appendChild(item);
+							});
+							editLi.appendChild(list);
+						}
 						redrawConnectors();
 					});
 
