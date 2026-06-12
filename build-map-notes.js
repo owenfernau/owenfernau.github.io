@@ -122,7 +122,9 @@ function main() {
     manifest[slug].backlinks = [...backlinks[slug]];
   }
 
-  manifest._meta = { generatedAt: new Date().toISOString().slice(0, 10) };
+  const now = new Date();
+  const generatedAt = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  manifest._meta = { generatedAt };
 
   fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
 
