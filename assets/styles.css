@@ -182,6 +182,42 @@ hr {
     content: "−";
 }
 
+/* Lighter chevron variant, used for inline per-item toggles like book reviews */
+.arrow.chevron {
+    width: auto;
+    height: auto;
+    border: none;
+    font-size: 1em;
+    color: #000;
+}
+
+.arrow.chevron::before {
+    content: "»";
+    display: inline-block;
+}
+
+.arrow.chevron:hover {
+    background-color: transparent;
+    color: #000;
+}
+
+.expandable.open > .arrow.chevron::before {
+    content: "⌄";
+}
+
+.sub-list:has(> .review-text) {
+    padding-left: 0;
+    padding-top: 0.3em;
+}
+
+.sub-list > li.review-text {
+    font-style: italic;
+    color: #555;
+    padding-left: 1.5em;
+    text-indent: 0;
+    max-width: 80ch;
+}
+
 .sub-list {
     display: none;
     list-style: none;
