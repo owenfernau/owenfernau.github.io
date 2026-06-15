@@ -113,6 +113,12 @@ body {
     content: "";
 }
 
+.section-header {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
 /* General text styling for essays/notes pages */
 .noto-sans-mono-unique {
     font-family: "IBM Plex Mono", monospace;
