@@ -14,6 +14,7 @@ const MIME = {
   '.css':  'text/css',
   '.png':  'image/png',
   '.svg':  'image/svg+xml',
+  '.mp4':  'video/mp4',
 };
 
 http.createServer((req, res) => {
