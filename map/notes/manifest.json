@@ -5,6 +5,11 @@
     "backlinks": []
   },
   "ai-economic-impact": {
+    "title": "AI Economic Impact",
+    "links": [],
+    "backlinks": []
+  },
+  "ai-safety": {
     "title": "AI Safety",
     "links": [],
     "backlinks": []
@@ -99,6 +104,6 @@
     "backlinks": []
   },
   "_meta": {
-    "generatedAt": "2026-06-14"
+    "generatedAt": "2026-06-16"
   }
 }

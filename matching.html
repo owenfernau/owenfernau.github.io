@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Routing AI safety's people</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        .matching-section { margin-bottom: 2em; }
+        .matching-lede {
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            max-width: 80ch;
+        }
+        .match-card {
+            border: 1px solid #000;
+            background: #fff;
+            padding: 14px 18px;
+            margin-bottom: 14px;
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            max-width: 80ch;
+        }
+        .match-stuck { color: #6c6c63; }
+        .match-arrow { margin: 0 0.4em; }
+        .match-solved { font-weight: 600; }
+        .match-reason {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #6c6c63;
+            font-style: italic;
+        }
+        .mock-form {
+            border: 1px solid #000;
+            background: #fff;
+            padding: 18px 20px;
+            max-width: 60ch;
+            font-family: "IBM Plex Mono", monospace;
+        }
+        .mock-form label {
+            display: block;
+            font-size: 12px;
+            color: #6c6c63;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .mock-form input, .mock-form textarea {
+            width: 100%;
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 13px;
+            border: 1px solid #000;
+            background: #eaebea;
+            padding: 6px 8px;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+        }
+        .mock-form textarea { resize: none; height: 3.5em; }
+        .mock-submit {
+            font-family: "IBM Plex Mono", monospace;
+            background-color: transparent;
+            border: 1px solid #000;
+            padding: 6px 16px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .mock-submit:hover { background-color: #000; color: #eaebea; }
+        .mock-confirm {
+            display: none;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #1e7a3c;
+        }
+        .poll-row {
+            display: flex;
+            gap: 10px;
+            max-width: 60ch;
+            margin-top: 10px;
+        }
+        .poll-option {
+            flex: 1;
+            border: 1px solid #000;
+            background: #fff;
+            padding: 10px 12px;
+            font-family: "IBM Plex Mono", monospace;
+            font-size: 13px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .poll-option:hover { background-color: #000; color: #eaebea; }
+        .matching-caption {
+            font-size: 12px;
+            color: #6c6c63;
+            font-style: italic;
+            margin-top: 0.5em;
+        }
+    </style>
+    <!-- Cloudflare Web Analytics -->
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d241846e7f9a4235825f84be63226841"}'></script>
+    <!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+    <div class="container">
+        <div class="header-container">
+            <a href="index.html" class="button">Owen Fernau</a>
+        </div>
+        <hr>
+        <br>
+        <p class="page-title">Routing AI safety's people, not its content</p>
+        <p class="page-subtitle">Concept mockup. Not a live product. Built to test one idea: matching on what you're specifically working on or stuck on, not on a broad interest tag.</p>
+        <br>
+
+        <div class="matching-section matching-lede">
+            <p>There are more people in AI safety who should be talking to each other than currently are. Proximity (the same Slack, the same EAG, the same Discord) doesn't produce connection, because nothing in those tools matches on the specific thing you're working on, only the broad category. This page mocks up what a specific, justified intro looks like, and what the intake profile behind it would ask.</p>
+        </div>
+
+        <div class="matching-section">
+            <p class="page-title" style="font-size: 13px;">Example matches</p>
+            <br>
+            <div class="match-card">
+                <span class="match-stuck">Stuck on: building a clean activation-patching pipeline for interpretability work</span>
+                <span class="match-arrow">&rarr;</span>
+                <span class="match-solved">paired with someone who already built and shipped one</span>
+                <div class="match-reason">"you're stuck on X, they just solved X" — not a generic alignment match</div>
+            </div>
+            <div class="match-card">
+                <span class="match-stuck">Stuck on: how enforcement actually works under the EU AI Act</span>
+                <span class="match-arrow">&rarr;</span>
+                <span class="match-solved">paired with a policy researcher who's mapped exactly that</span>
+                <div class="match-reason">a former ML engineer transitioning into AI governance</div>
+            </div>
+            <div class="match-card">
+                <span class="match-stuck">Stuck on: sandboxing and tool-call logging for an agent-evals harness</span>
+                <span class="match-arrow">&rarr;</span>
+                <span class="match-solved">paired with someone who solved that exact problem on a benchmark like AgentHarm</span>
+                <div class="match-reason">often one Slack channel apart</div>
+            </div>
+        </div>
+
+        <div class="matching-section">
+            <p class="page-title" style="font-size: 13px;">Intake profile (mockup, not submittable)</p>
+            <br>
+            <div class="mock-form">
+                <label>What are you working on?</label>
+                <input type="text" placeholder="e.g. mechanistic interpretability of induction heads" disabled>
+                <label>What are you stuck on?</label>
+                <input type="text" placeholder="e.g. getting a clean activation extraction pipeline running" disabled>
+                <label>What would a useful intro look like?</label>
+                <textarea placeholder="e.g. someone who's already solved this exact infra problem" disabled></textarea>
+                <button class="mock-submit" type="button" onclick="document.getElementById('mock-confirm').style.display='block'">Submit</button>
+                <div class="mock-confirm" id="mock-confirm">A real version of this would route to a human curator, not an algorithm.</div>
+            </div>
+            <p class="matching-caption">Disabled on purpose, this is a mockup of the intake, not a live form.</p>
+        </div>
+
+        <div class="matching-section">
+            <p class="page-title" style="font-size: 13px;">Cheaper parallel version: a pointed poll</p>
+            <br>
+            <p class="matching-lede" style="margin-bottom: 0.5em;">Instead of free text, a poll of pointed AI-safety-specific A/B questions. People who land the same way get grouped into a chat inside a Slack the community already uses.</p>
+            <p class="page-subtitle" style="margin-top: 10px;">e.g. "When evals disagree with your intuition, do you trust the eval or your intuition more?"</p>
+            <div class="poll-row">
+                <div class="poll-option">The eval</div>
+                <div class="poll-option">My intuition</div>
+            </div>
+        </div>
+
+        <hr>
+        <p class="email-text"><a href="mailto:owenfernau@gmail.com">email</a> | <a href="https://x.com/ofernau" target="_blank">x</a> | <a href="https://www.linkedin.com/in/owenfernau" target="_blank">linkedin</a></p>
+    </div>
+</body>
+</html>

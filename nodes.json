@@ -26,6 +26,12 @@
       "notes": [],
       "content": "OS is chasing closed weights"
     },
+    "ai-economic-impact": {
+      "id": "ai-economic-impact",
+      "label": "AI economic impact",
+      "type": "stack",
+      "notes": []
+    },
     "chips": {
       "id": "chips",
       "label": "chips",
@@ -92,8 +98,8 @@
       "type": "stack",
       "notes": []
     },
-    "ai-economic-impact": {
-      "id": "ai-economic-impact",
+    "ai-safety": {
+      "id": "ai-safety",
       "label": "AI safety",
       "type": "stack",
       "notes": []
@@ -138,12 +144,17 @@
           "y": 253.7003936767578
         },
         {
+          "ref": "ai-economic-impact",
+          "x": 410.763916015625,
+          "y": 80
+        },
+        {
           "ref": "national-debt",
           "x": -281.63861083984375,
           "y": 165.9852294921875
         },
         {
-          "ref": "ai-economic-impact",
+          "ref": "ai-safety",
           "x": -15.447220802307129,
           "y": 373.81134033203125
         },
@@ -176,12 +187,12 @@
         },
         {
           "from": "ai-capability",
-          "to": "ai-economic-impact",
+          "to": "ai-safety",
           "type": "input"
         },
         {
           "from": "national-debt",
-          "to": "ai-economic-impact",
+          "to": "ai-safety",
           "type": "input"
         }
       ]
@@ -227,7 +238,7 @@
           "x": -424.57019400809526,
           "y": -276.3472472001765
         },
-        "ai-economic-impact": {
+        "ai-safety": {
           "x": -484.2589178188857,
           "y": -4.590847120002394
         },
@@ -340,7 +351,7 @@
           "x": -1824.9825261486967,
           "y": -163.50010433224327
         },
-        "ai-economic-impact": {
+        "ai-safety": {
           "x": -3429.401619244072,
           "y": -111.2537511828292
         },
