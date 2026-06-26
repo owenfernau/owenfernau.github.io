@@ -1,0 +1,84 @@
+{
+  "nodes": [
+    {
+      "id": "feshbach-checklist",
+      "title": "Feshbach Short-Selling Checklist",
+      "summary": "A systematic analyst framework for identifying companies worth shorting. Covers deteriorating fundamentals (sales, earnings, cash flow), accounting red flags, misleading management, competitive weakness, and valuation (stock overvalued 100%+). Originally used by the Feshbach brothers, one of Wall Street's most prominent short-selling firms.",
+      "sourceFile": "HLmJ5hZXsAAUvk6-1.jpg"
+    },
+    {
+      "id": "financial-red-flags",
+      "title": "Financial Red Flags",
+      "summary": "Signals of hidden company distress: negative operating cash flow, receivables growing faster than sales, aggressive accounting that inflates earnings, non-GAAP reporting that obscures reality, management making misleading public statements. These patterns recur across frauds, failing businesses, and sanctions evasion schemes.",
+      "sourceFile": "HLmJ5hZXsAAUvk6-1.jpg"
+    },
+    {
+      "id": "dollar-hegemony",
+      "title": "Dollar Hegemony",
+      "summary": "The US dollar's ~80% share of international trade finance gives Washington extraordinary surveillance and coercive power. Because most dollar transactions must be settled through American banks, the US can monitor global financial flows and cut off any actor. This is the structural foundation of US sanctions power.",
+      "sourceFile": "wsj-yuan-sanctions.txt"
+    },
+    {
+      "id": "yuan-internationalization",
+      "title": "Yuan Internationalization",
+      "summary": "China's deliberate strategy to make the yuan usable in international trade without fully floating the currency. Tools include CIPS (alternative to SWIFT), mBridge (blockchain settlement), yuan-denominated oil contracts in Shanghai, central bank swap lines, and digital yuan interest payments. Goal: build dollar-free trade lanes, not replace the dollar globally.",
+      "sourceFile": "wsj-yuan-sanctions.txt"
+    },
+    {
+      "id": "us-sanctions-power",
+      "title": "US Sanctions as Geopolitical Weapon",
+      "summary": "The US uses dollar-system access as leverage to coerce foreign governments — cutting countries off from correspondent banking, freezing assets, threatening secondary sanctions on third-party buyers. Effective against Iran and Russia historically, but eroding as yuan alternatives reduce dependence on dollar infrastructure.",
+      "sourceFile": "wsj-yuan-sanctions.txt"
+    },
+    {
+      "id": "mbridge",
+      "title": "mBridge",
+      "summary": "A blockchain-based cross-border payment platform where central banks settle transactions in digital currencies, bypassing SWIFT and US financial institutions entirely. Launched 2021 by China, UAE, Thailand, Hong Kong. Saudi Arabia joined later. Digital yuan is 95% of its volume. The BIS pulled out after Russia proposed a BRICS-wide version immune to Western sanctions.",
+      "sourceFile": "wsj-yuan-sanctions.txt"
+    },
+    {
+      "id": "iran-sanctions-evasion",
+      "title": "Iran Sanctions Evasion",
+      "summary": "Iran earns ~$43B/year in oil despite sanctions by routing sales through yuan, shadow tanker fleets (AIS disabled), hundreds of shell companies, and front companies in Hong Kong/UAE/Turkey. China buys 90%+ of Iran's crude. The IRGC runs covert trading units. Some yuan is converted to dollars via small Chinese banks, giving larger institutions plausible deniability.",
+      "sourceFile": "wsj-yuan-sanctions.txt"
+    }
+  ],
+  "edges": [
+    {
+      "source": "feshbach-checklist",
+      "target": "financial-red-flags",
+      "reason": "the checklist is a tool for systematically identifying these red flags"
+    },
+    {
+      "source": "dollar-hegemony",
+      "target": "us-sanctions-power",
+      "reason": "dollar dominance is the structural foundation that makes sanctions effective"
+    },
+    {
+      "source": "yuan-internationalization",
+      "target": "us-sanctions-power",
+      "reason": "yuan-based trade lanes erode US leverage by removing dollar dependency"
+    },
+    {
+      "source": "yuan-internationalization",
+      "target": "mbridge",
+      "reason": "mBridge is a key infrastructure project in China's yuan internationalization strategy"
+    },
+    {
+      "source": "us-sanctions-power",
+      "target": "iran-sanctions-evasion",
+      "reason": "US sanctions pressure drove Iran to develop these evasion architectures"
+    },
+    {
+      "source": "yuan-internationalization",
+      "target": "iran-sanctions-evasion",
+      "reason": "yuan is the primary currency Iran uses to sell oil outside US oversight"
+    },
+    {
+      "source": "financial-red-flags",
+      "target": "iran-sanctions-evasion",
+      "reason": "both involve deliberate financial obfuscation — hiding true economic activity through shell companies and misleading disclosures"
+    }
+  ],
+  "lastUpdated": "2026-06-25"
+}

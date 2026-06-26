@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Map2 — Owen Fernau</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#e6e6e0; --ink:#191916; --muted:#6c6c63;
+    --line:#c9c9c0; --accent:#2f7a3a;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{ --paper:#16161a; --ink:#e7e7e0; --muted:#9a9a90; --line:#33332f; --accent:#7fc98b; }
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .header{
+    padding:24px 32px 20px;
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:16px; justify-content:space-between;
+  }
+  .header h1{ font-size:15px; font-weight:700; letter-spacing:-0.01em; }
+  .header h1 a{ color:inherit; text-decoration:none; }
+  .header h1 a:hover{ opacity:.7; }
+  .meta{ font-size:11px; color:var(--muted); }
+  .layout{
+    display:grid;
+    grid-template-columns:1fr 360px;
+    height:calc(100vh - 73px);
+  }
+  .main{ position:relative; overflow:hidden; }
+  #graph-svg{ width:100%; height:100%; display:block; }
+  .node circle{ cursor:pointer; fill:var(--paper); stroke:var(--ink); stroke-width:1.5; transition:stroke .15s; }
+  .node circle:hover{ stroke:var(--accent); }
+  .node.selected circle{ stroke:var(--accent); stroke-width:2.5; }
+  .node text{
+    font-family:"JetBrains Mono", ui-monospace, monospace;
+    font-size:11px; fill:var(--ink); pointer-events:none;
+    text-anchor:middle; dominant-baseline:hanging;
+  }
+  .edge{ stroke:var(--line); stroke-width:1; }
+  .sidebar{
+    border-left:1px solid var(--line);
+    padding:32px 24px; overflow-y:auto;
+    background:var(--paper);
+  }
+  .section-label{
+    font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); margin-bottom:14px;
+  }
+  .empty-state{ font-size:12px; color:var(--muted); line-height:1.7; }
+  #node-panel{ display:none; }
+  .node-title{ font-size:14px; font-weight:700; margin-bottom:12px; line-height:1.4; }
+  .node-source{ font-size:11px; color:var(--muted); margin-bottom:20px; }
+  .node-summary{ font-size:12px; line-height:1.8; color:var(--ink); }
+  .conn-list{ list-style:none; margin-top:24px; }
+  .conn-item{
+    display:flex; align-items:baseline; gap:6px;
+    padding:7px 0; border-bottom:1px solid var(--line); font-size:12px;
+    cursor:pointer;
+  }
+  .conn-item:last-of-type{ border-bottom:none; }
+  .conn-item:hover{ color:var(--accent); }
+  .conn-arr{ color:var(--accent); font-size:11px; flex-shrink:0; }
+  .conn-reason{ font-size:11px; color:var(--muted); margin-top:3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><a href="/">Owen Fernau</a> / map2</h1>
+  <span class="meta" id="last-updated"></span>
+</div>
+
+<div class="layout">
+  <main class="main">
+    <svg id="graph-svg"></svg>
+  </main>
+  <aside class="sidebar">
+    <div id="default-panel">
+      <div class="section-label">interest graph</div>
+      <p class="empty-state">click a node to explore</p>
+    </div>
+    <div id="node-panel">
+      <div class="node-title" id="node-title"></div>
+      <div class="node-source" id="node-source"></div>
+      <div class="node-summary" id="node-summary"></div>
+      <ul class="conn-list" id="conn-list"></ul>
+    </div>
+  </aside>
+</div>
+
+<script>
+let graph = { nodes: [], edges: [] };
+let simulation = null;
+let selectedId = null;
+
+const svg = document.getElementById('graph-svg');
+const NS = 'http://www.w3.org/2000/svg';
+
+function el(tag, attrs = {}, parent){
+  const e = document.createElementNS(NS, tag);
+  for(const [k,v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if(parent) parent.appendChild(e);
+  return e;
+}
+
+async function load(){
+  const res = await fetch('brain-graph.json');
+  graph = await res.json();
+  if(graph.lastUpdated){
+    document.getElementById('last-updated').textContent = 'updated ' + graph.lastUpdated;
+  }
+  if(graph.nodes.length) initSimulation();
+}
+
+function initSimulation(){
+  const W = svg.clientWidth  || 800;
+  const H = svg.clientHeight || 600;
+  const R = 22;
+  const nodes = graph.nodes.map(n => ({ ...n, x: W/2 + (Math.random()-.5)*200, y: H/2 + (Math.random()-.5)*200, vx:0, vy:0 }));
+  const nodeById = Object.fromEntries(nodes.map(n => [n.id, n]));
+  const edges = graph.edges.map(e => ({ ...e, source: nodeById[e.source], target: nodeById[e.target] })).filter(e => e.source && e.target);
+
+  svg.innerHTML = '';
+  const edgeGroup = el('g', {}, svg);
+  const nodeGroup = el('g', {}, svg);
+
+  const edgeEls = edges.map(e => el('line', { class:'edge' }, edgeGroup));
+
+  const nodeEls = nodes.map((n, i) => {
+    const g = el('g', { class:'node', 'data-id': n.id }, nodeGroup);
+    el('circle', { r: R }, g);
+    el('text', { y: R + 6 }, g).textContent = n.title;
+    g.addEventListener('click', () => selectNode(n.id, nodes, edges));
+    return g;
+  });
+
+  let tick = 0;
+  const TICKS = 300;
+
+  function step(){
+    tick++;
+
+    // repulsion
+    for(let i = 0; i < nodes.length; i++){
+      for(let j = i+1; j < nodes.length; j++){
+        const a = nodes[i], b = nodes[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const d = Math.sqrt(dx*dx + dy*dy) || 1;
+        const force = Math.min(8000 / (d*d), 30);
+        const fx = (dx/d)*force, fy = (dy/d)*force;
+        a.vx -= fx; a.vy -= fy;
+        b.vx += fx; b.vy += fy;
+      }
+    }
+
+    // attraction along edges
+    for(const e of edges){
+      const dx = e.target.x - e.source.x, dy = e.target.y - e.source.y;
+      const d = Math.sqrt(dx*dx + dy*dy) || 1;
+      const force = (d - 180) * 0.04;
+      const fx = (dx/d)*force, fy = (dy/d)*force;
+      e.source.vx += fx; e.source.vy += fy;
+      e.target.vx -= fx; e.target.vy -= fy;
+    }
+
+    // center gravity
+    for(const n of nodes){
+      n.vx += (W/2 - n.x) * 0.01;
+      n.vy += (H/2 - n.y) * 0.01;
+    }
+
+    // damping + integrate
+    const alpha = tick < TICKS ? 0.85 : 0.7;
+    for(const n of nodes){
+      n.vx *= alpha; n.vy *= alpha;
+      n.x += n.vx; n.y += n.vy;
+      n.x = Math.max(R+10, Math.min(W-R-10, n.x));
+      n.y = Math.max(R+10, Math.min(H-R-10, n.y));
+    }
+
+    // render
+    edgeEls.forEach((line, i) => {
+      line.setAttribute('x1', edges[i].source.x);
+      line.setAttribute('y1', edges[i].source.y);
+      line.setAttribute('x2', edges[i].target.x);
+      line.setAttribute('y2', edges[i].target.y);
+    });
+    nodeEls.forEach((g, i) => {
+      g.setAttribute('transform', `translate(${nodes[i].x},${nodes[i].y})`);
+    });
+
+    if(tick < TICKS || tick < 20) requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+
+  function selectNode(id, nodes, edges){
+    selectedId = id;
+    nodeEls.forEach(g => g.classList.toggle('selected', g.dataset.id === id));
+    const node = graph.nodes.find(n => n.id === id);
+    const conns = graph.edges
+      .filter(e => e.source === id || e.target === id)
+      .map(e => {
+        const otherId = e.source === id ? e.target : e.source;
+        const other = graph.nodes.find(n => n.id === otherId);
+        return { title: other?.title || otherId, id: otherId, reason: e.reason || '' };
+      });
+
+    document.getElementById('default-panel').style.display = 'none';
+    document.getElementById('node-panel').style.display = 'block';
+    document.getElementById('node-title').textContent = node.title;
+    document.getElementById('node-source').textContent = node.sourceFile || '';
+    document.getElementById('node-summary').textContent = node.summary || '';
+
+    const list = document.getElementById('conn-list');
+    list.innerHTML = '';
+    if(conns.length){
+      const label = document.createElement('div');
+      label.className = 'section-label';
+      label.style.marginTop = '24px';
+      label.textContent = 'connections';
+      list.before(label);
+    }
+    for(const c of conns){
+      const li = document.createElement('li');
+      li.className = 'conn-item';
+      li.innerHTML = `<span class="conn-arr">→</span><span>${c.title}</span>`;
+      if(c.reason){
+        const r = document.createElement('div');
+        r.className = 'conn-reason';
+        r.textContent = c.reason;
+        li.appendChild(r);
+      }
+      li.addEventListener('click', () => selectNode(c.id, nodes, edges));
+      list.appendChild(li);
+    }
+  }
+}
+
+load();
+</script>
+</body>
+</html>
