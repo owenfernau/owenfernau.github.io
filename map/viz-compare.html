@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>viz compare (scratch)</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+	body {
+		background: #eaebea;
+		font-family: "IBM Plex Mono", monospace;
+		color: #000;
+		margin: 0;
+		padding: 30px 40px;
+	}
+	h1 { font-size: 16px; font-weight: 500; margin: 0 0 4px; }
+	p.note { color: #6c6c63; font-size: 12px; margin: 0 0 28px; max-width: 640px; }
+	.panels { display: flex; gap: 32px; flex-wrap: wrap; }
+	.panel { flex: 1 1 460px; }
+	.panel h2 { font-size: 13px; font-weight: 600; margin: 0 0 10px; }
+	.panel p.sub { color: #6c6c63; font-size: 11px; margin: 0 0 12px; }
+	svg { display: block; background: #fff; border: 1px solid #000; }
+	.cell rect {
+		stroke: #eaebea;
+		stroke-width: 1.5px;
+		cursor: pointer;
+	}
+	.cell text {
+		font-family: "IBM Plex Mono", monospace;
+		fill: #fff;
+		pointer-events: none;
+	}
+	.cell .count { fill: #d8d8d2; }
+</style>
+</head>
+<body>
+
+<h1>visualization comparison — scratch, not linked from the live site</h1>
+<p class="note">Both panels read the same real data: your current map.html hierarchy, sized by word count per note (empty stubs get a small floor so they stay visible). Colored by top-level branch. Click a block to log its slug to console.</p>
+
+<div class="panels">
+	<div class="panel">
+		<h2>Treemap</h2>
+		<p class="sub">nesting = containment, area = weight. no explicit "abstraction level" axis.</p>
+		<svg id="treemap" width="460" height="420"></svg>
+	</div>
+	<div class="panel">
+		<h2>Icicle (flame graph, rotated)</h2>
+		<p class="sub">row = depth in hierarchy (abstraction level is literal), width within a row = weight.</p>
+		<svg id="icicle" width="460" height="420"></svg>
+	</div>
+</div>
+
+<script>
+const DATA = {
+	name: "root",
+	children: [
+		{ name: "AI Economic Impact", slug: "ai-economic-impact", value: 4 },
+		{
+			name: "AI Capability", slug: "ai-capability",
+			children: [
+				{ name: "Data", slug: "data", value: 4 },
+				{ name: "Algorithms", slug: "algorithms", value: 7 },
+				{
+					name: "Computing Power", slug: "computing-power",
+					children: [
+						{ name: "Energy", slug: "energy", value: 4 },
+						{ name: "Chips", slug: "chips", value: 6 },
+						{ name: "Data Centers", slug: "data-centers", value: 4 },
+					]
+				}
+			]
+		},
+		{
+			name: "National Debt", slug: "national-debt",
+			children: [
+				{ name: "Treasuries", slug: "treasuries", value: 26 }
+			]
+		},
+		{ name: "AI Safety", slug: "ai-safety", value: 4 },
+		{ name: "Information Delivery Systems", slug: "info-delivery", value: 47 },
+		{ name: "Finance", slug: "finance", value: 25 },
+	]
+};
+
+const branchColor = d3.scaleOrdinal()
+	.domain(DATA.children.map(d => d.name))
+	.range(["#3b3b8f", "#8f3b6b", "#3b8f6b", "#8f6b3b", "#6b3b8f", "#3b6b8f"]);
+
+function topBranch(node) {
+	while (node.depth > 1) node = node.parent;
+	return node.data.name;
+}
+
+// --- Treemap ---
+{
+	const width = 460, height = 420;
+	const root = d3.hierarchy(DATA).sum(d => d.value).sort((a, b) => b.value - a.value);
+	d3.treemap().size([width, height]).paddingInner(2).paddingOuter(2)(root);
+
+	const svg = d3.select("#treemap");
+	const cell = svg.selectAll("g")
+		.data(root.descendants().filter(d => d.depth > 0))
+		.join("g")
+		.attr("class", "cell")
+		.attr("transform", d => `translate(${d.x0},${d.y0})`)
+		.on("click", (e, d) => console.log(d.data.slug));
+
+	cell.append("rect")
+		.attr("width", d => Math.max(0, d.x1 - d.x0))
+		.attr("height", d => Math.max(0, d.y1 - d.y0))
+		.attr("fill", d => branchColor(topBranch(d)))
+		.attr("fill-opacity", d => 1 - d.depth * 0.18);
+
+	cell.append("text")
+		.attr("x", 5).attr("y", 14)
+		.style("font-size", d => d.depth === 1 ? "12px" : "10px")
+		.text(d => {
+			const w = d.x1 - d.x0;
+			if (w < 40) return "";
+			return d.data.name.length > w / 6 ? d.data.name.slice(0, Math.floor(w / 6)) + "…" : d.data.name;
+		});
+}
+
+// --- Icicle (partition, horizontal rows = depth) ---
+{
+	const width = 460, height = 420;
+	const root = d3.hierarchy(DATA).sum(d => d.value).sort((a, b) => b.value - a.value);
+	d3.partition().size([width, height]).padding(1)(root);
+
+	const svg = d3.select("#icicle");
+	const cell = svg.selectAll("g")
+		.data(root.descendants().filter(d => d.depth > 0))
+		.join("g")
+		.attr("class", "cell")
+		.attr("transform", d => `translate(${d.x0},${d.y0})`)
+		.on("click", (e, d) => console.log(d.data.slug));
+
+	cell.append("rect")
+		.attr("width", d => Math.max(0, d.x1 - d.x0))
+		.attr("height", d => Math.max(0, d.y1 - d.y0))
+		.attr("fill", d => branchColor(topBranch(d)))
+		.attr("fill-opacity", d => 1 - d.depth * 0.18);
+
+	cell.append("text")
+		.attr("x", 5).attr("y", 14)
+		.style("font-size", "10px")
+		.text(d => {
+			const w = d.x1 - d.x0;
+			if (w < 40) return "";
+			return d.data.name.length > w / 6 ? d.data.name.slice(0, Math.floor(w / 6)) + "…" : d.data.name;
+		});
+}
+</script>
+</body>
+</html>

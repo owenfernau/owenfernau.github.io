@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d241846e7f9a4235825f84be63226841"}'></script>
     <!-- End Cloudflare Web Analytics -->
@@ -21,20 +22,25 @@
 	<br>
 	<p class="page-subtitle">Working notes of personal interests aiming to be evergreen. Last update: <span id="map-updated"></span></p>
 	<br>
-	<ul class="bio-list">
+	<div id="treemap-wrap"><svg id="treemap" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid meet"></svg></div>
+	<div id="note-detail"><p class="note-detail-empty">Click a block above to read its notes.</p></div>
+	<br>
+
+	<!-- Hidden: source-of-truth hierarchy the treemap above reads. Edited via
+	     the map-inbox pipeline / add-map-node.js, not by hand in the browser. -->
+	<ul class="bio-list" id="tree-data">
 		<li> <span class="node-title" data-slug="ai-economic-impact">AI Economic Impact</span></li>
-		<br>
-		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="ai-capability">AI Capability</span>
+		<li> <span class="node-title" data-slug="ai-capability">AI Capability</span>
 				<ul class="sub-list">
 					<li> <span class="node-title" data-slug="data">Data</span></li>
 					<li> <span class="node-title" data-slug="algorithms">Algorithms</span></li>
-					<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="computing-power">Computing Power</span>
+					<li> <span class="node-title" data-slug="computing-power">Computing Power</span>
 							<ul class="sub-list">
-								<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="energy">Energy</span>
+								<li> <span class="node-title" data-slug="energy">Energy</span>
 										<ul class="sub-list">
 										</ul>
 									</li>
-								<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="chips">Chips</span>
+								<li> <span class="node-title" data-slug="chips">Chips</span>
 										<ul class="sub-list">
 										</ul>
 									</li>
@@ -43,60 +49,43 @@
 						</li>
 				</ul>
 			</li>
-		<br>
-		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="national-debt">National Debt</span>
+		<li> <span class="node-title" data-slug="national-debt">National Debt</span>
 			<ul class="sub-list">
 				<li> <span class="node-title" data-slug="treasuries">Treasuries</span></li>
 			</ul>
 		</li>
-		<br>
-		<li> <span class="node-title" data-slug="ai-safety">AI Safety</span></li>
-		<br>
+		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="ai-safety">AI Safety</span>
+			<ul class="sub-list">
+				<li> <span class="node-title" data-slug="interpretability">Interpretability</span></li>
+			</ul>
+		</li>
 		<li> <span class="node-title" data-slug="info-delivery">Information Delivery Systems</span></li>
-		<br>
-		<li> <span class="node-title" data-slug="finance">Finance</span></li>
-		<br>
-		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="links">Links</span>
-				<ul class="sub-list">
-					<li> <a href="https://www.goodfire.ai/research/the-world-inside-neural-networks" target="_blank">Goodfire — the world inside neural networks</a></li>
-					<li> <a href="https://www.3blue1brown.com/topics/neural-networks" target="_blank">3Blue1Brown — Neural Networks series</a></li>
-					<li> <a href="https://www.youtube.com/watch?v=zjkBMFhNj_g" target="_blank">Karpathy — Intro to LLMs</a></li>
-					<li> <a href="http://neuralnetworksanddeeplearning.com/" target="_blank">Neural Networks and Deep Learning by Michael Nielsen</a></li>
-					<li> <a href="https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf" target="_blank">Attention is All You Need</a></li>
-					<li> <a href="https://climate.benjames.io/fusion/" target="_blank">Big Guide to Fusion</a></li>
-					<li> <a href="https://atlasofinnovation.org/" target="_blank">UI Experiment: Atlas of Innovation</a></li>
-					<li> <a href="https://x.com/dwarkesh_sp/status/2062574759628661215" target="_blank">AI + Econ Dwarkesh</a></li>
-					<li> <a href="https://en.wikipedia.org/wiki/Value_chain" target="_blank">Value Chain</a></li>
-					<li> <a href="https://learnmechinterp.mcgee.cat/" target="_blank">Learning Mech Interp</a></li>
-					<li> <a href="https://nanransohoff.substack.com/p/the-third-wave-of-american-philanthropy" target="_blank">3rd Wave of Philantropy</a></li>
-				<li> <a href="https://x.com/adiix_official/status/2064404496332001341" target="_blank">Investing Efficiency</a></li>
-				<li> <a href="https://www.anthropic.com/economic-index#job-explorer" target="_blank">Anthropic Economic Index</a></li>
-				<li> <a href="https://nanransohoff.substack.com/p/there-should-be-general-managers" target="_blank">'General Managers' for World Problem</a></li>
-				<li> <a href="https://openaifoundation.smapply.us/prog/people-first-ai-fund/" target="_blank">Economic Futures in the Age of AI</a></li>
-				</ul>
-			</li>
+		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="finance">Finance</span>
+			<ul class="sub-list">
+				<li> <span class="node-title" data-slug="philanthropy">Philanthropy</span></li>
+			</ul>
+		</li>
+	</ul>
+
+	<p class="page-subtitle">Links</p>
+	<ul class="bio-list" id="resource-links">
+		<li> <a href="https://www.3blue1brown.com/topics/neural-networks" target="_blank">3Blue1Brown — Neural Networks series</a></li>
+		<li> <a href="https://www.youtube.com/watch?v=zjkBMFhNj_g" target="_blank">Karpathy — Intro to LLMs</a></li>
+		<li> <a href="http://neuralnetworksanddeeplearning.com/" target="_blank">Neural Networks and Deep Learning by Michael Nielsen</a></li>
+		<li> <a href="https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf" target="_blank">Attention is All You Need</a></li>
+		<li> <a href="https://x.com/adiix_official/status/2064404496332001341" target="_blank">Investing Efficiency</a></li>
 	</ul>
 	<br>
 	<hr>
 	<p class="email-text">email: owenfernau at gmail.com</p>
 
 	<script>
-		const IS_LOCAL = ['localhost','127.0.0.1'].includes(location.hostname);
-
-		const OPEN_KEY = 'mapOpenSlugs';
-		function getOpenSlugs() {
-			try { return new Set(JSON.parse(sessionStorage.getItem(OPEN_KEY) || '[]')); }
-			catch { return new Set(); }
-		}
-		function setSlugOpen(slug, open) {
-			const slugs = getOpenSlugs();
-			if (open) slugs.add(slug); else slugs.delete(slug);
-			sessionStorage.setItem(OPEN_KEY, JSON.stringify([...slugs]));
-		}
-
 		const manifestPromise = fetch('map/notes/manifest.json')
 			.then(r => r.ok ? r.json() : {})
 			.catch(() => ({}));
+
+		let MANIFEST = {};
+		manifestPromise.then(manifest => { MANIFEST = manifest; });
 
 		manifestPromise.then(manifest => {
 			const generatedAt = manifest._meta?.generatedAt;
@@ -107,206 +96,28 @@
 			}
 		});
 
-		function jumpToNode(slug) {
-			const target = document.querySelector(`.bio-list .node-title[data-slug="${slug}"]`);
-			if (!target) return;
-			let li = target.closest('li');
-			while (li) {
-				if (li.classList.contains('expandable')) {
-					li.classList.add('open');
-					const s = li.querySelector(':scope > .node-title')?.dataset.slug;
-					if (s) setSlugOpen(s, true);
-					li.querySelectorAll(':scope > .sub-list > .note-edit > .note-textarea').forEach(t => {
-						t.style.height = 'auto';
-						t.style.height = t.scrollHeight + 'px';
-					});
-				}
-				li = li.parentElement.closest('li');
-			}
-			target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-		}
-
-		function showAddForm(li, btn, placeholders, onSubmit) {
-			btn.style.display = 'none';
-			const inputs = placeholders.map(ph => {
-				const input = document.createElement('input');
-				input.type = 'text';
-				input.className = 'add-node-input';
-				input.placeholder = ph;
-				li.insertBefore(input, btn);
-				input.addEventListener('click', e => e.stopPropagation());
-				return input;
-			});
-
-			function cleanup() {
-				inputs.forEach(i => i.remove());
-				btn.style.display = '';
-			}
-
-			inputs.forEach((input, i) => {
-				input.addEventListener('keydown', e => {
-					e.stopPropagation();
-					if (e.key === 'Escape') cleanup();
-					if (e.key === 'Enter') {
-						if (i < inputs.length - 1) {
-							inputs[i + 1].focus();
-						} else {
-							const values = inputs.map(inp => inp.value.trim());
-							if (values.every(v => v)) onSubmit(values);
-							else cleanup();
-						}
-					}
-				});
-			});
-
-			inputs[0].focus();
-		}
-
+		// Word counts for treemap sizing, fetched from the same notes-src
+		// markdown the detail panel reads, so sizing can't drift from content.
 		const notePromises = [];
-		document.querySelectorAll('.bio-list .node-title[data-slug]').forEach(title => {
+		const wordCounts = {};
+		document.querySelectorAll('#tree-data .node-title[data-slug]').forEach(title => {
 			const slug = title.dataset.slug;
-			const li = title.closest('li');
-
-			let subList = li.querySelector(':scope > ul.sub-list');
-			if (!subList) {
-				li.classList.add('expandable');
-				const arrow = document.createElement('span');
-				arrow.className = 'arrow';
-				li.insertBefore(arrow, title);
-				li.insertBefore(document.createTextNode(' '), title);
-				subList = document.createElement('ul');
-				subList.className = 'sub-list';
-				li.appendChild(subList);
-			}
-
-			let addBtn = null;
-			if (IS_LOCAL) {
-				addBtn = document.createElement('span');
-				addBtn.className = 'node-action';
-				li.insertBefore(addBtn, subList);
-
-				if (slug === 'links') {
-					addBtn.textContent = '+ add link';
-					addBtn.addEventListener('click', e => {
-						e.stopPropagation();
-						showAddForm(li, addBtn, ['Title', 'URL'], ([linkTitle, url]) => {
-							fetch('/add-link', {
-								method: 'POST',
-								headers: {'Content-Type': 'application/json'},
-								body: JSON.stringify({ title: linkTitle, url })
-							})
-								.then(r => r.json())
-								.then(data => {
-									if (data.ok) location.reload();
-									else alert('Error: ' + data.error);
-								});
-						});
-					});
-				} else {
-					addBtn.textContent = '+ add sub-note';
-					addBtn.addEventListener('click', e => {
-						e.stopPropagation();
-						showAddForm(li, addBtn, ['Title'], ([label]) => {
-							fetch('/add-node', {
-								method: 'POST',
-								headers: {'Content-Type': 'application/json'},
-								body: JSON.stringify({ parentSlug: slug, label })
-							})
-								.then(r => r.json())
-								.then(data => {
-									if (data.ok) location.reload();
-									else alert('Error: ' + data.error);
-								});
-						});
-					});
-				}
-			}
-
-			if (slug !== 'links') {
-				const editLi = document.createElement('li');
-				editLi.className = 'note-edit';
-				subList.insertBefore(editLi, subList.firstChild);
-
-				const textarea = document.createElement('textarea');
-				textarea.className = 'note-textarea';
-				textarea.placeholder = 'Write notes...';
-
-				const autoResize = () => {
-					textarea.style.height = 'auto';
-					textarea.style.height = textarea.scrollHeight + 'px';
-				};
-
-				if (IS_LOCAL) {
-					editLi.appendChild(textarea);
-					textarea.addEventListener('input', autoResize);
-				}
-
-				notePromises.push(fetch(`map/notes-src/${slug}.md`)
+			notePromises.push(
+				fetch(`map/notes-src/${slug}.md`)
 					.then(r => r.ok ? r.text() : '')
 					.then(raw => {
 						const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
 						const content = (fm ? fm[1] : raw).trim();
-						if (!content || content.toUpperCase() === 'TK') {
-							if (!IS_LOCAL) { editLi.remove(); return; }
-
-							editLi.style.display = 'none';
-							const promptBtn = document.createElement('span');
-							promptBtn.className = 'node-action';
-							promptBtn.textContent = '+ add note';
-							li.insertBefore(promptBtn, addBtn);
-
-							promptBtn.addEventListener('click', e => {
-								e.stopPropagation();
-								promptBtn.remove();
-								editLi.style.display = '';
-								textarea.focus();
-								autoResize();
-								redrawConnectors();
-							});
-							return;
-						}
-						if (IS_LOCAL) {
-							textarea.value = content;
-							autoResize();
-						} else {
-							const lines = content.split(/\r?\n\s*\r?\n/).map(p => p.trim()).filter(p => p && !/^\[\[.*\]\]$/.test(p));
-							if (!lines.length) { editLi.remove(); return; }
-							const list = document.createElement('ul');
-							list.className = 'note-content';
-							lines.forEach(p => {
-								const item = document.createElement('li');
-								item.className = 'note-line';
-								item.textContent = p;
-								list.appendChild(item);
-							});
-							editLi.appendChild(list);
-						}
-						redrawConnectors();
-					}));
-
-				if (IS_LOCAL) {
-					let timer;
-					textarea.addEventListener('input', () => {
-						clearTimeout(timer);
-						timer = setTimeout(() => {
-							fetch('/save-note', {
-								method: 'POST',
-								headers: {'Content-Type': 'application/json'},
-								body: JSON.stringify({ slug, content: textarea.value })
-							});
-						}, 600);
-					});
-				}
-
-			}
+						wordCounts[slug] = content && content.toUpperCase() !== 'TK'
+							? content.split(/\s+/).filter(Boolean).length : 0;
+					})
+			);
 		});
 
 		// Links: checkable items move to a "Checked" subsection
 		(() => {
-			const linksTitle = document.querySelector('.node-title[data-slug="links"]');
-			const linksList = linksTitle?.closest('li')?.querySelector(':scope > ul.sub-list');
+			const linksList = document.getElementById('resource-links');
 			if (!linksList) return;
-
 			const linkItems = [...linksList.querySelectorAll(':scope > li')].filter(li => li.querySelector('a'));
 
 			const checkedLi = document.createElement('li');
@@ -314,6 +125,10 @@
 			checkedLi.innerHTML = '<span class="arrow"></span> <span>Checked</span><ul class="sub-list"></ul>';
 			linksList.appendChild(checkedLi);
 			const checkedList = checkedLi.querySelector('ul.sub-list');
+			checkedLi.addEventListener('click', function(e) {
+				if (e.target.tagName === 'A') return;
+				this.classList.toggle('open');
+			});
 
 			const CHECKED_KEY = 'mapCheckedLinks';
 			let checked;
@@ -346,136 +161,137 @@
 			});
 		})();
 
-		document.querySelectorAll('.expandable').forEach(item => {
-			item.addEventListener('click', function(e) {
-				if (e.target.tagName !== 'A' && e.target.tagName !== 'TEXTAREA') {
-					e.stopPropagation();
-					this.classList.toggle('open');
-					const slug = this.querySelector(':scope > .node-title')?.dataset.slug;
-					if (slug) setSlugOpen(slug, this.classList.contains('open'));
-					if (this.classList.contains('open')) {
-						this.querySelectorAll(':scope > .sub-list > .note-edit > .note-textarea').forEach(t => {
-							t.style.height = 'auto';
-							t.style.height = t.scrollHeight + 'px';
+		// Note detail panel: populated from the same notes-src markdown the
+		// word-count loop above reads, so clicking a treemap block shows real content.
+		const noteDetailEl = document.getElementById('note-detail');
+		function showNoteDetail(slug) {
+			fetch(`map/notes-src/${slug}.md`)
+				.then(r => r.ok ? r.text() : '')
+				.then(raw => {
+					const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
+					const content = (fm ? fm[1] : raw).trim();
+					const titleMatch = raw.match(/^title:\s*(.+)$/m);
+					const title = titleMatch ? titleMatch[1].trim() : slug;
+
+					noteDetailEl.innerHTML = '';
+					const h = document.createElement('h3');
+					h.textContent = title;
+					noteDetailEl.appendChild(h);
+
+					const resolveLinks = text => text.replace(
+						/\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|([^\]]+))?\]\]/g,
+						(_, s, label) => label || (MANIFEST[s.trim()]?.title || s.trim())
+					);
+
+					if (!content || content.toUpperCase() === 'TK') {
+						const p = document.createElement('p');
+						p.className = 'note-detail-empty';
+						p.textContent = 'No notes yet.';
+						noteDetailEl.appendChild(p);
+					} else {
+						content.split(/\r?\n\s*\r?\n/).map(p => p.trim()).filter(Boolean).forEach(p => {
+							const el = document.createElement('p');
+							el.textContent = resolveLinks(p);
+							noteDetailEl.appendChild(el);
 						});
 					}
-					redrawConnectors();
-				}
-			});
-		});
 
-		const openSlugs = getOpenSlugs();
-		document.querySelectorAll('.bio-list .node-title[data-slug]').forEach(title => {
-			if (!openSlugs.has(title.dataset.slug)) return;
-			const li = title.closest('li.expandable');
-			if (!li) return;
-			li.classList.add('open');
-			li.querySelectorAll(':scope > .sub-list > .note-edit > .note-textarea').forEach(t => {
-				t.style.height = 'auto';
-				t.style.height = t.scrollHeight + 'px';
-			});
-		});
-
-		// links/backlinks ([[wikilinks]]) and connector lines between them
-		const bioList = document.querySelector('.bio-list');
-		const connectors = [];
-
-		function redrawConnectors() {
-			const listRect = bioList.getBoundingClientRect();
-			connectors.forEach(({ fromEl, toEl, lineEl, elbowA, elbowB }) => {
-				if (!fromEl.offsetParent || !toEl.offsetParent) {
-					lineEl.style.display = elbowA.style.display = elbowB.style.display = 'none';
-					return;
-				}
-				const r1 = fromEl.getBoundingClientRect();
-				const r2 = toEl.getBoundingClientRect();
-				const l1 = fromEl.closest('li').getBoundingClientRect();
-				const l2 = toEl.closest('li').getBoundingClientRect();
-
-				const y1 = (r1.top + r1.bottom) / 2 - listRect.top;
-				const y2 = (r2.top + r2.bottom) / 2 - listRect.top;
-				const x1 = l1.left - listRect.left;
-				const x2 = l2.left - listRect.left;
-
-				lineEl.style.display = 'block';
-				lineEl.style.top = Math.min(y1, y2) + 'px';
-				lineEl.style.height = Math.abs(y2 - y1) + 'px';
-
-				elbowA.style.display = 'block';
-				elbowA.style.top = y1 + 'px';
-				elbowA.style.width = (x1 + 14) + 'px';
-
-				elbowB.style.display = 'block';
-				elbowB.style.top = y2 + 'px';
-				elbowB.style.width = (x2 + 14) + 'px';
-			});
-		}
-		window.addEventListener('resize', redrawConnectors);
-
-		manifestPromise.then(manifest => {
-			document.querySelectorAll('.bio-list .node-title[data-slug]').forEach(title => {
-				const slug = title.dataset.slug;
-				const entry = manifest[slug];
-				if (!entry || (!entry.links.length && !entry.backlinks.length)) return;
-
-				const subList = title.closest('li').querySelector(':scope > ul.sub-list');
-				const editLi = subList.querySelector(':scope > .note-edit');
-
-				const linksLi = document.createElement('li');
-				linksLi.className = 'note-links';
-
-				const items = [
-					...entry.links.map(s => ({ dir: '→', slug: s })),
-					...entry.backlinks.map(s => ({ dir: '←', slug: s })),
-				];
-				items.forEach(({ dir, slug: targetSlug }) => {
-					const span = document.createElement('span');
-					span.className = 'note-link';
-					span.textContent = `${dir} ${(manifest[targetSlug] || {}).title || targetSlug}`;
-					span.addEventListener('click', e => {
-						e.stopPropagation();
-						jumpToNode(targetSlug);
-					});
-					linksLi.appendChild(span);
-
-					if (dir === '←') {
-						const toEl = document.querySelector(`.bio-list .node-title[data-slug="${targetSlug}"]`);
-						if (toEl) {
-							const lineEl = document.createElement('div');
-							lineEl.className = 'note-connector';
-							const elbowA = document.createElement('div');
-							elbowA.className = 'note-connector-elbow';
-							const elbowB = document.createElement('div');
-							elbowB.className = 'note-connector-elbow';
-							bioList.append(lineEl, elbowA, elbowB);
-							connectors.push({ fromEl: title, toEl, lineEl, elbowA, elbowB });
-						}
+					const entry = MANIFEST[slug];
+					if (entry && (entry.links.length || entry.backlinks.length)) {
+						const linksWrap = document.createElement('div');
+						linksWrap.className = 'note-detail-links';
+						[...entry.links.map(s => ({ dir: '→', s })), ...entry.backlinks.map(s => ({ dir: '←', s }))]
+							.forEach(({ dir, s }) => {
+								const span = document.createElement('span');
+								span.className = 'note-link';
+								span.textContent = `${dir} ${(MANIFEST[s] || {}).title || s}`;
+								span.addEventListener('click', () => showNoteDetail(s));
+								linksWrap.appendChild(span);
+							});
+						noteDetailEl.appendChild(linksWrap);
 					}
 				});
-
-				subList.insertBefore(linksLi, editLi ? editLi.nextSibling : subList.firstChild);
-			});
-
-			requestAnimationFrame(redrawConnectors);
-			setTimeout(redrawConnectors, 300);
-		});
-
-		if (!IS_LOCAL) {
-			Promise.all([manifestPromise, ...notePromises]).then(() => {
-				document.querySelectorAll('.bio-list li.expandable').forEach(li => {
-					const subList = li.querySelector(':scope > ul.sub-list');
-					if (!subList || subList.children.length > 0) return;
-
-					li.classList.remove('expandable');
-					const arrow = li.querySelector(':scope > .arrow');
-					const spacer = arrow?.nextSibling;
-					if (spacer?.nodeType === Node.TEXT_NODE) spacer.remove();
-					arrow?.remove();
-					subList.remove();
-				});
-				redrawConnectors();
-			});
 		}
+
+		// Treemap overview: built from the hidden #tree-data DOM + the note
+		// word counts fetched above, so it can't drift from the content it summarizes.
+		function buildTreemapData(li) {
+			const title = li.querySelector(':scope > .node-title[data-slug]');
+			if (!title) return null;
+			const slug = title.dataset.slug;
+			const subList = li.querySelector(':scope > ul.sub-list');
+			const children = [];
+			if (subList) {
+				subList.querySelectorAll(':scope > li').forEach(childLi => {
+					const child = buildTreemapData(childLi);
+					if (child) children.push(child);
+				});
+			}
+			const node = { name: title.textContent.trim(), slug };
+			if (children.length) node.children = children;
+			else node.value = Math.max(wordCounts[slug] || 0, 4);
+			return node;
+		}
+
+		function renderTreemap() {
+			const roots = [];
+			document.querySelectorAll('#tree-data > li').forEach(li => {
+				const node = buildTreemapData(li);
+				if (node) roots.push(node);
+			});
+			const data = { name: 'root', children: roots };
+
+			const branchColor = d3.scaleOrdinal()
+				.domain(roots.map(d => d.name))
+				.range(['#3b3b8f', '#8f3b6b', '#3b8f6b', '#8f6b3b', '#6b3b8f', '#3b6b8f', '#3b6b3b', '#6b3b3b']);
+			function topBranch(node) {
+				while (node.depth > 1) node = node.parent;
+				return node.data.name;
+			}
+
+			const width = 700, height = 420;
+			const root = d3.hierarchy(data).sum(d => d.value);
+			d3.treemap()
+				.size([width, height])
+				.paddingInner(2)
+				.paddingOuter(2)
+				.paddingTop(d => d.children ? 16 : 3)
+				(root);
+
+			const svg = d3.select('#treemap');
+			svg.attr('viewBox', `0 0 ${width} ${height}`);
+			svg.selectAll('*').remove();
+			const cell = svg.selectAll('g')
+				.data(root.descendants().filter(d => d.depth > 0))
+				.join('g')
+				.attr('class', 'tm-cell')
+				.attr('transform', d => `translate(${d.x0},${d.y0})`)
+				.on('click', (e, d) => showNoteDetail(d.data.slug));
+
+			cell.append('clipPath')
+				.attr('id', d => `tm-clip-${d.data.slug}`)
+				.append('rect')
+				.attr('width', d => Math.max(0, d.x1 - d.x0))
+				.attr('height', d => Math.max(0, d.y1 - d.y0));
+
+			cell.append('rect')
+				.attr('width', d => Math.max(0, d.x1 - d.x0))
+				.attr('height', d => Math.max(0, d.y1 - d.y0))
+				.attr('fill', d => branchColor(topBranch(d)))
+				.attr('fill-opacity', d => 1 - d.depth * 0.18);
+
+			cell.append('text')
+				.attr('clip-path', d => `url(#tm-clip-${d.data.slug})`)
+				.attr('x', 5).attr('y', 14)
+				.style('font-size', d => d.children ? '12px' : '10px')
+				.text(d => {
+					const w = d.x1 - d.x0, h = d.y1 - d.y0;
+					if (w < 36 || h < 14) return '';
+					return d.data.name.length > w / 6 ? d.data.name.slice(0, Math.floor(w / 6)) + '…' : d.data.name;
+				});
+		}
+
+		Promise.all([manifestPromise, ...notePromises]).then(renderTreemap);
 	</script>
 </body>
 </html>

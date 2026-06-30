@@ -16,7 +16,9 @@
   },
   "algorithms": {
     "title": "Algorithms",
-    "links": [],
+    "links": [
+      "finance"
+    ],
     "backlinks": []
   },
   "chip-design": {
@@ -69,7 +71,9 @@
     "links": [
       "national-debt"
     ],
-    "backlinks": []
+    "backlinks": [
+      "algorithms"
+    ]
   },
   "generation": {
     "title": "Generation",
@@ -86,12 +90,22 @@
     "links": [],
     "backlinks": []
   },
+  "interpretability": {
+    "title": "Interpretability",
+    "links": [],
+    "backlinks": []
+  },
   "national-debt": {
     "title": "National Debt",
     "links": [],
     "backlinks": [
       "finance"
     ]
+  },
+  "philanthropy": {
+    "title": "Philanthropy",
+    "links": [],
+    "backlinks": []
   },
   "transmission": {
     "title": "Transmission",
@@ -104,6 +118,6 @@
     "backlinks": []
   },
   "_meta": {
-    "generatedAt": "2026-06-16"
+    "generatedAt": "2026-06-30"
   }
 }

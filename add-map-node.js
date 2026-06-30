@@ -62,12 +62,10 @@ function writeStub(slug, label) {
   );
 }
 
-function addNode(parentSlug, label) {
-  label = label.trim();
-  if (!label) throw new Error('label required');
-
-  const slug = uniqueSlug(label);
-
+// inserts a <li> for `slug` under `parentSlug` in map.html, without touching
+// the note file. Used both by addNode (which also writes a fresh stub) and
+// by attachExistingNote (which expects the note file to already exist).
+function insertNodeLi(parentSlug, slug, label) {
   const html = fs.readFileSync(MAP_HTML, 'utf8');
 
   const titleTag = `<span class="node-title" data-slug="${parentSlug}">`;
@@ -109,8 +107,28 @@ function addNode(parentSlug, label) {
   }
 
   fs.writeFileSync(MAP_HTML, newHtml);
+}
+
+function addNode(parentSlug, label) {
+  label = label.trim();
+  if (!label) throw new Error('label required');
+
+  const slug = uniqueSlug(label);
+  insertNodeLi(parentSlug, slug, label);
   writeStub(slug, label);
 
+  return slug;
+}
+
+// attaches a note that's already been drafted in notes-src/<slug>.md to the
+// tree under parentSlug, without overwriting the existing note content.
+function attachExistingNote(parentSlug, slug, label) {
+  label = label.trim();
+  if (!label) throw new Error('label required');
+  if (!fs.existsSync(path.join(SRC_DIR, `${slug}.md`))) {
+    throw new Error(`note file not found for slug: ${slug}`);
+  }
+  insertNodeLi(parentSlug, slug, label);
   return slug;
 }
 
@@ -121,13 +139,9 @@ function addLink(title, url) {
 
   const html = fs.readFileSync(MAP_HTML, 'utf8');
 
-  const titleTag = `<span class="node-title" data-slug="links">`;
-  const titleStart = html.indexOf(titleTag);
-  if (titleStart === -1) throw new Error('links section not found');
-  const titleSpanEnd = html.indexOf('</span>', titleStart) + '</span>'.length;
-
-  const subListOpen = html.indexOf('<ul class="sub-list"', titleSpanEnd);
-  const ulClose = findMatchingClose(html, subListOpen, 'ul');
+  const ulOpen = html.indexOf('<ul class="bio-list" id="resource-links">');
+  if (ulOpen === -1) throw new Error('resource-links section not found');
+  const ulClose = findMatchingClose(html, ulOpen, 'ul');
   const lineStart = html.lastIndexOf('\n', ulClose) + 1;
   const indent = html.slice(lineStart, ulClose);
 
@@ -141,4 +155,4 @@ function addLink(title, url) {
   fs.writeFileSync(nodesPath, JSON.stringify(nodes, null, 2));
 }
 
-module.exports = { addNode, addLink, slugify };
+module.exports = { addNode, attachExistingNote, addLink, slugify, uniqueSlug };
