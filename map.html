@@ -20,10 +20,10 @@
 	</div>
 	<hr>
 	<br>
-	<p class="page-subtitle">Working notes of personal interests aiming to be evergreen. Last update: <span id="map-updated"></span></p>
+	<p class="page-subtitle">Working notes of personal interests aiming to be evergreen. Click a block below to read its notes. Last update: <span id="map-updated"></span></p>
 	<br>
 	<div id="treemap-wrap"><svg id="treemap" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid meet"></svg></div>
-	<div id="note-detail"><p class="note-detail-empty">Click a block above to read its notes.</p></div>
+	<div id="note-detail"></div>
 	<br>
 
 	<!-- Hidden: source-of-truth hierarchy the treemap above reads. Edited via
@@ -229,7 +229,9 @@
 			}
 			const node = { name: title.textContent.trim(), slug };
 			if (children.length) node.children = children;
-			else node.value = Math.max(wordCounts[slug] || 0, 4);
+			// sqrt-scaled: word counts here range ~0-150+, and sizing
+			// linearly makes near-empty stub notes shrink to illegible slivers
+			else node.value = Math.sqrt((wordCounts[slug] || 0) + 4);
 			return node;
 		}
 
@@ -253,9 +255,9 @@
 			const root = d3.hierarchy(data).sum(d => d.value);
 			d3.treemap()
 				.size([width, height])
-				.paddingInner(2)
+				.paddingInner(3)
 				.paddingOuter(2)
-				.paddingTop(d => d.children ? 16 : 3)
+				.paddingTop(d => d.children ? 24 : 3)
 				(root);
 
 			const svg = d3.select('#treemap');
@@ -280,15 +282,54 @@
 				.attr('fill', d => branchColor(topBranch(d)))
 				.attr('fill-opacity', d => 1 - d.depth * 0.18);
 
+			// Word-wraps a label into <tspan> lines instead of truncating
+			// mid-word, so a narrow column never cuts a name off.
+			function wrapLabel(textEl, d) {
+				const w = d.x1 - d.x0;
+				const fullH = d.y1 - d.y0;
+				const isParent = !!d.children;
+				const fontSize = isParent ? 12 : 10;
+				const charWidth = fontSize * 0.62;
+				const lineHeight = fontSize * 1.3;
+				const availW = w - 8;
+				const availH = (isParent ? 24 : fullH) - 6;
+				if (w < 28 || availH < lineHeight) return;
+
+				const maxChars = Math.max(1, Math.floor(availW / charWidth));
+				const words = d.data.name.split(' ');
+				const lines = [];
+				let current = '';
+				words.forEach(word => {
+					const test = current ? current + ' ' + word : word;
+					if (test.length > maxChars && current) {
+						lines.push(current);
+						current = word;
+					} else {
+						current = test;
+					}
+				});
+				if (current) lines.push(current);
+
+				const maxLines = Math.max(1, Math.floor(availH / lineHeight));
+				let shown = lines.slice(0, maxLines);
+				if (lines.length > maxLines) {
+					const last = shown[shown.length - 1];
+					shown[shown.length - 1] = last.length > 1 ? last.slice(0, -1) + '…' : '…';
+				}
+
+				const sel = d3.select(textEl);
+				shown.forEach((line, i) => {
+					sel.append('tspan')
+						.attr('x', 5)
+						.attr('y', 14 + i * lineHeight)
+						.text(line);
+				});
+			}
+
 			cell.append('text')
 				.attr('clip-path', d => `url(#tm-clip-${d.data.slug})`)
-				.attr('x', 5).attr('y', 14)
 				.style('font-size', d => d.children ? '12px' : '10px')
-				.text(d => {
-					const w = d.x1 - d.x0, h = d.y1 - d.y0;
-					if (w < 36 || h < 14) return '';
-					return d.data.name.length > w / 6 ? d.data.name.slice(0, Math.floor(w / 6)) + '…' : d.data.name;
-				});
+				.each(function(d) { wrapLabel(this, d); });
 		}
 
 		Promise.all([manifestPromise, ...notePromises]).then(renderTreemap);

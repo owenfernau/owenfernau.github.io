@@ -382,6 +382,8 @@ hr {
 #note-detail {
     font-family: "IBM Plex Mono", monospace;
     color: #000;
+}
+#note-detail:not(:empty) {
     border: 1px solid #000;
     background: #fff;
     padding: 14px 18px;
