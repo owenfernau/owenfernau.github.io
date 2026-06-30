@@ -41,6 +41,18 @@
       "title": "Iran Sanctions Evasion",
       "summary": "Iran earns ~$43B/year in oil despite sanctions by routing sales through yuan, shadow tanker fleets (AIS disabled), hundreds of shell companies, and front companies in Hong Kong/UAE/Turkey. China buys 90%+ of Iran's crude. The IRGC runs covert trading units. Some yuan is converted to dollars via small Chinese banks, giving larger institutions plausible deniability.",
       "sourceFile": "wsj-yuan-sanctions.txt"
+    },
+    {
+      "id": "solopreneur-surge",
+      "title": "Solopreneur Surge",
+      "summary": "Solo business formation is growing far faster than employer businesses globally — up 40-80% in Australia, Finland, France since 2017, with sharp acceleration in 2025. In the US, 4M+ Americans earn >$100K as solopreneurs. More than 2x as many crossed $1M in 2025 vs 2023. Validated by Census Bureau, Stripe cohort data, and Delaware incorporations — not a fraud wave.",
+      "sourceFile": "stripe-solopreneur-surge.txt"
+    },
+    {
+      "id": "ai-capability-gap",
+      "title": "AI as Capability Gap Filler",
+      "summary": "AI is replacing the need to hire by giving solo founders on-tap access to skills previously requiring a team: market sizing, coding, marketing, sales, legal. AI-influenced Stripe sign-ups are 4x their Jan 2025 share. Solopreneur growth is highest in high-AI-adoption sectors. Sam Altman: 'revenge of the idea guys.' This may be the primary structural driver of the solopreneur surge.",
+      "sourceFile": "stripe-solopreneur-surge.txt"
     }
   ],
   "edges": [
@@ -78,7 +90,17 @@
       "source": "financial-red-flags",
       "target": "iran-sanctions-evasion",
       "reason": "both involve deliberate financial obfuscation — hiding true economic activity through shell companies and misleading disclosures"
+    },
+    {
+      "source": "ai-capability-gap",
+      "target": "solopreneur-surge",
+      "reason": "AI is the primary structural driver of the surge — filling skill gaps that previously required hiring"
+    },
+    {
+      "source": "ai-capability-gap",
+      "target": "financial-red-flags",
+      "reason": "AI gives solo analysts access to sophisticated financial analysis tools that previously required a team — lowering the barrier to identifying red flags"
     }
   ],
-  "lastUpdated": "2026-06-25"
+  "lastUpdated": "2026-06-26"
 }
