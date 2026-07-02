@@ -32,6 +32,7 @@
 		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="ai-economic-impact">AI Economic Impact</span>
 			<ul class="sub-list">
 				<li> <span class="node-title" data-slug="enterprise-data-privacy">Enterprise Data Privacy</span></li>
+				<li> <span class="node-title" data-slug="robotics">Robotics</span></li>
 			</ul>
 		</li>
 		<li> <span class="node-title" data-slug="ai-capability">AI Capability</span>
@@ -71,6 +72,7 @@
 		</li>
 	</ul>
 
+	<div id="links-section" style="display:none;">
 	<p class="page-subtitle">Links</p>
 	<ul class="bio-list" id="resource-links">
 		<li> <a href="https://www.3blue1brown.com/topics/neural-networks" target="_blank">3Blue1Brown — Neural Networks series</a></li>
@@ -78,7 +80,9 @@
 		<li> <a href="http://neuralnetworksanddeeplearning.com/" target="_blank">Neural Networks and Deep Learning by Michael Nielsen</a></li>
 		<li> <a href="https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf" target="_blank">Attention is All You Need</a></li>
 		<li> <a href="https://x.com/adiix_official/status/2064404496332001341" target="_blank">Investing Efficiency</a></li>
+		<li> <a href="https://www.lesswrong.com/posts/RWna48W4bPr2ChePz/tips-tricks-notes-on-optimizing-investments" target="_blank">Tips/tricks/notes on optimizing investments</a></li>
 	</ul>
+	</div>
 	<br>
 	<hr>
 	<p class="email-text">email: owenfernau at gmail.com</p>
@@ -117,6 +121,11 @@
 					})
 			);
 		});
+
+		// Links section is a personal reading queue, only shown locally
+		if (['localhost', '127.0.0.1'].includes(location.hostname)) {
+			document.getElementById('links-section').style.display = '';
+		}
 
 		// Links: checkable items move to a "Checked" subsection
 		(() => {
@@ -265,7 +274,7 @@
 				.size([width, height])
 				.paddingInner(3)
 				.paddingOuter(2)
-				.paddingTop(d => d.children ? HEADER_H : 3)
+				.paddingTop(d => d.depth === 0 ? 0 : (d.children ? HEADER_H : 3))
 				(root);
 
 			const svg = d3.select('#treemap');
