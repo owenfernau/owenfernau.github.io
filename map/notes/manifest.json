@@ -56,6 +56,13 @@
     "links": [],
     "backlinks": []
   },
+  "enterprise-data-privacy": {
+    "title": "Enterprise Data Privacy",
+    "links": [
+      "finance"
+    ],
+    "backlinks": []
+  },
   "euv": {
     "title": "EUV",
     "links": [],
@@ -72,7 +79,8 @@
       "national-debt"
     ],
     "backlinks": [
-      "algorithms"
+      "algorithms",
+      "enterprise-data-privacy"
     ]
   },
   "generation": {
@@ -118,6 +126,6 @@
     "backlinks": []
   },
   "_meta": {
-    "generatedAt": "2026-06-30"
+    "generatedAt": "2026-07-02"
   }
 }

@@ -29,7 +29,11 @@
 	<!-- Hidden: source-of-truth hierarchy the treemap above reads. Edited via
 	     the map-inbox pipeline / add-map-node.js, not by hand in the browser. -->
 	<ul class="bio-list" id="tree-data">
-		<li> <span class="node-title" data-slug="ai-economic-impact">AI Economic Impact</span></li>
+		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="ai-economic-impact">AI Economic Impact</span>
+			<ul class="sub-list">
+				<li> <span class="node-title" data-slug="enterprise-data-privacy">Enterprise Data Privacy</span></li>
+			</ul>
+		</li>
 		<li> <span class="node-title" data-slug="ai-capability">AI Capability</span>
 				<ul class="sub-list">
 					<li> <span class="node-title" data-slug="data">Data</span></li>
@@ -189,11 +193,14 @@
 						p.textContent = 'No notes yet.';
 						noteDetailEl.appendChild(p);
 					} else {
+						const list = document.createElement('ul');
+						list.className = 'note-detail-list';
 						content.split(/\r?\n\s*\r?\n/).map(p => p.trim()).filter(Boolean).forEach(p => {
-							const el = document.createElement('p');
-							el.textContent = resolveLinks(p);
-							noteDetailEl.appendChild(el);
+							const li = document.createElement('li');
+							li.textContent = resolveLinks(p);
+							list.appendChild(li);
 						});
+						noteDetailEl.appendChild(list);
 					}
 
 					const entry = MANIFEST[slug];
