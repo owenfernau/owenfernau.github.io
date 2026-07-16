@@ -408,6 +408,30 @@ hr {
 #note-detail ul.note-detail-list > li::before {
     content: "– ";
 }
+#note-detail ul:not(.note-detail-list),
+#note-detail ol {
+    list-style: none;
+    margin: 0 0 10px;
+    padding: 0;
+    counter-reset: note-ol;
+}
+#note-detail ul:not(.note-detail-list) > li,
+#note-detail ol > li {
+    font-size: 13px;
+    line-height: 1.5;
+    padding-left: 1.3em;
+    text-indent: -1.3em;
+    margin: 0 0 8px;
+}
+#note-detail ul:not(.note-detail-list) > li::before {
+    content: "– ";
+}
+#note-detail ol > li {
+    counter-increment: note-ol;
+}
+#note-detail ol > li::before {
+    content: counter(note-ol) ". ";
+}
 #note-detail p {
     font-size: 13px;
     line-height: 1.5;
@@ -427,6 +451,41 @@ hr {
     color: #555;
     cursor: pointer;
     text-decoration: underline;
+}
+#note-detail .note-edit-btn {
+    font-family: inherit;
+    font-size: 11px;
+    color: #555;
+    background: none;
+    border: 1px solid #999;
+    padding: 2px 8px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+#note-detail .note-edit-btn:hover {
+    color: #000;
+    border-color: #000;
+}
+#note-detail .note-editor {
+    width: 100%;
+    min-height: 220px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 8px;
+    box-sizing: border-box;
+    resize: vertical;
+}
+#note-detail .note-editor-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+#note-detail .note-editor-actions button {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 4px 12px;
+    cursor: pointer;
 }
 
 /* #tree-data is the hidden source-of-truth hierarchy the treemap reads from;

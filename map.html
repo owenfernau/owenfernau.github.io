@@ -177,6 +177,46 @@
 		// Note detail panel: populated from the same notes-src markdown the
 		// word-count loop above reads, so clicking a treemap block shows real content.
 		const noteDetailEl = document.getElementById('note-detail');
+		const CAN_EDIT = ['localhost', '127.0.0.1'].includes(location.hostname);
+
+		function saveNote(slug, content) {
+			return fetch('/api/save-note', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ slug, content }),
+			}).then(r => { if (!r.ok) throw new Error('save failed'); });
+		}
+
+		function showNoteEditor(slug, raw) {
+			noteDetailEl.innerHTML = '';
+			const textarea = document.createElement('textarea');
+			textarea.className = 'note-editor';
+			textarea.value = raw;
+			noteDetailEl.appendChild(textarea);
+
+			const actions = document.createElement('div');
+			actions.className = 'note-editor-actions';
+			const saveBtn = document.createElement('button');
+			saveBtn.textContent = 'Save';
+			const cancelBtn = document.createElement('button');
+			cancelBtn.textContent = 'Cancel';
+			actions.appendChild(saveBtn);
+			actions.appendChild(cancelBtn);
+			noteDetailEl.appendChild(actions);
+
+			cancelBtn.addEventListener('click', () => showNoteDetail(slug));
+			saveBtn.addEventListener('click', () => {
+				saveBtn.disabled = true;
+				saveBtn.textContent = 'Saving…';
+				saveNote(slug, textarea.value)
+					.then(() => showNoteDetail(slug))
+					.catch(() => {
+						saveBtn.disabled = false;
+						saveBtn.textContent = 'Save failed, retry';
+					});
+			});
+		}
+
 		function showNoteDetail(slug) {
 			fetch(`map/notes-src/${slug}.md`)
 				.then(r => r.ok ? r.text() : '')
@@ -191,6 +231,14 @@
 					h.textContent = title;
 					noteDetailEl.appendChild(h);
 
+					if (CAN_EDIT) {
+						const editBtn = document.createElement('button');
+						editBtn.className = 'note-edit-btn';
+						editBtn.textContent = 'Edit';
+						editBtn.addEventListener('click', () => showNoteEditor(slug, raw));
+						noteDetailEl.appendChild(editBtn);
+					}
+
 					const resolveLinks = text => text.replace(
 						/\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|([^\]]+))?\]\]/g,
 						(_, s, label) => label || (MANIFEST[s.trim()]?.title || s.trim())
@@ -202,14 +250,24 @@
 						p.textContent = 'No notes yet.';
 						noteDetailEl.appendChild(p);
 					} else {
-						const list = document.createElement('ul');
-						list.className = 'note-detail-list';
-						content.split(/\r?\n\s*\r?\n/).map(p => p.trim()).filter(Boolean).forEach(p => {
-							const li = document.createElement('li');
-							li.textContent = resolveLinks(p);
-							list.appendChild(li);
+						content.split(/\r?\n\s*\r?\n/).map(p => p.trim()).filter(Boolean).forEach(block => {
+							const lines = block.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+							const isList = lines.length > 1 && lines.every(l => /^([-*]|\d+\.)\s+/.test(l));
+							if (isList) {
+								const list = document.createElement('ul');
+								list.className = 'note-detail-list';
+								lines.forEach(l => {
+									const li = document.createElement('li');
+									li.textContent = resolveLinks(l.replace(/^([-*]|\d+\.)\s+/, ''));
+									list.appendChild(li);
+								});
+								noteDetailEl.appendChild(list);
+							} else {
+								const p = document.createElement('p');
+								p.textContent = resolveLinks(block.replace(/\r?\n/g, ' '));
+								noteDetailEl.appendChild(p);
+							}
 						});
-						noteDetailEl.appendChild(list);
 					}
 
 					const entry = MANIFEST[slug];
