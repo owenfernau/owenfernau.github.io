@@ -239,10 +239,19 @@
 						noteDetailEl.appendChild(editBtn);
 					}
 
-					const resolveLinks = text => text.replace(
-						/\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|([^\]]+))?\]\]/g,
-						(_, s, label) => label || (MANIFEST[s.trim()]?.title || s.trim())
-					);
+					const escapeHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+					const inlineFormat = text => {
+						let out = escapeHtml(text);
+						out = out.replace(
+							/\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|([^\]]+))?\]\]/g,
+							(_, s, label) => label || (MANIFEST[s.trim()]?.title || s.trim())
+						);
+						out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+						out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+						out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+						out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
+						return out;
+					};
 
 					if (!content || content.toUpperCase() === 'TK') {
 						const p = document.createElement('p');
@@ -258,13 +267,13 @@
 								list.className = 'note-detail-list';
 								lines.forEach(l => {
 									const li = document.createElement('li');
-									li.textContent = resolveLinks(l.replace(/^([-*]|\d+\.)\s+/, ''));
+									li.innerHTML = inlineFormat(l.replace(/^([-*]|\d+\.)\s+/, ''));
 									list.appendChild(li);
 								});
 								noteDetailEl.appendChild(list);
 							} else {
 								const p = document.createElement('p');
-								p.textContent = resolveLinks(block.replace(/\r?\n/g, ' '));
+								p.innerHTML = inlineFormat(block.replace(/\r?\n/g, ' '));
 								noteDetailEl.appendChild(p);
 							}
 						});
