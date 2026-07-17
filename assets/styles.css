@@ -379,85 +379,112 @@ hr {
     pointer-events: none;
 }
 
-#note-detail {
+#note-trail {
     font-family: "IBM Plex Mono", monospace;
     color: #000;
 }
-#note-detail:not(:empty) {
+.note-breadcrumb {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 10px;
+}
+.note-breadcrumb-item {
+    cursor: pointer;
+    text-decoration: underline;
+}
+.note-breadcrumb-item:last-child {
+    color: #000;
+    text-decoration: none;
+    cursor: default;
+}
+.note-breadcrumb-sep {
+    margin: 0 6px;
+    color: #999;
+}
+.note-box {
     border: 1px solid #000;
     background: #fff;
     padding: 14px 18px;
     margin-bottom: 24px;
 }
-#note-detail h3 {
+.note-box.collapsed {
+    padding: 8px 18px;
+}
+.note-box.collapsed h3 {
+    margin: 0;
+    font-size: 13px;
+    color: #555;
+}
+.note-box h3 {
+    cursor: pointer;
     margin: 0 0 10px;
     font-size: 14px;
 }
-#note-detail ul.note-detail-list {
+.note-box ul.note-detail-list {
     list-style: none;
     margin: 0 0 10px;
     padding: 0;
 }
-#note-detail ul.note-detail-list > li {
+.note-box ul.note-detail-list > li {
     font-size: 13px;
     line-height: 1.5;
     padding-left: 1.3em;
     text-indent: -1.3em;
     margin: 0 0 8px;
 }
-#note-detail ul.note-detail-list > li::before {
+.note-box ul.note-detail-list > li::before {
     content: "– ";
 }
-#note-detail ul:not(.note-detail-list),
-#note-detail ol {
+.note-box ul:not(.note-detail-list),
+.note-box ol {
     list-style: none;
     margin: 0 0 10px;
     padding: 0;
     counter-reset: note-ol;
 }
-#note-detail ul:not(.note-detail-list) > li,
-#note-detail ol > li {
+.note-box ul:not(.note-detail-list) > li,
+.note-box ol > li {
     font-size: 13px;
     line-height: 1.5;
     padding-left: 1.3em;
     text-indent: -1.3em;
     margin: 0 0 8px;
 }
-#note-detail ul:not(.note-detail-list) > li::before {
+.note-box ul:not(.note-detail-list) > li::before {
     content: "– ";
 }
-#note-detail ol > li {
+.note-box ol > li {
     counter-increment: note-ol;
 }
-#note-detail ol > li::before {
+.note-box ol > li::before {
     content: counter(note-ol) ". ";
 }
-#note-detail p {
+.note-box p {
     font-size: 13px;
     line-height: 1.5;
     margin: 0 0 10px;
 }
-#note-detail hr {
+.note-box hr {
     border: none;
     border-top: 1px solid #000;
     margin: 4px 0 14px;
 }
-#note-detail .note-detail-empty {
+.note-box .note-detail-empty {
     color: #6c6c63;
 }
-#note-detail .note-detail-links {
+.note-box .note-detail-links {
     margin-top: 10px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
 }
-#note-detail .note-link {
+.note-box .note-link {
     font-size: 12px;
     color: #555;
     cursor: pointer;
     text-decoration: underline;
 }
-#note-detail .note-edit-btn {
+.note-box .note-edit-btn {
     font-family: inherit;
     font-size: 11px;
     color: #555;
@@ -467,11 +494,11 @@ hr {
     margin-bottom: 10px;
     cursor: pointer;
 }
-#note-detail .note-edit-btn:hover {
+.note-box .note-edit-btn:hover {
     color: #000;
     border-color: #000;
 }
-#note-detail .note-editor {
+.note-box .note-editor {
     width: 100%;
     min-height: 220px;
     font-family: "IBM Plex Mono", monospace;
@@ -481,12 +508,12 @@ hr {
     box-sizing: border-box;
     resize: vertical;
 }
-#note-detail .note-editor-actions {
+.note-box .note-editor-actions {
     margin-top: 10px;
     display: flex;
     gap: 10px;
 }
-#note-detail .note-editor-actions button {
+.note-box .note-editor-actions button {
     font-family: inherit;
     font-size: 12px;
     padding: 4px 12px;

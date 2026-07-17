@@ -23,7 +23,7 @@
 	<p class="page-subtitle">Working notes of personal interests aiming to be evergreen. Click a block below to read its notes. Last update: <span id="map-updated"></span></p>
 	<br>
 	<div id="treemap-wrap"><svg id="treemap" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid meet"></svg></div>
-	<div id="note-detail"></div>
+	<div id="note-trail"></div>
 	<br>
 
 	<!-- Hidden: source-of-truth hierarchy the treemap above reads. Edited via
@@ -174,10 +174,63 @@
 			});
 		})();
 
-		// Note detail panel: populated from the same notes-src markdown the
-		// word-count loop above reads, so clicking a treemap block shows real content.
-		const noteDetailEl = document.getElementById('note-detail');
+		// Branch color: one color per top-level tree-data node, shared by the
+		// treemap cells and the note boxes so a note stays visually tied to
+		// its category even once it's the only thing on screen.
+		const branchColor = d3.scaleOrdinal()
+			.domain([...document.querySelectorAll('#tree-data > li')]
+				.map(li => li.querySelector(':scope > .node-title[data-slug]')?.textContent.trim()))
+			.range(['#3b3b8f', '#8f3b6b', '#3b8f6b', '#8f6b3b', '#6b3b8f', '#3b6b8f', '#3b6b3b', '#6b3b3b']);
+
+		const SLUG_COLOR = {};
+		function assignSlugColors(li, color) {
+			const title = li.querySelector(':scope > .node-title[data-slug]');
+			if (!title) return;
+			SLUG_COLOR[title.dataset.slug] = color;
+			const subList = li.querySelector(':scope > ul.sub-list');
+			if (subList) subList.querySelectorAll(':scope > li').forEach(child => assignSlugColors(child, color));
+		}
+		document.querySelectorAll('#tree-data > li').forEach(li => {
+			const title = li.querySelector(':scope > .node-title[data-slug]');
+			if (title) assignSlugColors(li, branchColor(title.textContent.trim()));
+		});
+
+		function tint(hex, alpha) {
+			const n = parseInt(hex.slice(1), 16);
+			return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+		}
+
+		// Note trail: a stack of open notes reflecting the drill-down path.
+		// Clicking a wikilink inside a box appends (or, if already open
+		// earlier in the trail, truncates back to) that note below it.
+		// Clicking a treemap block starts a fresh trail.
+		const trailEl = document.getElementById('note-trail');
 		const CAN_EDIT = ['localhost', '127.0.0.1'].includes(location.hostname);
+		let trail = [];
+		// Only the last box in the trail is expanded by default; earlier ones
+		// collapse to a title bar. A slug present here overrides that default.
+		let expandedOverride = {};
+
+		function isExpanded(slug, isLast) {
+			return expandedOverride.hasOwnProperty(slug) ? expandedOverride[slug] : isLast;
+		}
+
+		function toggleBox(slug, isLast) {
+			expandedOverride[slug] = !isExpanded(slug, isLast);
+			renderTrail();
+		}
+
+		function openRoot(slug) {
+			trail = [slug];
+			expandedOverride = {};
+			renderTrail();
+		}
+
+		function openNote(slug) {
+			const idx = trail.indexOf(slug);
+			trail = idx !== -1 ? trail.slice(0, idx + 1) : [...trail, slug];
+			renderTrail();
+		}
 
 		function saveNote(slug, content) {
 			return fetch('/api/save-note', {
@@ -187,12 +240,12 @@
 			}).then(r => { if (!r.ok) throw new Error('save failed'); });
 		}
 
-		function showNoteEditor(slug, raw) {
-			noteDetailEl.innerHTML = '';
+		function fillEditor(box, slug, raw, isLast) {
+			box.innerHTML = '';
 			const textarea = document.createElement('textarea');
 			textarea.className = 'note-editor';
 			textarea.value = raw;
-			noteDetailEl.appendChild(textarea);
+			box.appendChild(textarea);
 
 			const actions = document.createElement('div');
 			actions.className = 'note-editor-actions';
@@ -202,14 +255,14 @@
 			cancelBtn.textContent = 'Cancel';
 			actions.appendChild(saveBtn);
 			actions.appendChild(cancelBtn);
-			noteDetailEl.appendChild(actions);
+			box.appendChild(actions);
 
-			cancelBtn.addEventListener('click', () => showNoteDetail(slug));
+			cancelBtn.addEventListener('click', () => fillNoteBox(box, slug, isLast));
 			saveBtn.addEventListener('click', () => {
 				saveBtn.disabled = true;
 				saveBtn.textContent = 'Saving…';
 				saveNote(slug, textarea.value)
-					.then(() => showNoteDetail(slug))
+					.then(() => fillNoteBox(box, slug, isLast))
 					.catch(() => {
 						saveBtn.disabled = false;
 						saveBtn.textContent = 'Save failed, retry';
@@ -217,7 +270,7 @@
 			});
 		}
 
-		function showNoteDetail(slug) {
+		function fillNoteBox(box, slug, isLast) {
 			fetch(`map/notes-src/${slug}.md`)
 				.then(r => r.ok ? r.text() : '')
 				.then(raw => {
@@ -226,17 +279,18 @@
 					const titleMatch = raw.match(/^title:\s*(.+)$/m);
 					const title = titleMatch ? titleMatch[1].trim() : slug;
 
-					noteDetailEl.innerHTML = '';
+					box.innerHTML = '';
 					const h = document.createElement('h3');
 					h.textContent = title;
-					noteDetailEl.appendChild(h);
+					h.addEventListener('click', () => toggleBox(slug, isLast));
+					box.appendChild(h);
 
 					if (CAN_EDIT) {
 						const editBtn = document.createElement('button');
 						editBtn.className = 'note-edit-btn';
 						editBtn.textContent = 'Edit';
-						editBtn.addEventListener('click', () => showNoteEditor(slug, raw));
-						noteDetailEl.appendChild(editBtn);
+						editBtn.addEventListener('click', () => fillEditor(box, slug, raw, isLast));
+						box.appendChild(editBtn);
 					}
 
 					const escapeHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -244,9 +298,13 @@
 						let out = escapeHtml(text);
 						out = out.replace(
 							/\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|([^\]]+))?\]\]/g,
-							(_, s, label) => label || (MANIFEST[s.trim()]?.title || s.trim())
+							(_, s, label) => {
+								s = s.trim();
+								const display = label || (MANIFEST[s]?.title || s);
+								return `<span class="note-link" data-slug="${s}">${display}</span>`;
+							}
 						);
-						out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+						out = out.replace(/\[([^\]]+)\]\s*\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
 						out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 						out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
 						out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
@@ -257,11 +315,11 @@
 						const p = document.createElement('p');
 						p.className = 'note-detail-empty';
 						p.textContent = 'No notes yet.';
-						noteDetailEl.appendChild(p);
+						box.appendChild(p);
 					} else {
 						content.split(/\r?\n\s*\r?\n/).map(p => p.trim()).filter(Boolean).forEach(block => {
 							if (/^(-{3,}|\*{3,}|_{3,})$/.test(block)) {
-								noteDetailEl.appendChild(document.createElement('hr'));
+								box.appendChild(document.createElement('hr'));
 								return;
 							}
 							const lines = block.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
@@ -274,30 +332,71 @@
 									li.innerHTML = inlineFormat(l.replace(/^([-*]|\d+\.)\s+/, ''));
 									list.appendChild(li);
 								});
-								noteDetailEl.appendChild(list);
+								box.appendChild(list);
 							} else {
 								const p = document.createElement('p');
 								p.innerHTML = inlineFormat(block.replace(/\r?\n/g, ' '));
-								noteDetailEl.appendChild(p);
+								box.appendChild(p);
 							}
 						});
 					}
 
+					box.querySelectorAll('.note-link[data-slug]').forEach(el => {
+						el.addEventListener('click', () => openNote(el.dataset.slug));
+					});
+
 					const entry = MANIFEST[slug];
-					if (entry && (entry.links.length || entry.backlinks.length)) {
+					if (entry && entry.backlinks.length) {
 						const linksWrap = document.createElement('div');
 						linksWrap.className = 'note-detail-links';
-						[...entry.links.map(s => ({ dir: '→', s })), ...entry.backlinks.map(s => ({ dir: '←', s }))]
-							.forEach(({ dir, s }) => {
-								const span = document.createElement('span');
-								span.className = 'note-link';
-								span.textContent = `${dir} ${(MANIFEST[s] || {}).title || s}`;
-								span.addEventListener('click', () => showNoteDetail(s));
-								linksWrap.appendChild(span);
-							});
-						noteDetailEl.appendChild(linksWrap);
+						entry.backlinks.forEach(s => {
+							const span = document.createElement('span');
+							span.className = 'note-link';
+							span.textContent = `← ${(MANIFEST[s] || {}).title || s}`;
+							span.addEventListener('click', () => openNote(s));
+							linksWrap.appendChild(span);
+						});
+						box.appendChild(linksWrap);
 					}
 				});
+		}
+
+		function renderTrail() {
+			trailEl.innerHTML = '';
+			if (trail.length > 1) {
+				const crumbs = document.createElement('div');
+				crumbs.className = 'note-breadcrumb';
+				trail.forEach((slug, i) => {
+					if (i > 0) {
+						const sep = document.createElement('span');
+						sep.className = 'note-breadcrumb-sep';
+						sep.textContent = '›';
+						crumbs.appendChild(sep);
+					}
+					const seg = document.createElement('span');
+					seg.className = 'note-breadcrumb-item';
+					seg.textContent = (MANIFEST[slug] || {}).title || slug;
+					seg.addEventListener('click', () => { trail = trail.slice(0, i + 1); renderTrail(); });
+					crumbs.appendChild(seg);
+				});
+				trailEl.appendChild(crumbs);
+			}
+			trail.forEach((slug, i) => {
+				const isLast = i === trail.length - 1;
+				const expanded = isExpanded(slug, isLast);
+				const box = document.createElement('div');
+				box.className = 'note-box' + (expanded ? '' : ' collapsed');
+				if (SLUG_COLOR[slug]) box.style.backgroundColor = tint(SLUG_COLOR[slug], 0.18);
+				trailEl.appendChild(box);
+				if (expanded) {
+					fillNoteBox(box, slug, isLast);
+				} else {
+					const h = document.createElement('h3');
+					h.textContent = (MANIFEST[slug] || {}).title || slug;
+					h.addEventListener('click', () => toggleBox(slug, isLast));
+					box.appendChild(h);
+				}
+			});
 		}
 
 		// Treemap overview: built from the hidden #tree-data DOM + the note
@@ -330,9 +429,6 @@
 			});
 			const data = { name: 'root', children: roots };
 
-			const branchColor = d3.scaleOrdinal()
-				.domain(roots.map(d => d.name))
-				.range(['#3b3b8f', '#8f3b6b', '#3b8f6b', '#8f6b3b', '#6b3b8f', '#3b6b8f', '#3b6b3b', '#6b3b3b']);
 			function topBranch(node) {
 				while (node.depth > 1) node = node.parent;
 				return node.data.name;
@@ -356,7 +452,7 @@
 				.join('g')
 				.attr('class', 'tm-cell')
 				.attr('transform', d => `translate(${d.x0},${d.y0})`)
-				.on('click', (e, d) => showNoteDetail(d.data.slug));
+				.on('click', (e, d) => openRoot(d.data.slug));
 
 			cell.append('clipPath')
 				.attr('id', d => `tm-clip-${d.data.slug}`)

@@ -31,7 +31,7 @@ function renderInline(text, titleMap) {
     const display = label ? label.trim() : (titleMap[slug] || slug);
     return `<a href="${href}">${display}</a>`;
   });
-  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  text = text.replace(/\[([^\]]+)\]\s*\(([^)]+)\)/g, '<a href="$2">$1</a>');
   text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*]+)\*/g, '<em>$1</em>');
   text = text.replace(/`([^`]+)`/g, '<code>$1</code>');

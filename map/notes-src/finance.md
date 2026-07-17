@@ -16,4 +16,6 @@ BOJ hiked to 1% June 2026, highest since 1995
 
 Remember demographics, esp. Japan
 
+The concept that passive flows from indexes, influence asset prices (e.g. SpaceX's inclusion in Nasdaq)
+
 [[national-debt]]
