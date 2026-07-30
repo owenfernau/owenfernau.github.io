@@ -142,6 +142,21 @@ hr {
 /* Expandable list items */
 .expandable {
     cursor: pointer;
+    margin: 0 -8px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    transition: background-color 0.1s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .expandable:hover:not(:has(> .sub-list:hover)) {
+        background-color: rgba(0, 0, 0, 0.07);
+    }
+
+    .expandable:hover:not(:has(> .sub-list:hover)) > .arrow:not(.chevron) {
+        background-color: #000;
+        color: #eaebea;
+    }
 }
 
 .arrow {
