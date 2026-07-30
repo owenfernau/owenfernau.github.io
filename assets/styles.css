@@ -337,6 +337,8 @@ hr {
 .profile-map-link {
     padding: 5px 10px;
     align-self: flex-end;
+    position: relative;
+    z-index: 1;
 }
 
 @media (max-width: 600px) {
@@ -355,6 +357,17 @@ hr {
 
     .tagline {
         text-align: left;
+        order: 1;
+    }
+
+    .tagline-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    .profile-map-link {
+        order: 2;
     }
 }
 
