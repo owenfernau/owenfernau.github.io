@@ -327,6 +327,18 @@ hr {
     text-align: right;
 }
 
+.tagline-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    align-self: stretch;
+}
+
+.profile-map-link {
+    padding: 5px 10px;
+    align-self: flex-end;
+}
+
 @media (max-width: 600px) {
     .profile-block {
         float: none;

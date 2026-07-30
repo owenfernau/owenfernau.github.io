@@ -20,7 +20,10 @@
 		<hr>
 		<div class="profile-block">
 			<img src="assets/headshot.png" alt="Owen Fernau" class="headshot">
-			<p class="tagline">writing +<br>operations</p>
+			<div class="tagline-row">
+				<a href="map.html" class="button notes profile-map-link">mind map</a>
+				<p class="tagline">writing +<br>operations</p>
+			</div>
 		</div>
 		<ul class="bio-list">
 			<br>
@@ -65,9 +68,9 @@
 			<!-- Demo link pre-consolidation, may move -->
 			<li class="expandable"> <span class="arrow"></span> Prototyping an AI matching layer for online communities, <a href="https://graph2-production-831d.up.railway.app/bluedot-demo-owen.html">Graph</a>
 					<ul class="sub-list">
-						<li> ○ Turns a member's intro/profile text into a structured profile of goals, skills, and interests, then generates matches between members</li>
-						<li> ○ Every "shared interest" match is checked against verbatim quotes in both profiles before being shown, so matches can't be hallucinated</li>
-						<li> ○ Built as a reusable community layer: a config object retargets the same profile and matching pipeline to any community, tested on AI Safety, Ethereum, and startup-founder groups</li>
+						<li> ○ Turns intro text into a structured profile of goals, skills, and interests, then matches members</li>
+						<li> ○ Matches are checked against verbatim quotes in both profiles, so they can't be hallucinated</li>
+						<li> ○ A config object retargets the same pipeline to any community, tested on AI Safety, Ethereum, and startup founders</li>
 					</ul>
 				</li>
 			<br>
