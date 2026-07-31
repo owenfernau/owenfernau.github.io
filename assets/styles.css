@@ -73,7 +73,6 @@ body {
 
 /* Bio list styling */
 .bio-list {
-    position: relative;
     font-family: "IBM Plex Mono", monospace;
     font-weight: 400;
     font-size: 14px;
@@ -141,6 +140,7 @@ hr {
 
 /* Expandable list items */
 .expandable {
+    display: flow-root;
     cursor: pointer;
     margin: 0 -8px;
     padding: 2px 8px;
