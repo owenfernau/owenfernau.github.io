@@ -2,6 +2,8 @@
 title: Treasuries
 ---
 
+__Scratch Notes__
+
 Long bond yields (30 year, 10 year?) trending up since COVID
 
 Higher rates put pressure on national debt repayment

@@ -419,6 +419,37 @@ hr {
     pointer-events: none;
 }
 
+#mobile-tree {
+    display: none;
+    margin: 4px 0 24px;
+}
+#mobile-tree .tree-row {
+    display: flow-root;
+    margin: 0 -8px;
+    padding: 6px 8px;
+}
+#mobile-tree > li.tree-row {
+    margin-top: 6px;
+    border-radius: 2px;
+}
+#mobile-tree > li.tree-row:first-child {
+    margin-top: 0;
+}
+#mobile-tree .sub-list {
+    padding-left: 20px;
+    padding-top: 0;
+    margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+    #treemap-wrap {
+        display: none;
+    }
+    #mobile-tree {
+        display: block;
+    }
+}
+
 #note-trail {
     font-family: "IBM Plex Mono", monospace;
     color: #000;

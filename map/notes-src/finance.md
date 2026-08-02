@@ -2,6 +2,8 @@
 title: Finance
 ---
 
+__Scratch Notes__
+
 Top 4 assets in the world
 
 Prices can't go down? https://geohot.github.io/blog/jekyll/update/2026/06/18/prices-cant-go-down.html

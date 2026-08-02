@@ -20,9 +20,10 @@
 	</div>
 	<hr>
 	<br>
-	<p class="page-subtitle">Working notes of personal interests aiming to be evergreen. Click a block below to read its notes. Last update: <span id="map-updated"></span></p>
+	<p class="page-subtitle">Working notes of personal interests. Click a block below to read its notes. Last update: <span id="map-updated"></span></p>
 	<br>
 	<div id="treemap-wrap"><svg id="treemap" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid meet"></svg></div>
+	<ul class="bio-list" id="mobile-tree"></ul>
 	<div id="note-trail"></div>
 	<br>
 
@@ -307,6 +308,7 @@
 						out = out.replace(/\[([^\]]+)\]\s*\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
 						out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 						out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+						out = out.replace(/__([^_]+)__/g, '<u>$1</u>');
 						out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
 						return out;
 					};
@@ -317,27 +319,61 @@
 						p.textContent = 'No notes yet.';
 						box.appendChild(p);
 					} else {
-						content.split(/\r?\n\s*\r?\n/).map(p => p.trim()).filter(Boolean).forEach(block => {
+						// Splits into paragraph blocks like a blank-line split, but also
+						// counts how many blank lines separated them, so typing extra
+						// blank lines for emphasis actually renders as extra space.
+						function splitBlocks(text) {
+							const blocks = [];
+							let current = [];
+							let blankRun = 0;
+							let started = false;
+							function flush() {
+								if (current.length) {
+									blocks.push({ text: current.join('\n'), gap: started ? blankRun : 0 });
+									current = [];
+									started = true;
+								}
+							}
+							text.split(/\r?\n/).forEach(line => {
+								if (line.trim() === '') {
+									if (current.length) {
+										flush();
+										blankRun = 0;
+									}
+									blankRun++;
+								} else {
+									current.push(line);
+								}
+							});
+							flush();
+							return blocks;
+						}
+
+						splitBlocks(content).forEach(({ text: rawBlock, gap }) => {
+							const block = rawBlock.trim();
+							if (!block) return;
+							const extraGap = Math.max(0, gap - 1);
 							if (/^(-{3,}|\*{3,}|_{3,})$/.test(block)) {
 								box.appendChild(document.createElement('hr'));
 								return;
 							}
 							const lines = block.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 							const isList = lines.length > 1 && lines.every(l => /^([-*]|\d+\.)\s+/.test(l));
+							let el;
 							if (isList) {
-								const list = document.createElement('ul');
-								list.className = 'note-detail-list';
+								el = document.createElement('ul');
+								el.className = 'note-detail-list';
 								lines.forEach(l => {
 									const li = document.createElement('li');
 									li.innerHTML = inlineFormat(l.replace(/^([-*]|\d+\.)\s+/, ''));
-									list.appendChild(li);
+									el.appendChild(li);
 								});
-								box.appendChild(list);
 							} else {
-								const p = document.createElement('p');
-								p.innerHTML = inlineFormat(block.replace(/\r?\n/g, ' '));
-								box.appendChild(p);
+								el = document.createElement('p');
+								el.innerHTML = inlineFormat(block.replace(/\r?\n/g, ' '));
 							}
+							if (extraGap) el.style.marginTop = `${extraGap * 14}px`;
+							box.appendChild(el);
 						});
 					}
 
@@ -517,6 +553,65 @@
 		}
 
 		Promise.all([manifestPromise, ...notePromises]).then(renderTreemap);
+
+		// Mobile fallback: the same #tree-data hierarchy as an accordion list
+		// (reuses the .bio-list/.expandable pattern from the Links section)
+		// instead of the treemap, which doesn't read well on narrow screens.
+		function buildMobileNode(li, depth) {
+			const title = li.querySelector(':scope > .node-title[data-slug]');
+			if (!title) return null;
+			const slug = title.dataset.slug;
+			const subList = li.querySelector(':scope > ul.sub-list');
+			const children = subList ? [...subList.querySelectorAll(':scope > li')] : [];
+
+			const item = document.createElement('li');
+			item.className = children.length ? 'expandable tree-row' : 'tree-row';
+			const color = SLUG_COLOR[slug];
+			if (color) {
+				if (depth === 1) item.style.borderLeft = `4px solid ${color}`;
+				item.style.backgroundColor = tint(color, 0.18);
+			}
+
+			const arrow = document.createElement('span');
+			arrow.className = 'arrow chevron';
+			if (!children.length) arrow.style.visibility = 'hidden';
+			item.appendChild(arrow);
+			item.appendChild(document.createTextNode(' '));
+
+			const titleSpan = document.createElement('span');
+			titleSpan.className = 'node-title';
+			titleSpan.textContent = title.textContent.trim();
+			titleSpan.addEventListener('click', e => {
+				e.stopPropagation();
+				openRoot(slug);
+			});
+			item.appendChild(titleSpan);
+
+			if (children.length) {
+				const childUl = document.createElement('ul');
+				childUl.className = 'sub-list';
+				children.forEach(childLi => {
+					const childNode = buildMobileNode(childLi, depth + 1);
+					if (childNode) childUl.appendChild(childNode);
+				});
+				item.appendChild(childUl);
+				item.addEventListener('click', e => {
+					e.stopPropagation();
+					item.classList.toggle('open');
+				});
+			}
+
+			return item;
+		}
+
+		function renderMobileTree() {
+			const container = document.getElementById('mobile-tree');
+			document.querySelectorAll('#tree-data > li').forEach(li => {
+				const node = buildMobileNode(li, 1);
+				if (node) container.appendChild(node);
+			});
+		}
+		renderMobileTree();
 	</script>
 </body>
 </html>
