@@ -8,7 +8,7 @@ __Scratch Notes__
 
 Graph of debt service as a % of total USG spending: https://fred.stlouisfed.org/graph/?g=1XNkp (15% of USG spending going to debt service sounds immense, but it's actually lower than essentially all the 80s and 90s.)
 
-
+Warsh trying to make the fed more invisible... 
 
 US: $39T
 

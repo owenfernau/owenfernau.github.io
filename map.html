@@ -196,6 +196,31 @@
 			if (title) assignSlugColors(li, branchColor(title.textContent.trim()));
 		});
 
+		function hexToHsl(hex) {
+			const n = parseInt(hex.slice(1), 16);
+			const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+			const max = Math.max(r, g, b), min = Math.min(r, g, b);
+			let h = 0, s = 0;
+			const l = (max + min) / 2;
+			if (max !== min) {
+				const d = max - min;
+				s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+				if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+				else if (max === g) h = (b - r) / d + 2;
+				else h = (r - g) / d + 4;
+				h *= 60;
+			}
+			return [h, s * 100, l * 100];
+		}
+
+		// Each nesting level steps toward a lighter tint of its top-level
+		// branch color, capped so the white cell labels stay legible.
+		function depthFill(hex, depth) {
+			const [h, s, l] = hexToHsl(hex);
+			const lightness = Math.min(l + (depth - 1) * 10, 68);
+			return `hsl(${h}, ${s}%, ${lightness}%)`;
+		}
+
 		function tint(hex, alpha) {
 			const n = parseInt(hex.slice(1), 16);
 			return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
@@ -500,7 +525,7 @@
 				.attr('width', d => Math.max(0, d.x1 - d.x0))
 				.attr('height', d => Math.max(0, d.y1 - d.y0))
 				.attr('fill', d => branchColor(topBranch(d)))
-				.attr('fill-opacity', d => 1 - d.depth * 0.18);
+				.attr('fill-opacity', d => 1 - d.depth * 0.30);
 
 			// Word-wraps a label into <tspan> lines instead of truncating
 			// mid-word, so a narrow column never cuts a name off.

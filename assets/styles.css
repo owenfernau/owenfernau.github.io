@@ -420,7 +420,7 @@ hr {
 }
 
 #mobile-tree {
-    display: none;
+    display: block;
     margin: 4px 0 24px;
 }
 #mobile-tree .tree-row {
@@ -441,13 +441,8 @@ hr {
     margin-bottom: 0;
 }
 
-@media (max-width: 600px) {
-    #treemap-wrap {
-        display: none;
-    }
-    #mobile-tree {
-        display: block;
-    }
+#treemap-wrap {
+    display: none;
 }
 
 #note-trail {
