@@ -20,7 +20,7 @@
 	</div>
 	<hr>
 	<br>
-	<p class="page-subtitle">Working notes of personal interests. Click a block below to read its notes. Last update: <span id="map-updated"></span></p>
+	<p class="page-subtitle">Working notes of personal interests. Last update: <span id="map-updated"></span></p>
 	<br>
 	<div id="treemap-wrap"><svg id="treemap" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid meet"></svg></div>
 	<ul class="bio-list" id="mobile-tree"></ul>
@@ -246,16 +246,38 @@
 			renderTrail();
 		}
 
+		// Populated once by buildMobileNode/renderMobileTree, read here to
+		// keep the accordion highlight synced to whatever's actually being
+		// read below, regardless of how the trail changed (row tap, a
+		// wikilink clicked inside a note, or a breadcrumb jump).
+		let mobileRowBySlug = {};
+		let selectedMobileRow = null;
+		function syncMobileSelection() {
+			if (selectedMobileRow) selectedMobileRow.classList.remove('selected');
+			const row = mobileRowBySlug[trail[trail.length - 1]];
+			selectedMobileRow = row || null;
+			if (row) row.classList.add('selected');
+		}
+
+		function scrollToBox(slug) {
+			requestAnimationFrame(() => {
+				trailEl.querySelector(`.note-box[data-slug="${slug}"]`)
+					?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			});
+		}
+
 		function openRoot(slug) {
 			trail = [slug];
 			expandedOverride = {};
 			renderTrail();
+			scrollToBox(slug);
 		}
 
 		function openNote(slug) {
 			const idx = trail.indexOf(slug);
 			trail = idx !== -1 ? trail.slice(0, idx + 1) : [...trail, slug];
 			renderTrail();
+			scrollToBox(slug);
 		}
 
 		function saveNote(slug, content) {
@@ -437,7 +459,7 @@
 					const seg = document.createElement('span');
 					seg.className = 'note-breadcrumb-item';
 					seg.textContent = (MANIFEST[slug] || {}).title || slug;
-					seg.addEventListener('click', () => { trail = trail.slice(0, i + 1); renderTrail(); });
+					seg.addEventListener('click', () => { trail = trail.slice(0, i + 1); renderTrail(); scrollToBox(slug); });
 					crumbs.appendChild(seg);
 				});
 				trailEl.appendChild(crumbs);
@@ -447,6 +469,7 @@
 				const expanded = isExpanded(slug, isLast);
 				const box = document.createElement('div');
 				box.className = 'note-box' + (expanded ? '' : ' collapsed');
+				box.dataset.slug = slug;
 				if (SLUG_COLOR[slug]) box.style.backgroundColor = tint(SLUG_COLOR[slug], 0.18);
 				trailEl.appendChild(box);
 				if (expanded) {
@@ -458,6 +481,7 @@
 					box.appendChild(h);
 				}
 			});
+			syncMobileSelection();
 		}
 
 		// Treemap overview: built from the hidden #tree-data DOM + the note
@@ -582,14 +606,6 @@
 		// Mobile fallback: the same #tree-data hierarchy as an accordion list
 		// (reuses the .bio-list/.expandable pattern from the Links section)
 		// instead of the treemap, which doesn't read well on narrow screens.
-		let selectedMobileRow = null;
-		function selectMobileRow(item, slug) {
-			if (selectedMobileRow) selectedMobileRow.classList.remove('selected');
-			item.classList.add('selected');
-			selectedMobileRow = item;
-			openRoot(slug);
-		}
-
 		function buildMobileNode(li, depth) {
 			const title = li.querySelector(':scope > .node-title[data-slug]');
 			if (!title) return null;
@@ -599,26 +615,30 @@
 
 			const item = document.createElement('li');
 			item.className = children.length ? 'expandable tree-row' : 'tree-row';
+			mobileRowBySlug[slug] = item;
 			const color = SLUG_COLOR[slug];
 			if (color) {
 				if (depth === 1) item.style.borderLeft = `4px solid ${color}`;
 				item.style.backgroundColor = tint(color, 0.18);
 			}
 
+			const head = document.createElement('span');
+			head.className = 'row-head';
+			item.appendChild(head);
+
 			const arrow = document.createElement('span');
 			arrow.className = 'arrow chevron';
 			if (!children.length) arrow.style.visibility = 'hidden';
-			item.appendChild(arrow);
-			item.appendChild(document.createTextNode(' '));
+			head.appendChild(arrow);
 
 			const titleSpan = document.createElement('span');
 			titleSpan.className = 'node-title';
 			titleSpan.textContent = title.textContent.trim();
 			titleSpan.addEventListener('click', e => {
 				e.stopPropagation();
-				selectMobileRow(item, slug);
+				openRoot(slug);
 			});
-			item.appendChild(titleSpan);
+			head.appendChild(titleSpan);
 
 			if (children.length) {
 				// Tapping the title opens this node's own notes; tapping
@@ -630,7 +650,8 @@
 					if (childNode) childUl.appendChild(childNode);
 				});
 				item.appendChild(childUl);
-				item.addEventListener('click', () => {
+				item.addEventListener('click', e => {
+					e.stopPropagation();
 					item.classList.toggle('open');
 				});
 			}
