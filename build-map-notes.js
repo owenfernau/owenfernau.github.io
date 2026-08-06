@@ -38,37 +38,44 @@ function renderInline(text, titleMap) {
   return text;
 }
 
-function renderBlock(block, titleMap) {
-  const trimmed = block.trim();
+function classifyLine(line) {
+  const trimmed = line.trim();
+  if (trimmed === '') return 'blank';
+  if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) return 'hr';
+  if (/^#{1,3}\s+/.test(trimmed)) return 'heading';
+  if (/^[-*]\s+/.test(trimmed)) return 'ul';
+  if (/^\d+\.\s+/.test(trimmed)) return 'ol';
+  if (trimmed.startsWith('>')) return 'quote';
+  return 'p';
+}
 
-  if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) return '<hr>';
+function renderGroup(kind, lines, titleMap) {
+  if (kind === 'hr') return '<hr>';
 
-  const lines = trimmed.split('\n');
-
-  const heading = trimmed.match(/^(#{1,3})\s+(.+)$/);
-  if (heading && lines.length === 1) {
+  if (kind === 'heading') {
+    const heading = lines[0].trim().match(/^(#{1,3})\s+(.+)$/);
     const level = heading[1].length + 1;
     const text = heading[2].trim();
     const id = slugify(text);
     return `<h${level} id="${id}">${renderInline(text, titleMap)}</h${level}>`;
   }
 
-  if (lines.every(l => /^[-*]\s+/.test(l.trim()))) {
+  if (kind === 'ul') {
     const items = lines.map(l => `<li>${renderInline(l.trim().replace(/^[-*]\s+/, ''), titleMap)}</li>`).join('\n');
     return `<ul>\n${items}\n</ul>`;
   }
 
-  if (lines.every(l => /^\d+\.\s+/.test(l.trim()))) {
+  if (kind === 'ol') {
     const items = lines.map(l => `<li>${renderInline(l.trim().replace(/^\d+\.\s+/, ''), titleMap)}</li>`).join('\n');
     return `<ol>\n${items}\n</ol>`;
   }
 
-  if (lines.every(l => l.trim().startsWith('>'))) {
+  if (kind === 'quote') {
     const text = lines.map(l => l.trim().replace(/^>\s?/, '')).join(' ');
     return `<blockquote>${renderInline(text, titleMap)}</blockquote>`;
   }
 
-  const text = lines.join(' ').trim();
+  const text = lines.map(l => l.trim()).join(' ').trim();
   return `<p>${renderInline(text, titleMap)}</p>`;
 }
 
@@ -84,11 +91,33 @@ function extractLinks(body, titleMap) {
 }
 
 function markdownToHtml(body, titleMap) {
-  return body.split(/\n\s*\n/)
-    .map(b => b.trim())
-    .filter(Boolean)
-    .map(b => renderBlock(b, titleMap))
-    .join('\n\n');
+  const groups = [];
+  let current = null;
+
+  for (const line of body.split(/\r?\n/)) {
+    const kind = classifyLine(line);
+
+    if (kind === 'blank') {
+      current = null;
+      continue;
+    }
+
+    // Headings and hrs are always their own block, even back-to-back.
+    if (kind === 'heading' || kind === 'hr') {
+      groups.push({ kind, lines: [line] });
+      current = null;
+      continue;
+    }
+
+    if (current && current.kind === kind) {
+      current.lines.push(line);
+    } else {
+      current = { kind, lines: [line] };
+      groups.push(current);
+    }
+  }
+
+  return groups.map(g => renderGroup(g.kind, g.lines, titleMap)).join('\n\n');
 }
 
 function main() {

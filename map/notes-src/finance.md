@@ -6,6 +6,8 @@ __Scratch Notes__
 
 Top 4 assets in the world
 
+[Kelly Criterion](https://en.wikipedia.org/wiki/Kelly_criterion) (for risk allocation)
+
 [Prices can't go down?](https://geohot.github.io/blog/jekyll/update/2026/06/18/prices-cant-go-down.html)
 
 Where does value accrue assuming some form of "agentic finance"? (agents don't watch ads)

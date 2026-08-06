@@ -582,6 +582,14 @@
 		// Mobile fallback: the same #tree-data hierarchy as an accordion list
 		// (reuses the .bio-list/.expandable pattern from the Links section)
 		// instead of the treemap, which doesn't read well on narrow screens.
+		let selectedMobileRow = null;
+		function selectMobileRow(item, slug) {
+			if (selectedMobileRow) selectedMobileRow.classList.remove('selected');
+			item.classList.add('selected');
+			selectedMobileRow = item;
+			openRoot(slug);
+		}
+
 		function buildMobileNode(li, depth) {
 			const title = li.querySelector(':scope > .node-title[data-slug]');
 			if (!title) return null;
@@ -608,11 +616,13 @@
 			titleSpan.textContent = title.textContent.trim();
 			titleSpan.addEventListener('click', e => {
 				e.stopPropagation();
-				openRoot(slug);
+				selectMobileRow(item, slug);
 			});
 			item.appendChild(titleSpan);
 
 			if (children.length) {
+				// Tapping the title opens this node's own notes; tapping
+				// anywhere else on the row expands/collapses its children.
 				const childUl = document.createElement('ul');
 				childUl.className = 'sub-list';
 				children.forEach(childLi => {
@@ -620,8 +630,7 @@
 					if (childNode) childUl.appendChild(childNode);
 				});
 				item.appendChild(childUl);
-				item.addEventListener('click', e => {
-					e.stopPropagation();
+				item.addEventListener('click', () => {
 					item.classList.toggle('open');
 				});
 			}
