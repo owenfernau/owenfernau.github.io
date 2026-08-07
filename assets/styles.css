@@ -461,10 +461,23 @@ hr {
 #mobile-tree > li.tree-row:first-child {
     margin-top: 0;
 }
+#mobile-tree .sub-list > li.tree-row {
+    margin-top: 4px;
+}
+#mobile-tree .sub-list > li.tree-row:first-child {
+    margin-top: 0;
+}
 #mobile-tree .sub-list {
     padding-left: 20px;
     padding-top: 0;
     margin-bottom: 0;
+}
+/* Reset the .sub-list > li hanging-indent trick (padding-left/text-indent
+   pair meant for bullet-style bio-list text) — it leaks into these rows
+   and shoves the flex arrow+title row out of place. */
+#mobile-tree .sub-list > li {
+    padding-left: 0;
+    text-indent: 0;
 }
 /* Real flex row for the arrow + title, so they align on the same center
    line regardless of font metrics (vertical-align on inline elements
@@ -491,14 +504,13 @@ hr {
     border-color: #000;
 }
 #mobile-tree .node-title {
-    text-decoration: underline;
-    text-decoration-color: rgba(0, 0, 0, 0.3);
-    text-underline-offset: 3px;
-}
-/* Top-level rows sit right above their (darker) sub-list background,
-   which the underline visually collides with, so drop it at this level. */
-#mobile-tree > li.tree-row > .row-head > .node-title {
     text-decoration: none;
+}
+#mobile-tree > li.tree-row {
+    padding-left: 12px;
+}
+#mobile-tree > li.tree-row > .row-head > .node-title {
+    font-weight: 600;
 }
 #mobile-tree .tree-row.selected {
     box-shadow: inset 0 0 0 2px #000;

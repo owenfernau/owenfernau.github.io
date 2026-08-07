@@ -692,10 +692,7 @@
 			item.className = children.length ? 'expandable tree-row' : 'tree-row';
 			mobileRowBySlug[slug] = item;
 			const color = SLUG_COLOR[slug];
-			if (color) {
-				if (depth === 1) item.style.borderLeft = `4px solid ${color}`;
-				item.style.backgroundColor = tint(color, 0.18);
-			}
+			if (color && depth === 1) item.style.borderLeft = `3px solid ${color}`;
 
 			const head = document.createElement('span');
 			head.className = 'row-head';
