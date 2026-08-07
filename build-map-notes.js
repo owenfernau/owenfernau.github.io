@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = __dirname;
-const SRC_DIR = path.join(ROOT, 'map', 'notes-src');
-const OUT_DIR = path.join(ROOT, 'map', 'notes');
-const TEMPLATE = fs.readFileSync(path.join(ROOT, 'map', 'notes-template.html'), 'utf8');
+const SRC_DIR = path.join(ROOT, 'publicnotes', 'notes-src');
+const OUT_DIR = path.join(ROOT, 'publicnotes', 'notes');
+const TEMPLATE = fs.readFileSync(path.join(ROOT, 'publicnotes', 'notes-template.html'), 'utf8');
 const MANIFEST_PATH = path.join(OUT_DIR, 'manifest.json');
 
 function parseFrontmatter(raw) {

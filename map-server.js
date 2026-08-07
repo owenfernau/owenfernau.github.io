@@ -5,9 +5,10 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { addLink } = require('./add-map-node');
 
 const ROOT = __dirname;
-const SRC_DIR = path.join(ROOT, 'map', 'notes-src');
+const SRC_DIR = path.join(ROOT, 'publicnotes', 'notes-src');
 const PORT = 8080;
 
 const MIME = {
@@ -46,13 +47,32 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.method === 'POST' && req.url === '/api/add-link') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const { title, url } = JSON.parse(body);
+        if (!title || !url || typeof title !== 'string' || typeof url !== 'string') {
+          res.writeHead(400).end('bad request');
+          return;
+        }
+        addLink(title, url);
+        res.writeHead(200, { 'Content-Type': 'application/json' }).end('{"ok":true}');
+      } catch (err) {
+        res.writeHead(500).end(String(err));
+      }
+    });
+    return;
+  }
+
   if (req.method !== 'GET') {
     res.writeHead(405).end('method not allowed');
     return;
   }
 
   let reqPath = decodeURIComponent(req.url.split('?')[0]);
-  if (reqPath === '/') reqPath = '/map.html';
+  if (reqPath === '/') reqPath = '/publicnotes.html';
   const filePath = path.normalize(path.join(ROOT, reqPath));
   if (!filePath.startsWith(ROOT)) {
     res.writeHead(403).end('forbidden');
@@ -71,5 +91,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, '127.0.0.1', () => {
-  console.log(`Map dev server running at http://localhost:${PORT}/map.html`);
+  console.log(`Map dev server running at http://localhost:${PORT}/publicnotes.html`);
 });

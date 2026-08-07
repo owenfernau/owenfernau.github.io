@@ -1,0 +1,138 @@
+{
+  "ai-capability": {
+    "title": "AI Capability",
+    "links": [],
+    "backlinks": []
+  },
+  "ai-economic-impact": {
+    "title": "AI Economic Impact",
+    "links": [],
+    "backlinks": []
+  },
+  "ai-safety": {
+    "title": "AI Safety",
+    "links": [],
+    "backlinks": []
+  },
+  "algorithms": {
+    "title": "Algorithms",
+    "links": [],
+    "backlinks": []
+  },
+  "chip-design": {
+    "title": "Chip Design",
+    "links": [],
+    "backlinks": []
+  },
+  "chips": {
+    "title": "Chips",
+    "links": [],
+    "backlinks": []
+  },
+  "computing-power": {
+    "title": "Computing Power",
+    "links": [],
+    "backlinks": []
+  },
+  "data-centers": {
+    "title": "Data Centers",
+    "links": [],
+    "backlinks": []
+  },
+  "data": {
+    "title": "Data",
+    "links": [],
+    "backlinks": []
+  },
+  "distribution": {
+    "title": "Distribution",
+    "links": [],
+    "backlinks": []
+  },
+  "energy": {
+    "title": "Energy",
+    "links": [],
+    "backlinks": []
+  },
+  "enterprise-data-privacy": {
+    "title": "Enterprise Data Privacy",
+    "links": [
+      "finance"
+    ],
+    "backlinks": []
+  },
+  "euv": {
+    "title": "EUV",
+    "links": [],
+    "backlinks": []
+  },
+  "fabrication": {
+    "title": "Fabrication",
+    "links": [],
+    "backlinks": []
+  },
+  "finance": {
+    "title": "Finance",
+    "links": [
+      "national-debt"
+    ],
+    "backlinks": [
+      "enterprise-data-privacy"
+    ]
+  },
+  "generation": {
+    "title": "Generation",
+    "links": [],
+    "backlinks": []
+  },
+  "hbm-memory": {
+    "title": "HBM Memory",
+    "links": [],
+    "backlinks": []
+  },
+  "info-delivery": {
+    "title": "Information Delivery Systems",
+    "links": [],
+    "backlinks": []
+  },
+  "interpretability": {
+    "title": "Interpretability",
+    "links": [],
+    "backlinks": []
+  },
+  "national-debt": {
+    "title": "National Debt",
+    "links": [],
+    "backlinks": [
+      "finance"
+    ]
+  },
+  "philanthropy": {
+    "title": "Philanthropy",
+    "links": [],
+    "backlinks": []
+  },
+  "physics": {
+    "title": "Physics",
+    "links": [],
+    "backlinks": []
+  },
+  "robotics": {
+    "title": "Robotics",
+    "links": [],
+    "backlinks": []
+  },
+  "transmission": {
+    "title": "Transmission",
+    "links": [],
+    "backlinks": []
+  },
+  "treasuries": {
+    "title": "Treasuries",
+    "links": [],
+    "backlinks": []
+  },
+  "_meta": {
+    "generatedAt": "2026-08-06"
+  }
+}

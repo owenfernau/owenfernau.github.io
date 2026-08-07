@@ -631,8 +631,40 @@ hr {
     cursor: pointer;
 }
 
+#add-link-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+#add-link-form input {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 15px;
+    padding: 10px 12px;
+    border: 1px solid #000;
+    border-radius: 0;
+    box-sizing: border-box;
+}
+#add-link-title {
+    flex: 1;
+}
+#add-link-url {
+    flex: 2;
+}
+#add-link-btn {
+    font-family: inherit;
+    font-size: 15px;
+    padding: 10px 20px;
+    border: 1px solid #000;
+    border-radius: 0;
+    background: none;
+    cursor: pointer;
+}
+#add-link-btn:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
 /* #tree-data is the hidden source-of-truth hierarchy the treemap reads from;
-   it's never meant to be seen directly, see map.html */
+   it's never meant to be seen directly, see publicnotes.html */
 #tree-data {
     display: none;
 }

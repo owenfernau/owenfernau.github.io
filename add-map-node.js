@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = __dirname;
-const MAP_HTML = path.join(ROOT, 'map.html');
-const SRC_DIR = path.join(ROOT, 'map', 'notes-src');
+const MAP_HTML = path.join(ROOT, 'publicnotes.html');
+const SRC_DIR = path.join(ROOT, 'publicnotes', 'notes-src');
 
 function slugify(text) {
   return text.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
@@ -62,7 +62,7 @@ function writeStub(slug, label) {
   );
 }
 
-// inserts a <li> for `slug` under `parentSlug` in map.html, without touching
+// inserts a <li> for `slug` under `parentSlug` in publicnotes.html, without touching
 // the note file. Used both by addNode (which also writes a fresh stub) and
 // by attachExistingNote (which expects the note file to already exist).
 function insertNodeLi(parentSlug, slug, label) {

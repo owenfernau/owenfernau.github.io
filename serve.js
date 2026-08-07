@@ -19,7 +19,7 @@ http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   const pathname = req.url.split('?')[0];
-  const filePath = path.join(ROOT, pathname === '/' ? 'map.html' : pathname);
+  const filePath = path.join(ROOT, pathname === '/' ? 'publicnotes.html' : pathname);
 
   fs.readFile(filePath, (err, data) => {
     if (err) { res.writeHead(404); res.end('not found'); return; }

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map</title>
+    <link rel="stylesheet" href="assets/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@100;200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Cloudflare Web Analytics -->
+    <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d241846e7f9a4235825f84be63226841"}'></script>
+    <!-- End Cloudflare Web Analytics -->
+</head>
+<body>
+	<div class="header-container">
+    	<a href="index.html" class="button">Owen Fernau</a>
+    	<a href="notes.html" class="button notes">notes</a>
+	</div>
+	<hr>
+	<br>
+	<p class="page-subtitle">Working notes of personal interests. Last update: <span id="map-updated"></span></p>
+	<br>
+	<div id="treemap-wrap"><svg id="treemap" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid meet"></svg></div>
+	<ul class="bio-list" id="mobile-tree"></ul>
+	<div id="note-trail"></div>
+	<br>
+
+	<!-- Hidden: source-of-truth hierarchy the treemap above reads. Edited via
+	     the map-inbox pipeline / add-map-node.js, not by hand in the browser. -->
+	<ul class="bio-list" id="tree-data">
+		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="ai-economic-impact">AI Economic Impact</span>
+			<ul class="sub-list">
+				<li> <span class="node-title" data-slug="enterprise-data-privacy">Enterprise Data Privacy</span></li>
+				<li> <span class="node-title" data-slug="robotics">Robotics</span></li>
+			</ul>
+		</li>
+		<li> <span class="node-title" data-slug="ai-capability">AI Capability</span>
+				<ul class="sub-list">
+					<li> <span class="node-title" data-slug="data">Data</span></li>
+					<li> <span class="node-title" data-slug="algorithms">Algorithms</span></li>
+					<li> <span class="node-title" data-slug="computing-power">Computing Power</span>
+							<ul class="sub-list">
+								<li> <span class="node-title" data-slug="energy">Energy</span>
+										<ul class="sub-list">
+										</ul>
+									</li>
+								<li> <span class="node-title" data-slug="chips">Chips</span>
+										<ul class="sub-list">
+										</ul>
+									</li>
+								<li> <span class="node-title" data-slug="data-centers">Data Centers</span></li>
+							</ul>
+						</li>
+				</ul>
+			</li>
+		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="ai-safety">AI Safety</span>
+			<ul class="sub-list">
+				<li> <span class="node-title" data-slug="interpretability">Interpretability</span></li>
+			</ul>
+		</li>
+		<li> <span class="node-title" data-slug="info-delivery">Information Delivery Systems</span></li>
+		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="finance">Finance</span>
+			<ul class="sub-list">
+				<li> <span class="node-title" data-slug="philanthropy">Philanthropy</span></li>
+				<li> <span class="node-title" data-slug="national-debt">National Debt</span>
+					<ul class="sub-list">
+						<li> <span class="node-title" data-slug="treasuries">Treasuries</span></li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li> <span class="node-title" data-slug="physics">Physics</span></li>
+	</ul>
+
+	<div id="links-section" style="display:none;">
+	<p class="page-subtitle">Links</p>
+	<div id="add-link-form" style="display:none;">
+		<input type="text" id="add-link-title" placeholder="title">
+		<input type="text" id="add-link-url" placeholder="url">
+		<button id="add-link-btn">Add</button>
+	</div>
+	<ul class="bio-list" id="resource-links">
+		<li> <a href="https://www.3blue1brown.com/topics/neural-networks" target="_blank">3Blue1Brown — Neural Networks series</a></li>
+		<li> <a href="https://www.youtube.com/watch?v=zjkBMFhNj_g" target="_blank">Karpathy — Intro to LLMs</a></li>
+		<li> <a href="http://neuralnetworksanddeeplearning.com/" target="_blank">Neural Networks and Deep Learning by Michael Nielsen</a></li>
+		<li> <a href="https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf" target="_blank">Attention is All You Need</a></li>
+		<li> <a href="https://x.com/adiix_official/status/2064404496332001341" target="_blank">Investing Efficiency</a></li>
+		<li> <a href="https://www.lesswrong.com/posts/RWna48W4bPr2ChePz/tips-tricks-notes-on-optimizing-investments" target="_blank">Tips/tricks/notes on optimizing investments</a></li>
+	</ul>
+	</div>
+	<br>
+	<hr>
+	<p class="email-text"><a href="mailto:owenfernau@gmail.com">email</a> | <a href="https://x.com/ofernau" target="_blank">x</a> | <a href="https://www.linkedin.com/in/owenfernau" target="_blank">linkedin</a> | <a href="https://github.com/owenfernau" target="_blank">github</a></p>
+
+	<script>
+		const manifestPromise = fetch('publicnotes/notes/manifest.json')
+			.then(r => r.ok ? r.json() : {})
+			.catch(() => ({}));
+
+		let MANIFEST = {};
+		manifestPromise.then(manifest => { MANIFEST = manifest; });
+
+		manifestPromise.then(manifest => {
+			const generatedAt = manifest._meta?.generatedAt;
+			const updatedEl = document.getElementById('map-updated');
+			if (generatedAt && updatedEl) {
+				updatedEl.textContent = new Date(`${generatedAt}T00:00:00`)
+					.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+			}
+		});
+
+		// Word counts for treemap sizing, fetched from the same notes-src
+		// markdown the detail panel reads, so sizing can't drift from content.
+		const notePromises = [];
+		const wordCounts = {};
+		document.querySelectorAll('#tree-data .node-title[data-slug]').forEach(title => {
+			const slug = title.dataset.slug;
+			notePromises.push(
+				fetch(`publicnotes/notes-src/${slug}.md`)
+					.then(r => r.ok ? r.text() : '')
+					.then(raw => {
+						const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
+						const content = (fm ? fm[1] : raw).trim();
+						wordCounts[slug] = content && content.toUpperCase() !== 'TK'
+							? content.split(/\s+/).filter(Boolean).length : 0;
+					})
+			);
+		});
+
+		// Links section is a personal reading queue, only shown locally
+		if (['localhost', '127.0.0.1'].includes(location.hostname)) {
+			document.getElementById('links-section').style.display = '';
+			document.getElementById('add-link-form').style.display = '';
+
+			const titleInput = document.getElementById('add-link-title');
+			const urlInput = document.getElementById('add-link-url');
+			const addBtn = document.getElementById('add-link-btn');
+			addBtn.addEventListener('click', () => {
+				const title = titleInput.value.trim();
+				const url = urlInput.value.trim();
+				if (!title || !url) return;
+				addBtn.disabled = true;
+				fetch('/api/add-link', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ title, url }),
+				})
+					.then(r => { if (!r.ok) throw new Error('add failed'); location.reload(); })
+					.catch(() => { addBtn.disabled = false; });
+			});
+		}
+
+		// Links: checkable items move to a "Checked" subsection
+		(() => {
+			const linksList = document.getElementById('resource-links');
+			if (!linksList) return;
+			const linkItems = [...linksList.querySelectorAll(':scope > li')].filter(li => li.querySelector('a'));
+
+			const checkedLi = document.createElement('li');
+			checkedLi.className = 'expandable';
+			checkedLi.innerHTML = '<span class="arrow"></span> <span>Checked</span><ul class="sub-list"></ul>';
+			linksList.appendChild(checkedLi);
+			const checkedList = checkedLi.querySelector('ul.sub-list');
+			checkedLi.addEventListener('click', function(e) {
+				if (e.target.tagName === 'A') return;
+				this.classList.toggle('open');
+			});
+
+			const CHECKED_KEY = 'mapCheckedLinks';
+			let checked;
+			try { checked = new Set(JSON.parse(localStorage.getItem(CHECKED_KEY) || '[]')); }
+			catch { checked = new Set(); }
+
+			linkItems.forEach(li => {
+				const a = li.querySelector('a');
+				const checkbox = document.createElement('input');
+				checkbox.type = 'checkbox';
+				checkbox.className = 'link-check';
+				li.insertBefore(checkbox, a);
+
+				checkbox.addEventListener('click', e => e.stopPropagation());
+				checkbox.addEventListener('change', () => {
+					if (checkbox.checked) {
+						checked.add(a.href);
+						checkedList.appendChild(li);
+					} else {
+						checked.delete(a.href);
+						linksList.insertBefore(li, checkedLi);
+					}
+					localStorage.setItem(CHECKED_KEY, JSON.stringify([...checked]));
+				});
+
+				if (checked.has(a.href)) {
+					checkbox.checked = true;
+					checkedList.appendChild(li);
+				}
+			});
+		})();
+
+		// Branch color: one color per top-level tree-data node, shared by the
+		// treemap cells and the note boxes so a note stays visually tied to
+		// its category even once it's the only thing on screen.
+		const branchColor = d3.scaleOrdinal()
+			.domain([...document.querySelectorAll('#tree-data > li')]
+				.map(li => li.querySelector(':scope > .node-title[data-slug]')?.textContent.trim()))
+			.range(['#3b3b8f', '#8f3b6b', '#3b8f6b', '#8f6b3b', '#6b3b8f', '#3b6b8f', '#3b6b3b', '#6b3b3b']);
+
+		const SLUG_COLOR = {};
+		function assignSlugColors(li, color) {
+			const title = li.querySelector(':scope > .node-title[data-slug]');
+			if (!title) return;
+			SLUG_COLOR[title.dataset.slug] = color;
+			const subList = li.querySelector(':scope > ul.sub-list');
+			if (subList) subList.querySelectorAll(':scope > li').forEach(child => assignSlugColors(child, color));
+		}
+		document.querySelectorAll('#tree-data > li').forEach(li => {
+			const title = li.querySelector(':scope > .node-title[data-slug]');
+			if (title) assignSlugColors(li, branchColor(title.textContent.trim()));
+		});
+
+		function hexToHsl(hex) {
+			const n = parseInt(hex.slice(1), 16);
+			const r = ((n >> 16) & 255) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+			const max = Math.max(r, g, b), min = Math.min(r, g, b);
+			let h = 0, s = 0;
+			const l = (max + min) / 2;
+			if (max !== min) {
+				const d = max - min;
+				s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+				if (max === r) h = (g - b) / d + (g < b ? 6 : 0);
+				else if (max === g) h = (b - r) / d + 2;
+				else h = (r - g) / d + 4;
+				h *= 60;
+			}
+			return [h, s * 100, l * 100];
+		}
+
+		// Each nesting level steps toward a lighter tint of its top-level
+		// branch color, capped so the white cell labels stay legible.
+		function depthFill(hex, depth) {
+			const [h, s, l] = hexToHsl(hex);
+			const lightness = Math.min(l + (depth - 1) * 10, 68);
+			return `hsl(${h}, ${s}%, ${lightness}%)`;
+		}
+
+		function tint(hex, alpha) {
+			const n = parseInt(hex.slice(1), 16);
+			return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+		}
+
+		// Note trail: a stack of open notes reflecting the drill-down path.
+		// Clicking a wikilink inside a box appends (or, if already open
+		// earlier in the trail, truncates back to) that note below it.
+		// Clicking a treemap block starts a fresh trail.
+		const trailEl = document.getElementById('note-trail');
+		const CAN_EDIT = ['localhost', '127.0.0.1'].includes(location.hostname);
+		let trail = [];
+		// Only the last box in the trail is expanded by default; earlier ones
+		// collapse to a title bar. A slug present here overrides that default.
+		let expandedOverride = {};
+
+		function isExpanded(slug, isLast) {
+			return expandedOverride.hasOwnProperty(slug) ? expandedOverride[slug] : isLast;
+		}
+
+		function toggleBox(slug, isLast) {
+			expandedOverride[slug] = !isExpanded(slug, isLast);
+			renderTrail();
+		}
+
+		// Populated once by buildMobileNode/renderMobileTree, read here to
+		// keep the accordion highlight synced to whatever's actually being
+		// read below, regardless of how the trail changed (row tap, a
+		// wikilink clicked inside a note, or a breadcrumb jump).
+		let mobileRowBySlug = {};
+		let selectedMobileRow = null;
+		function syncMobileSelection() {
+			if (selectedMobileRow) selectedMobileRow.classList.remove('selected');
+			const row = mobileRowBySlug[trail[trail.length - 1]];
+			selectedMobileRow = row || null;
+			if (row) row.classList.add('selected');
+		}
+
+		function scrollToBox(slug) {
+			requestAnimationFrame(() => {
+				trailEl.querySelector(`.note-box[data-slug="${slug}"]`)
+					?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+			});
+		}
+
+		function openRoot(slug) {
+			trail = [slug];
+			expandedOverride = {};
+			renderTrail();
+			scrollToBox(slug);
+		}
+
+		function openNote(slug) {
+			const idx = trail.indexOf(slug);
+			trail = idx !== -1 ? trail.slice(0, idx + 1) : [...trail, slug];
+			renderTrail();
+			scrollToBox(slug);
+		}
+
+		function saveNote(slug, content) {
+			return fetch('/api/save-note', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ slug, content }),
+			}).then(r => { if (!r.ok) throw new Error('save failed'); });
+		}
+
+		function fillEditor(box, slug, raw, isLast) {
+			box.innerHTML = '';
+			const textarea = document.createElement('textarea');
+			textarea.className = 'note-editor';
+			textarea.value = raw;
+			box.appendChild(textarea);
+
+			const actions = document.createElement('div');
+			actions.className = 'note-editor-actions';
+			const saveBtn = document.createElement('button');
+			saveBtn.textContent = 'Save';
+			const cancelBtn = document.createElement('button');
+			cancelBtn.textContent = 'Cancel';
+			actions.appendChild(saveBtn);
+			actions.appendChild(cancelBtn);
+			box.appendChild(actions);
+
+			cancelBtn.addEventListener('click', () => fillNoteBox(box, slug, isLast));
+			saveBtn.addEventListener('click', () => {
+				saveBtn.disabled = true;
+				saveBtn.textContent = 'Saving…';
+				saveNote(slug, textarea.value)
+					.then(() => fillNoteBox(box, slug, isLast))
+					.catch(() => {
+						saveBtn.disabled = false;
+						saveBtn.textContent = 'Save failed, retry';
+					});
+			});
+		}
+
+		function fillNoteBox(box, slug, isLast) {
+			fetch(`publicnotes/notes-src/${slug}.md`)
+				.then(r => r.ok ? r.text() : '')
+				.then(raw => {
+					const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
+					const content = (fm ? fm[1] : raw).trim();
+					const titleMatch = raw.match(/^title:\s*(.+)$/m);
+					const title = titleMatch ? titleMatch[1].trim() : slug;
+
+					box.innerHTML = '';
+					const h = document.createElement('h3');
+					h.textContent = title;
+					h.addEventListener('click', () => toggleBox(slug, isLast));
+					box.appendChild(h);
+
+					if (CAN_EDIT) {
+						const editBtn = document.createElement('button');
+						editBtn.className = 'note-edit-btn';
+						editBtn.textContent = 'Edit';
+						editBtn.addEventListener('click', () => fillEditor(box, slug, raw, isLast));
+						box.appendChild(editBtn);
+					}
+
+					const escapeHtml = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+					const inlineFormat = text => {
+						let out = escapeHtml(text);
+						out = out.replace(
+							/\[\[([^\]|#]+)(?:#[^\]|]+)?(?:\|([^\]]+))?\]\]/g,
+							(_, s, label) => {
+								s = s.trim();
+								const display = label || (MANIFEST[s]?.title || s);
+								return `<span class="note-link" data-slug="${s}">${display}</span>`;
+							}
+						);
+						out = out.replace(/\[([^\]]+)\]\s*\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+						out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+						out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+						out = out.replace(/__([^_]+)__/g, '<u>$1</u>');
+						out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
+						return out;
+					};
+
+					if (!content || content.toUpperCase() === 'TK') {
+						const p = document.createElement('p');
+						p.className = 'note-detail-empty';
+						p.textContent = 'No notes yet.';
+						box.appendChild(p);
+					} else {
+						// Splits into paragraph blocks like a blank-line split, but also
+						// counts how many blank lines separated them, so typing extra
+						// blank lines for emphasis actually renders as extra space.
+						function splitBlocks(text) {
+							const blocks = [];
+							let current = [];
+							let blankRun = 0;
+							let started = false;
+							function flush() {
+								if (current.length) {
+									blocks.push({ text: current.join('\n'), gap: started ? blankRun : 0 });
+									current = [];
+									started = true;
+								}
+							}
+							text.split(/\r?\n/).forEach(line => {
+								if (line.trim() === '') {
+									if (current.length) {
+										flush();
+										blankRun = 0;
+									}
+									blankRun++;
+								} else {
+									current.push(line);
+								}
+							});
+							flush();
+							return blocks;
+						}
+
+						splitBlocks(content).forEach(({ text: rawBlock, gap }) => {
+							const block = rawBlock.trim();
+							if (!block) return;
+							const extraGap = Math.max(0, gap - 1);
+							if (/^(-{3,}|\*{3,}|_{3,})$/.test(block)) {
+								box.appendChild(document.createElement('hr'));
+								return;
+							}
+							const lines = block.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+							const isList = lines.length > 1 && lines.every(l => /^([-*]|\d+\.)\s+/.test(l));
+							let el;
+							if (isList) {
+								el = document.createElement('ul');
+								el.className = 'note-detail-list';
+								lines.forEach(l => {
+									const li = document.createElement('li');
+									li.innerHTML = inlineFormat(l.replace(/^([-*]|\d+\.)\s+/, ''));
+									el.appendChild(li);
+								});
+							} else {
+								el = document.createElement('p');
+								el.innerHTML = inlineFormat(block.replace(/\r?\n/g, ' '));
+							}
+							if (extraGap) el.style.marginTop = `${extraGap * 14}px`;
+							box.appendChild(el);
+						});
+					}
+
+					box.querySelectorAll('.note-link[data-slug]').forEach(el => {
+						el.addEventListener('click', () => openNote(el.dataset.slug));
+					});
+
+					const entry = MANIFEST[slug];
+					if (entry && entry.backlinks.length) {
+						const linksWrap = document.createElement('div');
+						linksWrap.className = 'note-detail-links';
+						entry.backlinks.forEach(s => {
+							const span = document.createElement('span');
+							span.className = 'note-link';
+							span.textContent = `← ${(MANIFEST[s] || {}).title || s}`;
+							span.addEventListener('click', () => openNote(s));
+							linksWrap.appendChild(span);
+						});
+						box.appendChild(linksWrap);
+					}
+				});
+		}
+
+		function renderTrail() {
+			trailEl.innerHTML = '';
+			if (trail.length > 1) {
+				const crumbs = document.createElement('div');
+				crumbs.className = 'note-breadcrumb';
+				trail.forEach((slug, i) => {
+					if (i > 0) {
+						const sep = document.createElement('span');
+						sep.className = 'note-breadcrumb-sep';
+						sep.textContent = '›';
+						crumbs.appendChild(sep);
+					}
+					const seg = document.createElement('span');
+					seg.className = 'note-breadcrumb-item';
+					seg.textContent = (MANIFEST[slug] || {}).title || slug;
+					seg.addEventListener('click', () => { trail = trail.slice(0, i + 1); renderTrail(); scrollToBox(slug); });
+					crumbs.appendChild(seg);
+				});
+				trailEl.appendChild(crumbs);
+			}
+			trail.forEach((slug, i) => {
+				const isLast = i === trail.length - 1;
+				const expanded = isExpanded(slug, isLast);
+				const box = document.createElement('div');
+				box.className = 'note-box' + (expanded ? '' : ' collapsed');
+				box.dataset.slug = slug;
+				if (SLUG_COLOR[slug]) box.style.backgroundColor = tint(SLUG_COLOR[slug], 0.18);
+				trailEl.appendChild(box);
+				if (expanded) {
+					fillNoteBox(box, slug, isLast);
+				} else {
+					const h = document.createElement('h3');
+					h.textContent = (MANIFEST[slug] || {}).title || slug;
+					h.addEventListener('click', () => toggleBox(slug, isLast));
+					box.appendChild(h);
+				}
+			});
+			syncMobileSelection();
+		}
+
+		// Treemap overview: built from the hidden #tree-data DOM + the note
+		// word counts fetched above, so it can't drift from the content it summarizes.
+		function buildTreemapData(li) {
+			const title = li.querySelector(':scope > .node-title[data-slug]');
+			if (!title) return null;
+			const slug = title.dataset.slug;
+			const subList = li.querySelector(':scope > ul.sub-list');
+			const children = [];
+			if (subList) {
+				subList.querySelectorAll(':scope > li').forEach(childLi => {
+					const child = buildTreemapData(childLi);
+					if (child) children.push(child);
+				});
+			}
+			const node = { name: title.textContent.trim(), slug };
+			if (children.length) node.children = children;
+			// sqrt-scaled: word counts here range ~0-150+, and sizing
+			// linearly makes near-empty stub notes shrink to illegible slivers
+			else node.value = Math.sqrt((wordCounts[slug] || 0) + 4);
+			return node;
+		}
+
+		function renderTreemap() {
+			const roots = [];
+			document.querySelectorAll('#tree-data > li').forEach(li => {
+				const node = buildTreemapData(li);
+				if (node) roots.push(node);
+			});
+			const data = { name: 'root', children: roots };
+
+			function topBranch(node) {
+				while (node.depth > 1) node = node.parent;
+				return node.data.name;
+			}
+
+			const width = 700, height = 420;
+			const HEADER_H = 38;
+			const root = d3.hierarchy(data).sum(d => d.value);
+			d3.treemap()
+				.size([width, height])
+				.paddingInner(3)
+				.paddingOuter(2)
+				.paddingTop(d => d.depth === 0 ? 0 : (d.children ? HEADER_H : 3))
+				(root);
+
+			const svg = d3.select('#treemap');
+			svg.attr('viewBox', `0 0 ${width} ${height}`);
+			svg.selectAll('*').remove();
+			const cell = svg.selectAll('g')
+				.data(root.descendants().filter(d => d.depth > 0))
+				.join('g')
+				.attr('class', 'tm-cell')
+				.attr('transform', d => `translate(${d.x0},${d.y0})`)
+				.on('click', (e, d) => openRoot(d.data.slug));
+
+			cell.append('clipPath')
+				.attr('id', d => `tm-clip-${d.data.slug}`)
+				.append('rect')
+				.attr('width', d => Math.max(0, d.x1 - d.x0))
+				.attr('height', d => Math.max(0, d.y1 - d.y0));
+
+			cell.append('rect')
+				.attr('width', d => Math.max(0, d.x1 - d.x0))
+				.attr('height', d => Math.max(0, d.y1 - d.y0))
+				.attr('fill', d => branchColor(topBranch(d)))
+				.attr('fill-opacity', d => 1 - d.depth * 0.30);
+
+			// Word-wraps a label into <tspan> lines instead of truncating
+			// mid-word, so a narrow column never cuts a name off.
+			function wrapLabel(textEl, d) {
+				const w = d.x1 - d.x0;
+				const fullH = d.y1 - d.y0;
+				const isParent = !!d.children;
+				const fontSize = isParent ? 12 : 10;
+				const charWidth = fontSize * 0.62;
+				const lineHeight = fontSize * 1.3;
+				const availW = w - 8;
+				const availH = (isParent ? HEADER_H : fullH) - 6;
+				if (w < 28 || availH < lineHeight) return;
+
+				const maxChars = Math.max(1, Math.floor(availW / charWidth));
+				const words = d.data.name.split(' ');
+				const lines = [];
+				let current = '';
+				words.forEach(word => {
+					const test = current ? current + ' ' + word : word;
+					if (test.length > maxChars && current) {
+						lines.push(current);
+						current = word;
+					} else {
+						current = test;
+					}
+				});
+				if (current) lines.push(current);
+
+				const maxLines = Math.max(1, Math.floor(availH / lineHeight));
+				let shown = lines.slice(0, maxLines);
+				if (lines.length > maxLines) {
+					const last = shown[shown.length - 1];
+					shown[shown.length - 1] = last.length > 1 ? last.slice(0, -1) + '…' : '…';
+				}
+
+				const sel = d3.select(textEl);
+				shown.forEach((line, i) => {
+					sel.append('tspan')
+						.attr('x', 5)
+						.attr('y', 14 + i * lineHeight)
+						.text(line);
+				});
+			}
+
+			cell.append('text')
+				.attr('clip-path', d => `url(#tm-clip-${d.data.slug})`)
+				.style('font-size', d => d.children ? '12px' : '10px')
+				.each(function(d) { wrapLabel(this, d); });
+		}
+
+		Promise.all([manifestPromise, ...notePromises]).then(renderTreemap);
+
+		// Mobile fallback: the same #tree-data hierarchy as an accordion list
+		// (reuses the .bio-list/.expandable pattern from the Links section)
+		// instead of the treemap, which doesn't read well on narrow screens.
+		function buildMobileNode(li, depth) {
+			const title = li.querySelector(':scope > .node-title[data-slug]');
+			if (!title) return null;
+			const slug = title.dataset.slug;
+			const subList = li.querySelector(':scope > ul.sub-list');
+			const children = subList ? [...subList.querySelectorAll(':scope > li')] : [];
+
+			const item = document.createElement('li');
+			item.className = children.length ? 'expandable tree-row' : 'tree-row';
+			mobileRowBySlug[slug] = item;
+			const color = SLUG_COLOR[slug];
+			if (color) {
+				if (depth === 1) item.style.borderLeft = `4px solid ${color}`;
+				item.style.backgroundColor = tint(color, 0.18);
+			}
+
+			const head = document.createElement('span');
+			head.className = 'row-head';
+			item.appendChild(head);
+
+			const arrow = document.createElement('span');
+			arrow.className = 'arrow chevron';
+			if (!children.length) arrow.style.visibility = 'hidden';
+			head.appendChild(arrow);
+
+			const titleSpan = document.createElement('span');
+			titleSpan.className = 'node-title';
+			titleSpan.textContent = title.textContent.trim();
+			titleSpan.addEventListener('click', e => {
+				e.stopPropagation();
+				openRoot(slug);
+			});
+			head.appendChild(titleSpan);
+
+			if (children.length) {
+				// Tapping the title opens this node's own notes; tapping
+				// anywhere else on the row expands/collapses its children.
+				const childUl = document.createElement('ul');
+				childUl.className = 'sub-list';
+				children.forEach(childLi => {
+					const childNode = buildMobileNode(childLi, depth + 1);
+					if (childNode) childUl.appendChild(childNode);
+				});
+				item.appendChild(childUl);
+				item.addEventListener('click', e => {
+					e.stopPropagation();
+					item.classList.toggle('open');
+				});
+			}
+
+			return item;
+		}
+
+		function renderMobileTree() {
+			const container = document.getElementById('mobile-tree');
+			document.querySelectorAll('#tree-data > li').forEach(li => {
+				const node = buildMobileNode(li, 1);
+				if (node) container.appendChild(node);
+			});
+		}
+		renderMobileTree();
+	</script>
+</body>
+</html>
