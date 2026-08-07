@@ -364,9 +364,19 @@
   ],
   "links": [
     {
-      "id": "goodfire",
-      "title": "Goodfire — the world inside neural networks",
-      "url": "https://www.goodfire.ai/research/the-world-inside-neural-networks"
+      "id": "l-1786068739031",
+      "title": "wsj.com",
+      "url": "https://www.wsj.com/finance/currencies/the-worries-that-drove-uncle-sam-to-buy-yen-4ff554f1?st=7a3u4X&reflink=article_email_share"
+    },
+    {
+      "id": "l-1786067446137",
+      "title": "Nick on Bessent/Fed/Yen",
+      "url": "https://www.wsj.com/economy/central-banking/why-bessent-is-leaning-on-the-fed-to-help-prop-up-japans-currency-85794909?mod=author_content_page_1_pos_2"
+    },
+    {
+      "id": "l-1786067842728",
+      "title": "Trump Has Called Warsh Repeatedly Since He Became Fed Chair",
+      "url": "https://www.wsj.com/politics/policy/trump-has-called-warsh-repeatedly-since-he-became-fed-chair-32804cf7?mod=author_content_page_1_pos_1"
     },
     {
       "id": "3b1b",
@@ -387,6 +397,26 @@
       "id": "l-1780514448082",
       "title": "Attention is All You Need",
       "url": "https://proceedings.neurips.cc/paper_files/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf"
+    },
+    {
+      "id": "l-1781112775255",
+      "title": "Investing Efficiency",
+      "url": "https://x.com/adiix_official/status/2064404496332001341"
+    },
+    {
+      "id": "l-tips-investments",
+      "title": "Tips/tricks/notes on optimizing investments",
+      "url": "https://www.lesswrong.com/posts/RWna48W4bPr2ChePz/tips-tricks-notes-on-optimizing-investments"
+    },
+    {
+      "id": "l-1786068113288",
+      "title": "Zzz Test A",
+      "url": "https://example.com/a"
+    },
+    {
+      "id": "goodfire",
+      "title": "Goodfire — the world inside neural networks",
+      "url": "https://www.goodfire.ai/research/the-world-inside-neural-networks"
     },
     {
       "id": "l-1780514496307",
@@ -417,11 +447,6 @@
       "id": "l-1780955362036",
       "title": "3rd Wave of Philantropy",
       "url": "https://nanransohoff.substack.com/p/the-third-wave-of-american-philanthropy"
-    },
-    {
-      "id": "l-1781112775255",
-      "title": "Investing Efficiency",
-      "url": "https://x.com/adiix_official/status/2064404496332001341"
     },
     {
       "id": "l-1781644813183",

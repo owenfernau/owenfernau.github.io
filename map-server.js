@@ -2,10 +2,55 @@
 // Serves the site exactly like GitHub Pages, plus a save endpoint that
 // writes to map/notes-src/*.md and rebuilds. Never deployed.
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { addLink } = require('./add-map-node');
+const { addLink, reorderLinks, removeLink } = require('./add-map-node');
+
+// best-effort <title> fetch for links added without one; falls back to the
+// bare URL if the page can't be reached or has no title tag.
+function fetchPageTitle(url) {
+  return new Promise(resolve => {
+    let settled = false;
+    const finish = value => {
+      if (settled) return;
+      settled = true;
+      resolve(value);
+    };
+
+    let req;
+    try {
+      req = (url.startsWith('https:') ? https : http).get(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        timeout: 5000,
+      }, res => {
+        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+          res.resume();
+          fetchPageTitle(new URL(res.headers.location, url).href).then(finish);
+          return;
+        }
+        let html = '';
+        res.on('data', chunk => {
+          html += chunk;
+          const m = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+          if (m) {
+            finish(m[1].replace(/\s+/g, ' ').trim());
+            req.destroy();
+          } else if (html.length > 100000) {
+            finish(url);
+            req.destroy();
+          }
+        });
+        res.on('end', () => finish(url));
+      });
+      req.on('error', () => finish(url));
+      req.on('timeout', () => { req.destroy(); finish(url); });
+    } catch {
+      finish(url);
+    }
+  });
+}
 
 const ROOT = __dirname;
 const SRC_DIR = path.join(ROOT, 'publicnotes', 'notes-src');
@@ -50,14 +95,55 @@ const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/api/add-link') {
     let body = '';
     req.on('data', chunk => { body += chunk; });
-    req.on('end', () => {
+    req.on('end', async () => {
       try {
-        const { title, url } = JSON.parse(body);
-        if (!title || !url || typeof title !== 'string' || typeof url !== 'string') {
+        let { title, url } = JSON.parse(body);
+        if (!url || typeof url !== 'string') {
           res.writeHead(400).end('bad request');
           return;
         }
-        addLink(title, url);
+        if (!title || typeof title !== 'string') {
+          title = await fetchPageTitle(url.trim());
+        }
+        const id = addLink(title, url);
+        res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({ ok: true, id }));
+      } catch (err) {
+        res.writeHead(500).end(String(err));
+      }
+    });
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/reorder-links') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const { order } = JSON.parse(body);
+        if (!Array.isArray(order)) {
+          res.writeHead(400).end('bad request');
+          return;
+        }
+        reorderLinks(order);
+        res.writeHead(200, { 'Content-Type': 'application/json' }).end('{"ok":true}');
+      } catch (err) {
+        res.writeHead(500).end(String(err));
+      }
+    });
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/api/delete-link') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      try {
+        const { id } = JSON.parse(body);
+        if (!id || typeof id !== 'string') {
+          res.writeHead(400).end('bad request');
+          return;
+        }
+        removeLink(id);
         res.writeHead(200, { 'Content-Type': 'application/json' }).end('{"ok":true}');
       } catch (err) {
         res.writeHead(500).end(String(err));

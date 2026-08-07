@@ -132,27 +132,110 @@ function attachExistingNote(parentSlug, slug, label) {
   return slug;
 }
 
+function resourceLinksBounds(html) {
+  const ulOpen = html.indexOf('<ul class="bio-list" id="resource-links">');
+  if (ulOpen === -1) throw new Error('resource-links section not found');
+  const ulOpenEnd = html.indexOf('>', ulOpen) + 1;
+  const ulClose = findMatchingClose(html, ulOpen, 'ul');
+  return { ulOpen, ulOpenEnd, ulClose };
+}
+
+// parses the direct <li data-id="..."> children of the resource-links <ul>
+// into ordered {id, liHtml} entries, ignoring anything without a data-id
+// (the client-injected "Checked" li never lands in the static file).
+function parseLinkLis(html, ulOpenEnd, ulClose) {
+  const liRe = /<li data-id="([^"]+)">[\s\S]*?<\/li>/g;
+  liRe.lastIndex = ulOpenEnd;
+  const lis = [];
+  let m;
+  while ((m = liRe.exec(html)) && m.index < ulClose) {
+    lis.push({ id: m[1], html: m[0] });
+  }
+  return lis;
+}
+
 function addLink(title, url) {
   title = title.trim();
   url = url.trim();
   if (!title || !url) throw new Error('title and url required');
 
   const html = fs.readFileSync(MAP_HTML, 'utf8');
+  const { ulOpenEnd } = resourceLinksBounds(html);
+  const lineStart = html.indexOf('\n', ulOpenEnd) + 1;
+  const nextLine = html.slice(lineStart, html.indexOf('\n', lineStart) + 1);
+  const indent = nextLine.match(/^\t*/)[0];
 
-  const ulOpen = html.indexOf('<ul class="bio-list" id="resource-links">');
-  if (ulOpen === -1) throw new Error('resource-links section not found');
-  const ulClose = findMatchingClose(html, ulOpen, 'ul');
-  const lineStart = html.lastIndexOf('\n', ulClose) + 1;
-  const indent = html.slice(lineStart, ulClose);
-
-  const newLi = `${indent}<li> <a href="${escapeHtml(url)}" target="_blank">${escapeHtml(title)}</a></li>\n`;
+  const id = 'l-' + Date.now();
+  const newLi = `${indent}<li data-id="${id}"> <a href="${escapeHtml(url)}" target="_blank">${escapeHtml(title)}</a></li>\n`;
   fs.writeFileSync(MAP_HTML, html.slice(0, lineStart) + newLi + html.slice(lineStart));
 
   const nodesPath = path.join(ROOT, 'nodes.json');
   const nodes = JSON.parse(fs.readFileSync(nodesPath, 'utf8'));
   if (!nodes.links) nodes.links = [];
-  nodes.links.push({ id: 'l-' + Date.now(), title, url });
+  nodes.links.unshift({ id, title, url });
   fs.writeFileSync(nodesPath, JSON.stringify(nodes, null, 2));
+
+  return id;
 }
 
-module.exports = { addNode, attachExistingNote, addLink, slugify, uniqueSlug };
+// rewrites the resource-links <li>s into the given id order. ids not found
+// in `order` keep their existing relative order, appended at the end.
+function reorderLinks(order) {
+  const html = fs.readFileSync(MAP_HTML, 'utf8');
+  const { ulOpenEnd, ulClose } = resourceLinksBounds(html);
+  const lis = parseLinkLis(html, ulOpenEnd, ulClose);
+
+  const byId = new Map(lis.map(li => [li.id, li]));
+  const ordered = order.map(id => byId.get(id)).filter(Boolean);
+  const orderedIds = new Set(ordered.map(li => li.id));
+  for (const li of lis) {
+    if (!orderedIds.has(li.id)) ordered.push(li);
+  }
+
+  const listStart = lis.length ? html.indexOf(lis[0].html, ulOpenEnd) : ulOpenEnd;
+  const listEnd = lis.length
+    ? html.indexOf(lis[lis.length - 1].html, ulOpenEnd) + lis[lis.length - 1].html.length
+    : ulOpenEnd;
+  const lineStart = html.lastIndexOf('\n', listStart) + 1;
+  const indent = html.slice(lineStart, listStart);
+
+  const newBlock = ordered.map(li => li.html).join(`\n${indent}`);
+  const newHtml = html.slice(0, listStart) + newBlock + html.slice(listEnd);
+  fs.writeFileSync(MAP_HTML, newHtml);
+
+  const nodesPath = path.join(ROOT, 'nodes.json');
+  const nodes = JSON.parse(fs.readFileSync(nodesPath, 'utf8'));
+  if (Array.isArray(nodes.links)) {
+    const jsonById = new Map(nodes.links.map(l => [l.id, l]));
+    const reorderedJson = order.map(id => jsonById.get(id)).filter(Boolean);
+    const seen = new Set(reorderedJson.map(l => l.id));
+    for (const l of nodes.links) {
+      if (!seen.has(l.id)) reorderedJson.push(l);
+    }
+    nodes.links = reorderedJson;
+    fs.writeFileSync(nodesPath, JSON.stringify(nodes, null, 2));
+  }
+}
+
+function removeLink(id) {
+  const html = fs.readFileSync(MAP_HTML, 'utf8');
+  const { ulOpenEnd, ulClose } = resourceLinksBounds(html);
+  const lis = parseLinkLis(html, ulOpenEnd, ulClose);
+  const target = lis.find(li => li.id === id);
+  if (!target) throw new Error(`link not found: ${id}`);
+
+  const liStart = html.indexOf(target.html, ulOpenEnd);
+  const liEnd = liStart + target.html.length;
+  const lineStart = html.lastIndexOf('\n', liStart) + 1;
+  const lineEnd = html.indexOf('\n', liEnd) + 1;
+  fs.writeFileSync(MAP_HTML, html.slice(0, lineStart) + html.slice(lineEnd));
+
+  const nodesPath = path.join(ROOT, 'nodes.json');
+  const nodes = JSON.parse(fs.readFileSync(nodesPath, 'utf8'));
+  if (Array.isArray(nodes.links)) {
+    nodes.links = nodes.links.filter(l => l.id !== id);
+    fs.writeFileSync(nodesPath, JSON.stringify(nodes, null, 2));
+  }
+}
+
+module.exports = { addNode, attachExistingNote, addLink, reorderLinks, removeLink, slugify, uniqueSlug };

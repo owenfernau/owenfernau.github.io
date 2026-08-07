@@ -289,6 +289,27 @@ hr {
     color: #eaebea;
 }
 
+#resource-links > li[data-id] {
+    cursor: grab;
+}
+#resource-links > li[data-id].dragging {
+    opacity: 0.4;
+}
+.link-delete-btn {
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1;
+    margin-left: 0.6em;
+    padding: 0 0.3em;
+    border: none;
+    background: none;
+    color: #888;
+    cursor: pointer;
+}
+.link-delete-btn:hover {
+    color: #c00;
+}
+
 /* Lightbox modal */
 .lightbox {
     display: none;
@@ -651,7 +672,7 @@ hr {
     flex: 2;
 }
 #add-link-btn {
-    font-family: inherit;
+    font-family: "IBM Plex Mono", monospace;
     font-size: 15px;
     padding: 10px 20px;
     border: 1px solid #000;
