@@ -2,6 +2,8 @@
 title: AI Economic Impact
 ---
 
+AI is a secular trend... 
+
 Anthropic Economic Index: tracks AI's labor-market effects. Client-side data, check live. [Anthropic Economic Index](https://www.anthropic.com/economic-index#job-explorer)
 
 [Stanford AI Economic Indicators](https://digitaleconomy.stanford.edu/project/indicators/) 

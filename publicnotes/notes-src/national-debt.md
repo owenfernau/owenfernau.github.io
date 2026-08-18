@@ -6,6 +6,8 @@ Maybe because it's so boring and so intractable, but it feels like the national 
 
 __Scratch Notes__
 
+[vance looking to nix the USD reserve status](https://www.youtube.com/watch?v=sDwSHItK6X8&t=3s)
+
 US sold EUR to buy JPY? Aug 2026? Don't understand the "repo mechanism" yet 
 
 Graph of debt service as a % of total USG spending: https://fred.stlouisfed.org/graph/?g=1XNkp (15% of USG spending going to debt service sounds immense, but it's actually lower than essentially all the 80s and 90s.)
