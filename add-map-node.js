@@ -4,6 +4,7 @@ const path = require('path');
 const ROOT = __dirname;
 const MAP_HTML = path.join(ROOT, 'publicnotes.html');
 const SRC_DIR = path.join(ROOT, 'publicnotes', 'notes-src');
+const TREE_PATH = path.join(ROOT, 'publicnotes', 'tree.json');
 
 function slugify(text) {
   return text.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-');
@@ -11,20 +12,6 @@ function slugify(text) {
 
 function escapeHtml(text) {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-// scans from the start of html to find the start index of the <li> that
-// directly encloses position `pos`, by tracking a stack of open <li> tags.
-function findEnclosingLi(html, pos) {
-  const tagRe = /<li(?:[\s>]|$)|<\/li>/g;
-  const stack = [];
-  let m;
-  while ((m = tagRe.exec(html))) {
-    if (m.index >= pos) break;
-    if (m[0].startsWith('</')) stack.pop();
-    else stack.push(m.index);
-  }
-  return stack[stack.length - 1];
 }
 
 // finds the index of the closing tag (e.g. </li> or </ul>) matching the
@@ -62,51 +49,129 @@ function writeStub(slug, label) {
   );
 }
 
-// inserts a <li> for `slug` under `parentSlug` in publicnotes.html, without touching
-// the note file. Used both by addNode (which also writes a fresh stub) and
-// by attachExistingNote (which expects the note file to already exist).
-function insertNodeLi(parentSlug, slug, label) {
-  const html = fs.readFileSync(MAP_HTML, 'utf8');
+// ---- topic tree (publicnotes/tree.json) ----
+// The hierarchy shown on publicnotes.html lives here as JSON; the page builds
+// its hidden #tree-data list from this file at load. Everything below edits
+// the JSON, never the markup.
 
-  const titleTag = `<span class="node-title" data-slug="${parentSlug}">`;
-  const titleStart = html.indexOf(titleTag);
-  if (titleStart === -1) throw new Error(`parent slug not found: ${parentSlug}`);
-  const titleSpanEnd = html.indexOf('</span>', titleStart) + '</span>'.length;
+function readTree() {
+  return JSON.parse(fs.readFileSync(TREE_PATH, 'utf8'));
+}
 
-  const liStart = findEnclosingLi(html, titleStart);
-  const liEnd = findMatchingClose(html, liStart, 'li');
+function writeTree(tree) {
+  fs.writeFileSync(TREE_PATH, JSON.stringify(tree, null, 2) + '\n');
+}
 
-  const safeLabel = escapeHtml(label);
-  let newHtml;
-
-  const subListOpen = html.indexOf('<ul class="sub-list"', titleSpanEnd);
-  if (subListOpen !== -1 && subListOpen < liEnd) {
-    // parent already has children -> append a new sibling <li>
-    const ulClose = findMatchingClose(html, subListOpen, 'ul');
-    const lineStart = html.lastIndexOf('\n', ulClose) + 1;
-    const indent = html.slice(lineStart, ulClose);
-    const newLi = `${indent}<li> <span class="node-title" data-slug="${slug}">${safeLabel}</span></li>\n`;
-    newHtml = html.slice(0, lineStart) + newLi + html.slice(lineStart);
-  } else {
-    // leaf -> convert into an expandable parent with a fresh sub-list
-    const lineStart = html.lastIndexOf('\n', liStart) + 1;
-    const indent = html.slice(lineStart, liStart);
-    if (html.slice(liStart, liStart + 4) !== '<li>') {
-      throw new Error('expected leaf <li> to add children under');
+// finds `slug` anywhere in the tree, returning the node plus the array it
+// sits in, so callers can splice it out or insert beside it.
+function locate(tree, slug) {
+  function walk(nodes) {
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].slug === slug) return { node: nodes[i], siblings: nodes, index: i };
+      if (nodes[i].children) {
+        const found = walk(nodes[i].children);
+        if (found) return found;
+      }
     }
-    const subListBlock =
-      `\n${indent}\t<ul class="sub-list">\n` +
-      `${indent}\t\t<li> <span class="node-title" data-slug="${slug}">${safeLabel}</span></li>\n` +
-      `${indent}\t</ul>\n${indent}`;
-    newHtml =
-      html.slice(0, liStart) +
-      '<li class="expandable"> <span class="arrow"></span>' +
-      html.slice(liStart + 4, liEnd) +
-      subListBlock +
-      html.slice(liEnd);
+    return null;
+  }
+  return walk(tree);
+}
+
+// the child array a new node should join. A null/empty parentSlug means the
+// top level.
+function childList(tree, parentSlug) {
+  if (!parentSlug) return tree;
+  const found = locate(tree, parentSlug);
+  if (!found) throw new Error(`parent slug not found: ${parentSlug}`);
+  if (!found.node.children) found.node.children = [];
+  return found.node.children;
+}
+
+function containsSlug(node, slug) {
+  return (node.children || []).some(child => child.slug === slug || containsSlug(child, slug));
+}
+
+// drops `children: []` left behind by a move or delete, so the file stays
+// close to what a person would have typed.
+function pruneEmpty(nodes) {
+  for (const node of nodes) {
+    if (!node.children) continue;
+    pruneEmpty(node.children);
+    if (!node.children.length) delete node.children;
+  }
+}
+
+function subtreeSlugs(node) {
+  const slugs = [node.slug];
+  (node.children || []).forEach(child => { slugs.push(...subtreeSlugs(child)); });
+  return slugs;
+}
+
+// adds `slug` to the tree under `parentSlug`, without touching the note file.
+// Used both by addNode (which also writes a fresh stub) and by
+// attachExistingNote (which expects the note file to already exist).
+function insertNode(parentSlug, slug, label) {
+  const tree = readTree();
+  if (locate(tree, slug)) throw new Error(`slug already in the tree: ${slug}`);
+  childList(tree, parentSlug).push({ slug, label });
+  writeTree(tree);
+}
+
+// renames a topic in place. The slug never changes, so every [[wikilink]]
+// and note URL pointing at it keeps working; only the display label and the
+// note's frontmatter title move.
+function renameNode(slug, label) {
+  label = label.trim();
+  if (!label) throw new Error('label required');
+
+  const tree = readTree();
+  const found = locate(tree, slug);
+  if (!found) throw new Error(`slug not found in the tree: ${slug}`);
+  found.node.label = label;
+  writeTree(tree);
+
+  const notePath = path.join(SRC_DIR, `${slug}.md`);
+  if (fs.existsSync(notePath)) {
+    const raw = fs.readFileSync(notePath, 'utf8');
+    const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n/);
+    if (fm && /^title:\s*.*$/m.test(fm[0])) {
+      const updated = fm[0].replace(/^title:\s*.*$/m, `title: ${label}`);
+      fs.writeFileSync(notePath, updated + raw.slice(fm[0].length));
+    }
+  }
+}
+
+// moves a topic (with its children) under `parentSlug`, landing directly
+// above `beforeSlug` or at the end when that's null.
+function moveNode(slug, parentSlug, beforeSlug) {
+  const tree = readTree();
+  const found = locate(tree, slug);
+  if (!found) throw new Error(`slug not found in the tree: ${slug}`);
+  if (parentSlug === slug || (parentSlug && containsSlug(found.node, parentSlug))) {
+    throw new Error('a topic cannot be moved under itself');
   }
 
-  fs.writeFileSync(MAP_HTML, newHtml);
+  found.siblings.splice(found.index, 1);
+  const siblings = childList(tree, parentSlug);
+  const at = beforeSlug ? siblings.findIndex(n => n.slug === beforeSlug) : -1;
+  if (at === -1) siblings.push(found.node);
+  else siblings.splice(at, 0, found.node);
+
+  pruneEmpty(tree);
+  writeTree(tree);
+}
+
+// detaches a topic and its children from the tree. The notes-src markdown is
+// deliberately left on disk, so a mistaken delete loses nothing but placement.
+function removeNode(slug) {
+  const tree = readTree();
+  const found = locate(tree, slug);
+  if (!found) throw new Error(`slug not found in the tree: ${slug}`);
+  found.siblings.splice(found.index, 1);
+  pruneEmpty(tree);
+  writeTree(tree);
+  return subtreeSlugs(found.node);
 }
 
 function addNode(parentSlug, label) {
@@ -114,7 +179,7 @@ function addNode(parentSlug, label) {
   if (!label) throw new Error('label required');
 
   const slug = uniqueSlug(label);
-  insertNodeLi(parentSlug, slug, label);
+  insertNode(parentSlug, slug, label);
   writeStub(slug, label);
 
   return slug;
@@ -128,7 +193,7 @@ function attachExistingNote(parentSlug, slug, label) {
   if (!fs.existsSync(path.join(SRC_DIR, `${slug}.md`))) {
     throw new Error(`note file not found for slug: ${slug}`);
   }
-  insertNodeLi(parentSlug, slug, label);
+  insertNode(parentSlug, slug, label);
   return slug;
 }
 
@@ -238,4 +303,7 @@ function removeLink(id) {
   }
 }
 
-module.exports = { addNode, attachExistingNote, addLink, reorderLinks, removeLink, slugify, uniqueSlug };
+module.exports = {
+  addNode, attachExistingNote, renameNode, moveNode, removeNode, readTree,
+  addLink, reorderLinks, removeLink, slugify, uniqueSlug,
+};

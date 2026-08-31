@@ -24,55 +24,23 @@
 	<br>
 	<div id="treemap-wrap"><svg id="treemap" viewBox="0 0 700 420" preserveAspectRatio="xMidYMid meet"></svg></div>
 	<ul class="bio-list" id="mobile-tree"></ul>
+	<div id="topic-editor-wrap" style="display:none;">
+		<button id="topic-edit-toggle">edit topics</button>
+		<div id="topic-editor" hidden>
+			<p class="topic-editor-hint">click a name to rename · drag onto a name to nest, onto a gap to reorder</p>
+			<ul id="topic-tree"></ul>
+			<button id="topic-add-root">+ topic</button>
+			<span id="topic-editor-status"></span>
+		</div>
+	</div>
+
 	<div id="note-trail"></div>
 	<br>
 
-	<!-- Hidden: source-of-truth hierarchy the treemap above reads. Edited via
-	     the map-inbox pipeline / add-map-node.js, not by hand in the browser. -->
-	<ul class="bio-list" id="tree-data">
-		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="ai-economic-impact">AI Economic Impact</span>
-			<ul class="sub-list">
-				<li> <span class="node-title" data-slug="enterprise-data-privacy">Enterprise Data Privacy</span></li>
-				<li> <span class="node-title" data-slug="robotics">Robotics</span></li>
-			</ul>
-		</li>
-		<li> <span class="node-title" data-slug="ai-capability">AI Capability</span>
-				<ul class="sub-list">
-					<li> <span class="node-title" data-slug="data">Data</span></li>
-					<li> <span class="node-title" data-slug="algorithms">Algorithms</span></li>
-					<li> <span class="node-title" data-slug="computing-power">Computing Power</span>
-							<ul class="sub-list">
-								<li> <span class="node-title" data-slug="energy">Energy</span>
-										<ul class="sub-list">
-										</ul>
-									</li>
-								<li> <span class="node-title" data-slug="chips">Chips</span>
-										<ul class="sub-list">
-										</ul>
-									</li>
-								<li> <span class="node-title" data-slug="data-centers">Data Centers</span></li>
-							</ul>
-						</li>
-				</ul>
-			</li>
-		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="ai-safety">AI Safety</span>
-			<ul class="sub-list">
-				<li> <span class="node-title" data-slug="interpretability">Interpretability</span></li>
-			</ul>
-		</li>
-		<li> <span class="node-title" data-slug="info-delivery">Information Delivery Systems</span></li>
-		<li class="expandable"> <span class="arrow"></span> <span class="node-title" data-slug="finance">Finance</span>
-			<ul class="sub-list">
-				<li> <span class="node-title" data-slug="philanthropy">Philanthropy</span></li>
-				<li> <span class="node-title" data-slug="national-debt">National Debt</span>
-					<ul class="sub-list">
-						<li> <span class="node-title" data-slug="treasuries">Treasuries</span></li>
-					</ul>
-				</li>
-			</ul>
-		</li>
-		<li> <span class="node-title" data-slug="physics">Physics</span></li>
-	</ul>
+	<!-- Hidden source-of-truth hierarchy the treemap and the accordion above
+	     both read. It's built at load from publicnotes/tree.json, which is what
+	     the local "edit topics" mode and the map-inbox pipeline actually edit. -->
+	<ul class="bio-list" id="tree-data"></ul>
 
 	<div id="links-section" style="display:none;">
 	<p class="page-subtitle">Links</p>
@@ -98,6 +66,33 @@
 	<p class="email-text"><a href="mailto:owenfernau@gmail.com">email</a> | <a href="https://x.com/ofernau" target="_blank">x</a> | <a href="https://www.linkedin.com/in/owenfernau" target="_blank">linkedin</a> | <a href="https://github.com/owenfernau" target="_blank">github</a></p>
 
 	<script>
+		// The topic hierarchy lives in publicnotes/tree.json. Everything on this
+		// page (treemap, accordion, branch colors) still reads the #tree-data
+		// list, which is built from that JSON on load and rebuilt after an edit.
+		let TREE = [];
+		const treePromise = fetch('publicnotes/tree.json').then(r => r.json());
+
+		function renderTreeData(tree) {
+			const container = document.getElementById('tree-data');
+			container.innerHTML = '';
+			function buildLi(node) {
+				const li = document.createElement('li');
+				const title = document.createElement('span');
+				title.className = 'node-title';
+				title.dataset.slug = node.slug;
+				title.textContent = node.label;
+				li.appendChild(title);
+				if (node.children && node.children.length) {
+					const subList = document.createElement('ul');
+					subList.className = 'sub-list';
+					node.children.forEach(child => subList.appendChild(buildLi(child)));
+					li.appendChild(subList);
+				}
+				return li;
+			}
+			tree.forEach(node => container.appendChild(buildLi(node)));
+		}
+
 		const manifestPromise = fetch('publicnotes/notes/manifest.json')
 			.then(r => r.ok ? r.json() : {})
 			.catch(() => ({}));
@@ -116,21 +111,24 @@
 
 		// Word counts for treemap sizing, fetched from the same notes-src
 		// markdown the detail panel reads, so sizing can't drift from content.
-		const notePromises = [];
 		const wordCounts = {};
-		document.querySelectorAll('#tree-data .node-title[data-slug]').forEach(title => {
-			const slug = title.dataset.slug;
-			notePromises.push(
-				fetch(`publicnotes/notes-src/${slug}.md`)
-					.then(r => r.ok ? r.text() : '')
-					.then(raw => {
-						const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
-						const content = (fm ? fm[1] : raw).trim();
-						wordCounts[slug] = content && content.toUpperCase() !== 'TK'
-							? content.split(/\s+/).filter(Boolean).length : 0;
-					})
-			);
-		});
+		function loadWordCounts() {
+			const promises = [];
+			document.querySelectorAll('#tree-data .node-title[data-slug]').forEach(title => {
+				const slug = title.dataset.slug;
+				promises.push(
+					fetch(`publicnotes/notes-src/${slug}.md`)
+						.then(r => r.ok ? r.text() : '')
+						.then(raw => {
+							const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n([\s\S]*)$/);
+							const content = (fm ? fm[1] : raw).trim();
+							wordCounts[slug] = content && content.toUpperCase() !== 'TK'
+								? content.split(/\s+/).filter(Boolean).length : 0;
+						})
+				);
+			});
+			return promises;
+		}
 
 		// Links section is a personal reading queue, only shown locally
 		if (['localhost', '127.0.0.1'].includes(location.hostname)) {
@@ -253,11 +251,7 @@
 		// Branch color: one color per top-level tree-data node, shared by the
 		// treemap cells and the note boxes so a note stays visually tied to
 		// its category even once it's the only thing on screen.
-		const branchColor = d3.scaleOrdinal()
-			.domain([...document.querySelectorAll('#tree-data > li')]
-				.map(li => li.querySelector(':scope > .node-title[data-slug]')?.textContent.trim()))
-			.range(['#3b3b8f', '#8f3b6b', '#3b8f6b', '#8f6b3b', '#6b3b8f', '#3b6b8f', '#3b6b3b', '#6b3b3b']);
-
+		let branchColor;
 		const SLUG_COLOR = {};
 		function assignSlugColors(li, color) {
 			const title = li.querySelector(':scope > .node-title[data-slug]');
@@ -266,10 +260,17 @@
 			const subList = li.querySelector(':scope > ul.sub-list');
 			if (subList) subList.querySelectorAll(':scope > li').forEach(child => assignSlugColors(child, color));
 		}
-		document.querySelectorAll('#tree-data > li').forEach(li => {
-			const title = li.querySelector(':scope > .node-title[data-slug]');
-			if (title) assignSlugColors(li, branchColor(title.textContent.trim()));
-		});
+		function initColors() {
+			branchColor = d3.scaleOrdinal()
+				.domain([...document.querySelectorAll('#tree-data > li')]
+					.map(li => li.querySelector(':scope > .node-title[data-slug]')?.textContent.trim()))
+				.range(['#3b3b8f', '#8f3b6b', '#3b8f6b', '#8f6b3b', '#6b3b8f', '#3b6b8f', '#3b6b3b', '#6b3b3b']);
+			Object.keys(SLUG_COLOR).forEach(slug => { delete SLUG_COLOR[slug]; });
+			document.querySelectorAll('#tree-data > li').forEach(li => {
+				const title = li.querySelector(':scope > .node-title[data-slug]');
+				if (title) assignSlugColors(li, branchColor(title.textContent.trim()));
+			});
+		}
 
 		function hexToHsl(hex) {
 			const n = parseInt(hex.slice(1), 16);
@@ -676,8 +677,6 @@
 				.each(function(d) { wrapLabel(this, d); });
 		}
 
-		Promise.all([manifestPromise, ...notePromises]).then(renderTreemap);
-
 		// Mobile fallback: the same #tree-data hierarchy as an accordion list
 		// (reuses the .bio-list/.expandable pattern from the Links section)
 		// instead of the treemap, which doesn't read well on narrow screens.
@@ -733,12 +732,294 @@
 
 		function renderMobileTree() {
 			const container = document.getElementById('mobile-tree');
+			container.innerHTML = '';
+			mobileRowBySlug = {};
+			selectedMobileRow = null;
 			document.querySelectorAll('#tree-data > li').forEach(li => {
 				const node = buildMobileNode(li, 1);
 				if (node) container.appendChild(node);
 			});
+			syncMobileSelection();
 		}
-		renderMobileTree();
+
+		// ---- render everything from the tree, and re-render after an edit ----
+		function renderAll(tree) {
+			TREE = tree;
+			renderTreeData(tree);
+			initColors();
+			Promise.all([manifestPromise, ...loadWordCounts()]).then(renderTreemap);
+			renderMobileTree();
+			if (CAN_EDIT) renderTopicEditor();
+		}
+
+		treePromise.then(renderAll);
+
+		// Re-reads both files the tree edits touch (the hierarchy, and the
+		// manifest whose titles a rename changes) and redraws from them.
+		function reloadTree() {
+			const bust = `?ts=${Date.now()}`;
+			return Promise.all([
+				fetch(`publicnotes/tree.json${bust}`).then(r => r.json()),
+				fetch(`publicnotes/notes/manifest.json${bust}`).then(r => r.ok ? r.json() : MANIFEST).catch(() => MANIFEST),
+			]).then(([tree, manifest]) => {
+				MANIFEST = manifest;
+				renderAll(tree);
+				if (trail.length) renderTrail();
+			});
+		}
+
+		// ---- topic editing (localhost only) ----
+		// The outline below edits publicnotes/tree.json through map-server.js.
+		// Deleting only detaches a topic: its notes-src markdown stays on disk.
+		function setStatus(message, isError) {
+			const el = document.getElementById('topic-editor-status');
+			el.textContent = message;
+			el.className = isError ? 'is-error' : '';
+		}
+
+		function treeOp(op, payload) {
+			setStatus('saving…');
+			return fetch('/api/tree-op', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ op, ...payload }),
+			})
+				.then(r => r.json().catch(() => ({})).then(data => {
+					if (!r.ok || !data.ok) throw new Error(data.error || 'save failed');
+					return data;
+				}))
+				.then(data => reloadTree().then(() => {
+					setStatus('saved');
+					return data;
+				}))
+				.catch(err => { setStatus(err.message, true); throw err; });
+		}
+
+		// finds a slug in TREE along with where it sits, so a drop can be
+		// translated into a parent + the sibling it should land above.
+		function findNode(slug, nodes = TREE, parent = null) {
+			for (let i = 0; i < nodes.length; i++) {
+				if (nodes[i].slug === slug) return { node: nodes[i], parent, siblings: nodes, index: i };
+				if (nodes[i].children) {
+					const found = findNode(slug, nodes[i].children, nodes[i]);
+					if (found) return found;
+				}
+			}
+			return null;
+		}
+
+		function countSubtree(node) {
+			return 1 + (node.children || []).reduce((n, child) => n + countSubtree(child), 0);
+		}
+
+		let editing = false;
+
+		function renderTopicEditor() {
+			const list = document.getElementById('topic-tree');
+			list.innerHTML = '';
+			TREE.forEach(node => list.appendChild(buildEditorItem(node)));
+		}
+
+		function editorButton(label, title, onClick) {
+			const btn = document.createElement('button');
+			btn.className = 'te-btn';
+			btn.type = 'button';
+			btn.textContent = label;
+			btn.title = title;
+			btn.addEventListener('click', e => { e.stopPropagation(); onClick(); });
+			return btn;
+		}
+
+		function buildEditorItem(node) {
+			const li = document.createElement('li');
+			li.className = 'te-item';
+			li.dataset.slug = node.slug;
+
+			const row = document.createElement('div');
+			row.className = 'te-row';
+			row.draggable = true;
+			row.dataset.slug = node.slug;
+			li.appendChild(row);
+
+			const handle = document.createElement('span');
+			handle.className = 'te-handle';
+			handle.textContent = '⠿';
+			row.appendChild(handle);
+
+			const label = document.createElement('span');
+			label.className = 'te-label';
+			label.textContent = node.label;
+			label.title = node.slug;
+			label.addEventListener('click', () => startRename(row, node));
+			row.appendChild(label);
+
+			const actions = document.createElement('span');
+			actions.className = 'te-actions';
+			actions.appendChild(editorButton('+', 'add a topic under this one', () => startAdd(li, node.slug)));
+			actions.appendChild(editorButton('×', 'remove from the tree (keeps the note file)', () => deleteTopic(node)));
+			row.appendChild(actions);
+
+			attachDragHandlers(row, li, node);
+
+			const childUl = document.createElement('ul');
+			childUl.className = 'te-children';
+			(node.children || []).forEach(child => childUl.appendChild(buildEditorItem(child)));
+			li.appendChild(childUl);
+
+			return li;
+		}
+
+		function startRename(row, node) {
+			if (row.querySelector('.te-input')) return;
+			const label = row.querySelector('.te-label');
+			const input = document.createElement('input');
+			input.className = 'te-input';
+			input.value = node.label;
+			row.replaceChild(input, label);
+			row.draggable = false;
+			input.focus();
+			input.select();
+
+			let done = false;
+			const finish = commit => {
+				if (done) return;
+				done = true;
+				const value = input.value.trim();
+				if (commit && value && value !== node.label) {
+					treeOp('rename', { slug: node.slug, label: value }).catch(() => renderTopicEditor());
+				} else {
+					renderTopicEditor();
+				}
+			};
+			input.addEventListener('keydown', e => {
+				if (e.key === 'Enter') finish(true);
+				if (e.key === 'Escape') finish(false);
+			});
+			input.addEventListener('blur', () => finish(true));
+		}
+
+		// `parentSlug` null adds a new top-level topic; the server writes a stub
+		// note for it so the new box isn't a dead end.
+		function startAdd(parentLi, parentSlug) {
+			const host = parentLi ? parentLi.querySelector(':scope > .te-children') : document.getElementById('topic-tree');
+			if (host.querySelector(':scope > .te-adding')) return;
+
+			const li = document.createElement('li');
+			li.className = 'te-item te-adding';
+			const row = document.createElement('div');
+			row.className = 'te-row';
+			const input = document.createElement('input');
+			input.className = 'te-input';
+			input.placeholder = 'new topic';
+			row.appendChild(input);
+			li.appendChild(row);
+			host.appendChild(li);
+			input.focus();
+
+			let done = false;
+			const finish = commit => {
+				if (done) return;
+				done = true;
+				const value = input.value.trim();
+				if (commit && value) {
+					treeOp('add', { parent: parentSlug || null, label: value }).catch(() => renderTopicEditor());
+				} else {
+					li.remove();
+				}
+			};
+			input.addEventListener('keydown', e => {
+				if (e.key === 'Enter') finish(true);
+				if (e.key === 'Escape') finish(false);
+			});
+			input.addEventListener('blur', () => finish(true));
+		}
+
+		function deleteTopic(node) {
+			const n = countSubtree(node);
+			const what = n > 1 ? `"${node.label}" and its ${n - 1} sub-topic${n > 2 ? 's' : ''}` : `"${node.label}"`;
+			if (!confirm(`Remove ${what} from the tree?\n\nThe note file stays in notes-src, only the placement is lost.`)) return;
+			treeOp('remove', { slug: node.slug });
+		}
+
+		// Drop zones: the top and bottom quarters of a row reorder it as a
+		// sibling, the middle half nests it under that row.
+		let dragSlug = null;
+
+		function dropZone(row, e) {
+			const rect = row.getBoundingClientRect();
+			const y = (e.clientY - rect.top) / rect.height;
+			if (y < 0.25) return 'before';
+			if (y > 0.75) return 'after';
+			return 'into';
+		}
+
+		function clearDropMarks() {
+			document.querySelectorAll('#topic-tree .te-row')
+				.forEach(row => row.classList.remove('drop-before', 'drop-after', 'drop-into'));
+		}
+
+		function attachDragHandlers(row, li, node) {
+			row.addEventListener('dragstart', e => {
+				dragSlug = node.slug;
+				e.dataTransfer.effectAllowed = 'move';
+				e.dataTransfer.setData('text/plain', node.slug);
+				row.classList.add('dragging');
+			});
+			row.addEventListener('dragend', () => {
+				dragSlug = null;
+				row.classList.remove('dragging');
+				clearDropMarks();
+			});
+			row.addEventListener('dragover', e => {
+				if (!dragSlug || dragSlug === node.slug) return;
+				// a topic can't be dropped inside its own subtree
+				const dragged = document.querySelector(`#topic-tree .te-item[data-slug="${dragSlug}"]`);
+				if (dragged && dragged.contains(li)) return;
+				e.preventDefault();
+				e.dataTransfer.dropEffect = 'move';
+				const zone = dropZone(row, e);
+				clearDropMarks();
+				row.classList.add(`drop-${zone}`);
+			});
+			row.addEventListener('drop', e => {
+				e.preventDefault();
+				const moved = dragSlug;
+				const zone = dropZone(row, e);
+				clearDropMarks();
+				if (!moved || moved === node.slug) return;
+
+				const target = findNode(node.slug);
+				if (!target) return;
+				let parent = null, before = null;
+				if (zone === 'into') {
+					parent = node.slug;
+				} else {
+					parent = target.parent ? target.parent.slug : null;
+					if (zone === 'before') {
+						before = node.slug;
+					} else {
+						const next = target.siblings[target.index + 1];
+						before = next ? next.slug : null;
+					}
+				}
+				treeOp('move', { slug: moved, parent, before });
+			});
+		}
+
+		if (CAN_EDIT) {
+			document.getElementById('topic-editor-wrap').style.display = '';
+			const panel = document.getElementById('topic-editor');
+			const toggle = document.getElementById('topic-edit-toggle');
+			toggle.addEventListener('click', () => {
+				editing = !editing;
+				panel.hidden = !editing;
+				document.getElementById('mobile-tree').style.display = editing ? 'none' : '';
+				toggle.textContent = editing ? 'done' : 'edit topics';
+				setStatus('');
+			});
+			document.getElementById('topic-add-root')
+				.addEventListener('click', () => startAdd(null, null));
+		}
 	</script>
 </body>
 </html>

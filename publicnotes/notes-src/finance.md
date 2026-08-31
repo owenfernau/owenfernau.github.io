@@ -4,6 +4,10 @@ title: Finance
 
 __Scratch Notes__
 
+Democratic socialists win in 2028
+
+How do demographics come in here? What happens as baby boomers pass away?
+
 Top 4 assets in the world
 
 [Kelly Criterion](https://en.wikipedia.org/wiki/Kelly_criterion) (for risk allocation)

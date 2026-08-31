@@ -1,0 +1,86 @@
+[
+  {
+    "slug": "ai-economic-impact",
+    "label": "AI Economic Impact",
+    "children": [
+      {
+        "slug": "enterprise-data-privacy",
+        "label": "Enterprise Data Privacy"
+      },
+      {
+        "slug": "robotics",
+        "label": "Robotics"
+      }
+    ]
+  },
+  {
+    "slug": "ai-capability",
+    "label": "AI Capability",
+    "children": [
+      {
+        "slug": "data",
+        "label": "Data"
+      },
+      {
+        "slug": "algorithms",
+        "label": "Algorithms"
+      },
+      {
+        "slug": "computing-power",
+        "label": "Computing Power",
+        "children": [
+          {
+            "slug": "energy",
+            "label": "Energy"
+          },
+          {
+            "slug": "chips",
+            "label": "Chips"
+          },
+          {
+            "slug": "data-centers",
+            "label": "Data Centers"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "ai-safety",
+    "label": "AI Safety",
+    "children": [
+      {
+        "slug": "interpretability",
+        "label": "Interpretability"
+      }
+    ]
+  },
+  {
+    "slug": "info-delivery",
+    "label": "Information Delivery Systems"
+  },
+  {
+    "slug": "finance",
+    "label": "Finance",
+    "children": [
+      {
+        "slug": "philanthropy",
+        "label": "Philanthropy"
+      },
+      {
+        "slug": "national-debt",
+        "label": "National Debt",
+        "children": [
+          {
+            "slug": "treasuries",
+            "label": "Treasuries"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "slug": "physics",
+    "label": "Physics"
+  }
+]

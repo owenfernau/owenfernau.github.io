@@ -6,7 +6,10 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { addLink, reorderLinks, removeLink } = require('./add-map-node');
+const {
+  addLink, reorderLinks, removeLink,
+  addNode, renameNode, moveNode, removeNode,
+} = require('./add-map-node');
 
 // best-effort <title> fetch for links added without one; falls back to the
 // bare URL if the page can't be reached or has no title tag.
@@ -87,6 +90,66 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json' }).end('{"ok":true}');
       } catch (err) {
         res.writeHead(500).end(String(err));
+      }
+    });
+    return;
+  }
+
+  // Topic tree edits from the browser outline: every op rewrites
+  // publicnotes/tree.json, and add/rename also rebuild the notes so the
+  // manifest titles stay in step.
+  if (req.method === 'POST' && req.url === '/api/tree-op') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      const fail = (code, message) => {
+        res.writeHead(code, { 'Content-Type': 'application/json' })
+          .end(JSON.stringify({ ok: false, error: message }));
+      };
+      try {
+        const { op, slug, parent, before, label } = JSON.parse(body);
+        const okSlug = s => s === null || s === undefined || isSafeSlug(s);
+        if (!okSlug(slug) || !okSlug(parent) || !okSlug(before)) {
+          fail(400, 'bad slug');
+          return;
+        }
+
+        let result = { ok: true };
+        if (op === 'add') {
+          if (typeof label !== 'string' || !label.trim()) {
+            fail(400, 'label required');
+            return;
+          }
+          result.slug = addNode(parent || null, label);
+        } else if (op === 'rename') {
+          if (!slug || typeof label !== 'string') {
+            fail(400, 'slug and label required');
+            return;
+          }
+          renameNode(slug, label);
+        } else if (op === 'move') {
+          if (!slug) {
+            fail(400, 'slug required');
+            return;
+          }
+          moveNode(slug, parent || null, before || null);
+        } else if (op === 'remove') {
+          if (!slug) {
+            fail(400, 'slug required');
+            return;
+          }
+          result.removed = removeNode(slug);
+        } else {
+          fail(400, `unknown op: ${op}`);
+          return;
+        }
+
+        if (op === 'add' || op === 'rename') {
+          execFileSync('node', ['build-map-notes.js'], { cwd: ROOT, stdio: 'inherit' });
+        }
+        res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify(result));
+      } catch (err) {
+        fail(500, String(err.message || err));
       }
     });
     return;

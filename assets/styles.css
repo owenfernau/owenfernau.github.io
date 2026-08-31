@@ -701,3 +701,117 @@ hr {
 #tree-data {
     display: none;
 }
+
+/* Topic editor (publicnotes.html, localhost only): the tree.json hierarchy as
+   an editable outline, shown in place of the accordion while editing. */
+#topic-editor-wrap {
+    font-family: "IBM Plex Mono", monospace;
+    margin: 4px 0 24px;
+}
+#topic-edit-toggle,
+#topic-add-root {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 4px 12px;
+    border: 1px solid #000;
+    border-radius: 0;
+    background: none;
+    cursor: pointer;
+}
+#topic-edit-toggle:hover,
+#topic-add-root:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+#topic-editor {
+    margin-top: 12px;
+}
+.topic-editor-hint {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.55);
+    margin: 0 0 8px;
+}
+#topic-tree,
+#topic-tree .te-children {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+#topic-tree .te-children {
+    padding-left: 20px;
+}
+.te-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 4px 6px;
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
+}
+.te-row:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+.te-handle {
+    cursor: grab;
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 13px;
+}
+.te-label {
+    font-size: 15px;
+    cursor: text;
+    flex: 1;
+}
+#topic-tree > .te-item > .te-row > .te-label {
+    font-weight: 600;
+}
+.te-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+}
+.te-row:hover .te-actions {
+    opacity: 1;
+}
+.te-btn {
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1;
+    width: 22px;
+    height: 22px;
+    border: 1px solid rgba(0, 0, 0, 0.35);
+    border-radius: 0;
+    background: none;
+    cursor: pointer;
+}
+.te-btn:hover {
+    border-color: #000;
+    background-color: rgba(0, 0, 0, 0.08);
+}
+.te-input {
+    font-family: inherit;
+    font-size: 15px;
+    flex: 1;
+    padding: 2px 4px;
+    border: 1px solid #000;
+    border-radius: 0;
+}
+.te-row.dragging {
+    opacity: 0.4;
+}
+/* A line above or below reorders as a sibling; a full outline nests inside. */
+.te-row.drop-before {
+    border-top-color: #000;
+}
+.te-row.drop-after {
+    border-bottom-color: #000;
+}
+.te-row.drop-into {
+    box-shadow: inset 0 0 0 2px #000;
+}
+#topic-editor-status {
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.55);
+    margin-left: 10px;
+}
+#topic-editor-status.is-error {
+    color: #8f3b3b;
+}
