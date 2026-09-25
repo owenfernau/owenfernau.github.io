@@ -5,6 +5,7 @@
 - [x] Mind map (/map treemap) needs a different visualization for mobile — done: accordion list below 600px width
 - [ ] Add more articles to the Work section (The Defiant "select articles" list in index.html)
 - [ ] Auto-title on add-link (map-server.js fetchPageTitle) falls back to junk on bot-blocked sites (e.g. WSJ returns a JS-challenge page titled just "wsj.com") — needs a better fallback, e.g. deriving a readable title from the URL slug when the fetched title looks bogus or the response isn't a real 200
+- [ ] Benchmark the Predictions section: create the 10Y yield question on Manifold (free, public timestamp) and link it from the prediction row; if Polymarket/Kalshi has a matching market, show its price next to my 65%. Would need a "market" field added to the PREDICTIONS objects in index.html
 
 ## Usability audit (Aug 7 2026, quick pass — not exhaustive)
 
