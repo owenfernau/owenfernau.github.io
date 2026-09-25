@@ -815,3 +815,66 @@ hr {
 #topic-editor-status.is-error {
     color: #8f3b3b;
 }
+
+/* Predictions (index.html): one row per public forecast. The marker sits at
+   the current probability; faint dots behind it are earlier estimates. */
+.pred-meta {
+    color: #6c6c63;
+    font-size: 12px;
+    margin-left: 0.5em;
+}
+.pred-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0 2px 1.5em;
+    max-width: 60ch;
+}
+.pred-end {
+    font-size: 11px;
+    color: #6c6c63;
+}
+.pred-track {
+    position: relative;
+    flex: 1;
+    height: 14px;
+}
+.pred-track::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 1px solid #000;
+}
+/* Tick at 50%, so "more likely than not" reads at a glance */
+.pred-track::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 3px;
+    height: 8px;
+    border-left: 1px solid #6c6c63;
+}
+.pred-dot {
+    position: absolute;
+    top: 50%;
+    width: 9px;
+    height: 9px;
+    transform: translate(-50%, -50%);
+    background: #000;
+    z-index: 1;
+}
+.pred-dot.past {
+    width: 5px;
+    height: 5px;
+    background: #999;
+    border-radius: 50%;
+}
+.pred-pct {
+    font-weight: 600;
+    min-width: 3.5ch;
+    text-align: right;
+}
+.prediction.yes .pred-dot:not(.past) { background: #3f7a4f; }
+.prediction.no .pred-dot:not(.past) { background: #8f3b3b; }

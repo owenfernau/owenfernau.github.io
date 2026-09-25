@@ -21,12 +21,15 @@
 		<div class="profile-block">
 			<img src="assets/headshot.png" alt="Owen Fernau" class="headshot">
 			<div class="tagline-row">
-				<a href="publicnotes.html" class="button notes profile-map-link">public<br>notes</a>
+				<a href="essays.html" class="button notes profile-map-link">essays</a>
 				<p class="tagline">writing +<br>operations</p>
 			</div>
 		</div>
 		<ul class="bio-list">
 			<br>
+			<li class="section-header">Predictions <span class="pred-meta" id="pred-updated"></span></li>
+			<br>
+			<li id="predictions"></li>
 			<li class="section-header">Work</li>
 			<br>
 			<!-- <li class="expandable"> <span class="arrow"></span> Working in the <a href="https://www.x402.org/">x402</a> ecosystem
@@ -185,6 +188,45 @@
 	<div id="lightbox" class="lightbox" onclick="closeLightbox(this)">
 		<img src="assets/oracles_chainlink.svg" alt="SVG data visualization example">
 	</div>
+
+	<script>
+		// To add a prediction, add an object. To update one, push the old
+		// probability into `history` and change `p`. To resolve, set outcome.
+		const PRED_UPDATED = "Sep 25, 2026";
+		const PREDICTIONS = [
+			{
+				claim: "The US 10Y Treasury yield closes at 5.5%+ on at least one day by year-end 2026",
+				p: 65,
+				history: [],             // earlier estimates, oldest first, e.g. [50, 58]
+				outcome: null,           // null (open), "yes", or "no"
+				why: "Worries about the federal deficit keep pushing long-term rates up.",
+				made: "Sep 25, 2026, with the 10-year at 5.18%",
+				resolves: '<a href="https://fred.stlouisfed.org/series/DGS10">U.S. Treasury daily yield data (FRED: DGS10)</a>'
+			}
+		];
+
+		document.getElementById('pred-updated').textContent = 'last update ' + PRED_UPDATED;
+		document.getElementById('predictions').outerHTML = PREDICTIONS.map(d => {
+			const dots = d.history.map(h => `<span class="pred-dot past" style="left:${h}%"></span>`).join('');
+			const status = d.outcome ? ` <span class="pred-meta">resolved ${d.outcome.toUpperCase()}</span>` : '';
+			return `
+			<li class="expandable prediction ${d.outcome || ''}"> <span class="arrow"></span> ${d.claim}${status}
+				<div class="pred-row">
+					<span class="pred-end">0</span>
+					<span class="pred-track">${dots}<span class="pred-dot" style="left:${d.p}%"></span></span>
+					<span class="pred-end">100</span>
+					<span class="pred-pct">${d.p}%</span>
+				</div>
+				<ul class="sub-list">
+					<li> ○ why: ${d.why}</li>
+					${d.history.length ? `<li> ○ earlier estimates: ${d.history.join('% → ')}%</li>` : ''}
+					<li> ○ made: ${d.made}</li>
+					<li> ○ resolves on: ${d.resolves}</li>
+				</ul>
+			</li>
+			<br>`;
+		}).join('');
+	</script>
 
 	<script>
 		document.querySelectorAll('.expandable').forEach(item => {

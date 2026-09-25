@@ -82,5 +82,9 @@
   {
     "slug": "physics",
     "label": "Physics"
+  },
+  {
+    "slug": "politics",
+    "label": "Politics"
   }
 ]
