@@ -201,6 +201,7 @@
 				outcome: null,           // null (open), "yes", or "no"
 				why: "Worries about the federal deficit keep pushing long-term rates up.",
 				made: "Sep 25, 2026, with the 10-year at 5.18%",
+				archived: "https://archive.ph/GvUVH",
 				resolves: '<a href="https://fred.stlouisfed.org/series/DGS10">U.S. Treasury daily yield data (FRED: DGS10)</a>'
 			}
 		];
@@ -221,6 +222,7 @@
 					<li> ○ why: ${d.why}</li>
 					${d.history.length ? `<li> ○ earlier estimates: ${d.history.join('% → ')}%</li>` : ''}
 					<li> ○ made: ${d.made}</li>
+					${d.archived ? `<li> ○ archived: <a href="${d.archived}">snapshot</a></li>` : ''}
 					<li> ○ resolves on: ${d.resolves}</li>
 				</ul>
 			</li>
