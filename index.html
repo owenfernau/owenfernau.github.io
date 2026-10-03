@@ -21,7 +21,6 @@
 		<div class="profile-block">
 			<img src="assets/headshot.png" alt="Owen Fernau" class="headshot">
 			<div class="tagline-row">
-				<a href="essays.html" class="button notes profile-map-link">essays</a>
 				<p class="tagline">writing +<br>operations</p>
 			</div>
 		</div>
@@ -196,7 +195,7 @@
 	<script>
 		// To add a prediction, add an object. To update one, push the old
 		// probability into `history` and change `p`. To resolve, set outcome.
-		const PRED_UPDATED = "Sep 25, 2026";
+		const PRED_UPDATED = "Oct 3, 2026";
 		const PREDICTIONS = [
 			{
 				claim: "The US 10Y Treasury yield closes at 5.5%+ on at least one day by year-end 2026",
@@ -207,6 +206,16 @@
 				made: "Sep 25, 2026, with the 10-year at 5.18%",
 				archived: "https://archive.ph/GvUVH",
 				resolves: '<a href="https://fred.stlouisfed.org/series/DGS10">U.S. Treasury daily yield data (FRED: DGS10)</a>'
+			},
+			{
+				claim: "US professional & business services employment is lower in Sept 2027 than in Sept 2026",
+				p: 80,
+				history: [],
+				outcome: null,
+				why: "AI tools and tighter corporate budgets slow white-collar hiring, while layoffs in consulting, tech services and staffing pile up.",
+				made: "Oct 3, 2026, with the sector at 22.48M jobs",
+				archived: null,
+				resolves: '<a href="https://fred.stlouisfed.org/series/USPBS">BLS payroll data (FRED: USPBS)</a>, comparing Sept 2027 with Sept 2026 as both appear in the October 2027 jobs report'
 			}
 		];
 
