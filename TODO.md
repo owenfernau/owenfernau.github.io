@@ -14,3 +14,13 @@
 - [ ] No `<meta name="description">` or Open Graph tags (og:title/og:description/og:image) on any page — links shared to Slack/Twitter/iMessage will preview poorly (just a bare URL or generic title).
 - [ ] Page `<title>` tags are inconsistent/generic — index.html and notes.html are both just "Owen"; publicnotes.html is "Map". Individual note pages do this well already (e.g. "Finance — AI Map"), worth matching that pattern site-wide.
 - [ ] publicnotes.html's desktop treemap has no legend/instructions on first load — unclear to a first-time visitor that boxes are clickable/expandable without hovering or guessing.
+
+## UI/UX ideas (Oct 5 2026, for the dark trial theme in index-b.html / theme-b.css)
+
+- [ ] Add a one-line intro at the top saying who I am and what I do (tagline was removed, so visitors get no context)
+- [ ] Give essays their own Writing section near the top, listed openly instead of collapsed under Projects
+- [ ] Collapse less: show a one-line summary under each item, or open the top Work item by default
+- [ ] Narrow body text to ~65-75 characters per line (currently up to 113ch)
+- [ ] Trim the book list: lead with the books that have takes, move the rest to a separate page or "more" toggle (overlaps the Aug 7 book-list item above)
+- [ ] Move contact links (email, X, LinkedIn) to a small row under my name, not just the footer
+- [ ] Replace the `<br>` spacing between sections with CSS margins for a consistent rhythm

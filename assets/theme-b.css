@@ -1,0 +1,81 @@
+/* Trial theme B: dark, Front Burner palette. Loaded after styles.css. */
+:root {
+    --bg: #1e1e1e;
+    --panel: #2a201b;
+    --text: #ece5d8;
+    --muted: #9c9285;
+    --rust: #c2401f;
+    --gold: #b08a3e;
+    --line: #4a3f37;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+a { color: #e8a47a; text-decoration-color: rgba(232, 164, 122, 0.4); }
+a:hover { color: var(--text); text-decoration-color: var(--rust); }
+
+hr { border: none; border-top: 1px solid var(--line); }
+
+/* Readability: sans for body text, a bit bigger and airier */
+.bio-list,
+.noto-sans-mono-unique,
+.email-text {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+}
+
+/* Section headers like Front Burner's small uppercase labels */
+.bio-list .section-header {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+}
+
+/* Name button: cream bar with dark text */
+.page-title, #note-trail { color: var(--text); }
+.button {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--bg);
+    background: var(--text);
+    border-color: var(--text);
+}
+.button:hover { background: var(--rust); border-color: var(--rust); color: var(--text); }
+
+.headshot { border: 1px solid var(--line); filter: grayscale(1) sepia(0.35) contrast(1.05); }
+
+/* Expandable rows */
+@media (hover: hover) and (pointer: fine) {
+    .expandable:hover:not(:has(> .sub-list:hover)) {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    .expandable:hover:not(:has(> .sub-list:hover)) > .arrow:not(.chevron) {
+        background-color: var(--rust);
+        border-color: var(--rust);
+        color: var(--text);
+    }
+}
+.arrow { border-color: var(--gold); color: var(--gold); }
+.arrow:hover { background-color: var(--rust); color: var(--text); }
+.arrow.chevron, .arrow.chevron:hover { color: var(--gold); }
+.sub-list > li.review-text { color: var(--muted); }
+
+.link-check { border-color: var(--gold); }
+.link-check:checked::before { color: var(--gold); }
+
+/* Predictions */
+.pred-meta, .pred-end { color: var(--muted); }
+.pred-track::before { border-top-color: var(--line); }
+.pred-track::after { border-left-color: var(--muted); }
+.pred-dot { background: var(--rust); }
+.pred-dot.past { background: var(--muted); }
+.pred-pct { font-family: "IBM Plex Mono", monospace; color: var(--gold); }
+
+.lightbox img { background: var(--bg); border-color: var(--line); }

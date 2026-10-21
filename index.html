@@ -11,6 +11,37 @@
     <!-- Cloudflare Web Analytics -->
     <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "d241846e7f9a4235825f84be63226841"}'></script>
     <!-- End Cloudflare Web Analytics -->
+    <style>
+        /* Draft C: writing-first layout */
+        .intro { display: flex; gap: 20px; align-items: center; margin: 24px 0 32px; font-family: "IBM Plex Mono", monospace; font-size: 14px; line-height: 1.5; }
+        .intro img { width: 84px; height: auto; }
+        .intro .tag { color: #6c6c63; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; }
+        .writing { margin-bottom: 32px; font-family: "IBM Plex Mono", monospace; }
+        .writing h2 { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 16px; }
+        .writing ul { list-style: none; padding: 0; margin: 0; }
+        .writing .essay { font-size: 14px; line-height: 1.5; margin-bottom: 10px; display: flex; justify-content: space-between; gap: 16px; }
+        .writing .essay a { color: #000; }
+        .writing .date { font-size: 12px; color: #6c6c63; white-space: nowrap; }
+        .writing .sub { font-size: 12px; color: #6c6c63; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 8px; }
+        .writing .wip { font-size: 14px; margin-bottom: 4px; display: flex; justify-content: space-between; gap: 16px; }
+        .writing .wip .status { font-size: 12px; color: #6c6c63; }
+        .writing .foot { font-size: 12px; margin: 0; }
+        .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-bottom: 32px; }
+        .cols .bio-list { font-size: 13px; }
+        .block { margin-bottom: 32px; }
+        .layout { display: flex; gap: 32px; margin: 24px 0 32px; align-items: flex-start; }
+        .menu { display: flex; flex-direction: column; gap: 4px; flex: 0 0 130px; position: sticky; top: 20px; }
+        .menu a { font-family: "IBM Plex Mono", monospace; font-size: 13px; font-weight: 600; color: #000; text-decoration: none; border: 1px solid #000; padding: 4px 10px; }
+        .menu a:hover, .menu a.active { background: #000; color: #eaebea; }
+        main { flex: 1; min-width: 0; }
+        .panel { display: none; }
+        .panel.active { display: block; border: 1px solid #000; padding: 20px 24px; }
+        .panel .writing, .panel .block { margin: 0; }
+        #essay-body .noto-sans-mono-unique { font-size: 14px; }
+        .about-photo { width: 120px; height: auto; margin-bottom: 16px; }
+        @media (max-width: 700px) { .layout { flex-direction: column; align-items: stretch; gap: 20px; } .panel.active { padding: 16px; } .menu { flex-direction: row; flex-wrap: nowrap; position: static; flex-basis: auto; overflow-x: auto; } .menu a { flex: 1 1 auto; text-align: center; white-space: nowrap; font-size: 12px; padding: 4px 6px; } }
+        @media (max-width: 700px) { .cols { grid-template-columns: 1fr; } body { padding: 16px; } }
+    </style>
 </head>
 <body>
 	<div class="container">
@@ -18,27 +49,41 @@
 	    	<a href="index.html" class="button">Owen Fernau</a>
 		</div>
 		<hr>
-		<div class="profile-block">
-			<img src="assets/headshot.png" alt="Owen Fernau" class="headshot">
-			<div class="tagline-row">
-				<p class="tagline">writing +<br>operations</p>
-			</div>
-		</div>
-		<ul class="bio-list">
-			<br>
+		<div class="layout">
+			<nav class="menu">
+				<a href="#writing">Writing</a>
+				<a href="#work">Work</a>
+				<a href="#projects">Projects</a>
+				<a href="#predictions">Predictions</a>
+				<a href="#about">About</a>
+			</nav>
+			<main>
+				<div class="panel" id="p-writing">
+		<section class="writing">
+			<h2>Writing</h2>
+			<ul>
+				<li class="essay"><a href="#essay/productivityspreadsheet">Productivity Spreadsheet</a><span class="date">Aug 2025</span></li>
+				<li class="essay"><a href="#essay/reminderaboutlanguage">Reminder About Language</a><span class="date">Aug 2020</span></li>
+			</ul>
+		</section>
+
+				</div>
+				<div class="panel" id="p-predictions">
+		<ul class="bio-list block">
 			<li class="section-header">Predictions <span class="pred-meta" id="pred-updated"></span></li>
 			<br>
 			<li id="predictions"></li>
-			<li class="section-header">Work</li>
-			<br>
-			<!-- <li class="expandable"> <span class="arrow"></span> Working in the <a href="https://www.x402.org/">x402</a> ecosystem
-					<ul class="sub-list">
-						<li> ○ strategy, messaging, ops and design for <a href="https://www.x402.eco/">x402.eco</a> and <a href="https://x402news.org/">x402 News</a></li>
-						<li> ○ Shoutout to our sponsors Solana and Base</li>
-					</ul>
-				</li>
-			<br> -->
-			<li class="expandable"> <span class="arrow"></span> Running operations for <a href="http://www.ournetwork.xyz/">OurNetwork</a>, 2024-2026
+		</ul>
+
+				</div>
+				<div class="panel" id="p-essay">
+					<section class="writing"><h2 id="essay-title"></h2><div id="essay-body"></div></section>
+				</div>
+				<div class="panel" id="p-work">
+					<ul class="bio-list">
+				<li class="section-header">Work</li>
+				<br>
+				<li class="expandable"> <span class="arrow"></span> Running operations for <a href="http://www.ournetwork.xyz/">OurNetwork</a>, 2024-2026
 					<ul class="sub-list">
 						<li> ○ onchain data research organization</li>
 						<li> ○ grew newsletter from 28,000 to 36,000 subscribers</li>
@@ -74,9 +119,13 @@
 					</ul>
 				</li>
 			<br>
-			<li class="section-header">Projects</li>
-			<br>
-			<!-- Demo link pre-consolidation, may move -->
+			</ul>
+				</div>
+				<div class="panel" id="p-projects">
+						<ul class="bio-list">
+				<li class="section-header">Projects</li>
+				<br>
+				<!-- Demo link pre-consolidation, may move -->
 			<li class="expandable"> <span class="arrow"></span> Prototyping an AI matching layer for online communities, <a href="https://graph2-production-831d.up.railway.app/bluedot-demo-owen.html">Graph</a>
 					<ul class="sub-list">
 						<li> ○ Creates profiles of people's goals, skills, and interests in the context of a subgroup</li>
@@ -94,17 +143,15 @@
 					</ul>
 				</li>
 			<br>
-			<li class="expandable"> <span class="arrow"></span> A few essays from independent writing
-					<ul class="sub-list">
-						<li> ○ <a href="notes/productivityspreadsheet.html">Productivity Spreadsheet</a> (Aug. 17 2025)</li>
-						<li> ○ <a href="notes/reminderaboutlanguage.html">Reminder About Language</a> (Aug. 13 2020)</li>
-						<!-- WHAT I'VE LEARNED -->
-					</ul>
-				</li>
+			</ul>
+		
+				</div>
+				<div class="panel" id="p-about">
+					<img src="assets/headshot.png" alt="Owen Fernau" class="about-photo">
+		<ul class="bio-list block">
+			<li class="section-header">About</li>
 			<br>
-			<li class="section-header">Context</li>
-			<br>
-			<li class="expandable"> <span class="arrow"></span> Core beliefs
+						<li class="expandable"> <span class="arrow"></span> Core beliefs
 					<ul class="sub-list">
 						<li> ○ We rarely need more "content." We need the right information delivered to us with appropriate context such that we know it's what's actually important.</li>
 						<li> ○ People tend to choose the hierarchies they identify with based on whether they're winning in that hierarchy.</li>
@@ -115,7 +162,7 @@
 			<li class="expandable"> <span class="arrow"></span> Has a few hobbies
 					<ul class="sub-list">
 						<li> ○ <a href="https://sfhoopsleague.com/" target="_blank">basketball: league</a> (highlights: <a href="https://www.youtube.com/watch?v=wlHSMhhMchk&t=50s" target="_blank">1</a>,<a href="https://www.youtube.com/watch?v=8RQF1V1tNw0&t=164s" target="_blank">2</a>,<a href="https://www.youtube.com/watch?v=8RQF1V1tNw0&t=143s" target="_blank">3</a>) and pickup</li>
-						<li> ○ chess</li>
+						<li> ○ <a href="https://www.chess.com/member/CM480" target="_blank">chess</a></li>
 					</ul>
 				</li>
 			<br>
@@ -183,6 +230,9 @@
 				</li>
 			<br>
 		</ul>
+				</div>
+			</main>
+		</div>
 		<hr>
 		<p class="email-text"><a href="mailto:owenfernau@gmail.com">email</a> | <a href="https://x.com/ofernau" target="_blank">x</a> | <a href="https://www.linkedin.com/in/owenfernau" target="_blank">linkedin</a> | <a href="https://github.com/owenfernau" target="_blank">github</a></p>
 	</div>
@@ -202,7 +252,6 @@
 				p: 65,
 				history: [],             // earlier estimates, oldest first, e.g. [50, 58]
 				outcome: null,           // null (open), "yes", or "no"
-				why: "Worries about the federal deficit keep pushing long-term rates up.",
 				made: "Sep 25, 2026, with the 10-year at 5.18%",
 				archived: "https://archive.ph/GvUVH",
 				resolves: '<a href="https://fred.stlouisfed.org/series/DGS10">U.S. Treasury daily yield data (FRED: DGS10)</a>'
@@ -212,10 +261,9 @@
 				p: 80,
 				history: [],
 				outcome: null,
-				why: "AI tools and tighter corporate budgets slow white-collar hiring, while layoffs in consulting, tech services and staffing pile up.",
 				made: "Oct 3, 2026, with the sector at 22.48M jobs",
 				archived: "https://archive.ph/qscei",
-				resolves: '<a href="https://fred.stlouisfed.org/series/USPBS">BLS payroll data (FRED: USPBS)</a>, comparing Sept 2027 with Sept 2026 as both appear in the October 2027 jobs report'
+				resolves: '<a href="https://fred.stlouisfed.org/series/USPBS">BLS payroll data (FRED: USPBS)</a>'
 			}
 		];
 
@@ -232,7 +280,6 @@
 					<span class="pred-pct">${d.p}%</span>
 				</div>
 				<ul class="sub-list">
-					<li> ○ why: ${d.why}</li>
 					${d.history.length ? `<li> ○ earlier estimates: ${d.history.join('% → ')}%</li>` : ''}
 					<li> ○ made: ${d.made}</li>
 					${d.archived ? `<li> ○ archived: <a href="${d.archived}">snapshot</a></li>` : ''}
@@ -261,6 +308,38 @@
 		function closeLightbox(el) {
 			el.classList.remove('open');
 		}
+	</script>
+	<script>
+		// Essays load inside the page so the menu stays put. Writing stays highlighted.
+		async function loadEssay(slug) {
+			try {
+				const res = await fetch('notes/' + slug + '.html');
+				const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+				document.getElementById('essay-title').textContent = doc.querySelector('.page-title').textContent;
+				const body = doc.querySelector('.noto-sans-mono-unique');
+				body.innerHTML = body.innerHTML
+					.replace(/href="\.\.\/notes\/([\w-]+)\.html"/g, 'href="#essay/$1"')
+					.replace(/(src|href)="\.\.\//g, '$1="');
+				document.getElementById('essay-body').replaceChildren(body);
+			} catch (e) {
+				location.replace('notes/' + slug + '.html');
+			}
+		}
+
+		function showPanel() {
+			// ?p=predictions also works, for archive snapshots that drop the #
+			let id = location.hash.slice(1) || new URLSearchParams(location.search).get('p') || 'writing';
+			if (id.startsWith('essay/')) {
+				loadEssay(id.slice(6));
+				id = 'essay';
+			}
+			const tab = id === 'essay' ? 'writing' : id;
+			document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'p-' + id));
+			document.querySelectorAll('.menu a').forEach(a => a.classList.toggle('active', a.hash === '#' + tab));
+			window.scrollTo(0, 0);
+		}
+		window.addEventListener('hashchange', showPanel);
+		showPanel();
 	</script>
 </body>
 </html>
