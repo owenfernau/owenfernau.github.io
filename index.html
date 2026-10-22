@@ -34,9 +34,15 @@
         .menu a { font-family: "IBM Plex Mono", monospace; font-size: 13px; font-weight: 600; color: #000; text-decoration: none; border: 1px solid #000; padding: 4px 10px; }
         .menu a:hover, .menu a.active { background: #000; color: #eaebea; }
         main { flex: 1; min-width: 0; }
+        .email-text { margin-top: 6px; }
+        .layout { position: relative; }
+        .connector { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+        @media (max-width: 700px) { .connector { display: none; } }
         .panel { display: none; }
         .panel.active { display: block; border: 1px solid #000; padding: 20px 24px; }
         .panel .writing, .panel .block { margin: 0; }
+        #p-writing h2, .panel .section-header + br { display: none; } .panel .section-header { font-size: 0; margin: 0; } .panel .section-header .pred-meta { font-size: 12px; }
+        .panel ul > br:last-child { display: none; } .panel .writing ul { margin: 0; padding: 0; } .panel .writing .essay:last-child { margin-bottom: 0; }
         #essay-body .noto-sans-mono-unique { font-size: 14px; }
         .about-photo { width: 120px; height: auto; margin-bottom: 16px; }
         @media (max-width: 700px) { .layout { flex-direction: column; align-items: stretch; gap: 20px; } .panel.active { padding: 16px; } .menu { flex-direction: row; flex-wrap: nowrap; position: static; flex-basis: auto; overflow-x: auto; } .menu a { flex: 1 1 auto; text-align: center; white-space: nowrap; font-size: 12px; padding: 4px 6px; } }
@@ -45,9 +51,6 @@
 </head>
 <body>
 	<div class="container">
-		<div class="header-container">
-	    	<a href="index.html" class="button">Owen Fernau</a>
-		</div>
 		<hr>
 		<div class="layout">
 			<nav class="menu">
@@ -57,6 +60,7 @@
 				<a href="#predictions">Predictions</a>
 				<a href="#about">About</a>
 			</nav>
+			<svg class="connector"><line id="c-top" stroke="#000" stroke-width="1"/><line id="c-bot" stroke="#000" stroke-width="1"/></svg>
 			<main>
 				<div class="panel" id="p-writing">
 		<section class="writing">
@@ -83,7 +87,7 @@
 					<ul class="bio-list">
 				<li class="section-header">Work</li>
 				<br>
-				<li class="expandable"> <span class="arrow"></span> Running operations for <a href="http://www.ournetwork.xyz/">OurNetwork</a>, 2024-2026
+				<li class="expandable"> <span class="arrow"></span> Ran operations for <a href="http://www.ournetwork.xyz/">OurNetwork</a>, 2024-2026
 					<ul class="sub-list">
 						<li> ○ onchain data research organization</li>
 						<li> ○ grew newsletter from 28,000 to 36,000 subscribers</li>
@@ -234,7 +238,7 @@
 			</main>
 		</div>
 		<hr>
-		<p class="email-text"><a href="mailto:owenfernau@gmail.com">email</a> | <a href="https://x.com/ofernau" target="_blank">x</a> | <a href="https://www.linkedin.com/in/owenfernau" target="_blank">linkedin</a> | <a href="https://github.com/owenfernau" target="_blank">github</a></p>
+		<p class="email-text">owen fernau | <a href="mailto:owenfernau@gmail.com">email</a> | <a href="https://x.com/ofernau" target="_blank">x</a> | <a href="https://www.linkedin.com/in/owenfernau" target="_blank">linkedin</a> | <a href="https://github.com/owenfernau" target="_blank">github</a></p>
 	</div>
 
 	<!-- Lightbox modals -->
@@ -337,7 +341,24 @@
 			document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'p-' + id));
 			document.querySelectorAll('.menu a').forEach(a => a.classList.toggle('active', a.hash === '#' + tab));
 			window.scrollTo(0, 0);
+			drawConnector();
 		}
+		// Draw lines from the selected menu tab to the corners of its panel
+		function drawConnector() {
+			const layout = document.querySelector('.layout');
+			const tab = document.querySelector('.menu a.active');
+			const panel = document.querySelector('.panel.active');
+			const svg = document.querySelector('.connector');
+			if (!tab || !panel) { svg.style.display = 'none'; return; }
+			svg.style.display = '';
+			const L = layout.getBoundingClientRect(), t = tab.getBoundingClientRect(), p = panel.getBoundingClientRect();
+			const set = (id, x1, y1, x2, y2) => Object.entries({ x1, y1, x2, y2 }).forEach(([k, v]) => document.getElementById(id).setAttribute(k, v));
+			set('c-top', t.right - L.left, t.top - L.top + 0.5, p.left - L.left + 0.5, p.top - L.top + 0.5);
+			set('c-bot', t.right - L.left, t.bottom - L.top - 0.5, p.left - L.left + 0.5, p.bottom - L.top - 0.5);
+		}
+		window.addEventListener('scroll', drawConnector);
+		window.addEventListener('resize', drawConnector);
+		new ResizeObserver(drawConnector).observe(document.querySelector('main'));
 		window.addEventListener('hashchange', showPanel);
 		showPanel();
 	</script>
