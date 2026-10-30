@@ -1,0 +1,138 @@
+Alright. Attention ethics. For a long time I've struggled with posting online. 
+
+Online attention gives people two main, and overlapping, things. First, money, plain and 
+simple. Having followers is an excellent marketing lever. It leads all sorts of partnerships.
+Online attention also confers, social status, which correlates with viability as a sexual partner.
+
+In a way, social media games are the same as the real world. Humans are motivated by money, 
+and sex. Of course those two draws are deeply related, but that's out of scope of this essay.
+
+What bugs me about the online posting is that, normal things you would say to friends, are
+morally suspect online. And this introduces a sort of cognitive dissonance: what's wrong with posts
+containingsimple sentences like "NYC rocks" accompanied by a picture of Central Park? 
+
+This sort of statement is generally fine with a friend. You're just expressing an opinion. Your
+friend, by hanging out with you, is implicitly signing up to have a conversation. 
+
+But say you post "NYC rocks" on Twitter. If posted to a general audience, you're saying something
+different. You're saying your opinion, specifically what cities are cool, matters. Implicit in 
+your post is that you know what's going on in a cosmopolitan sense. 
+
+I think the danger here lies in the dissonence between statements which make sense in person,
+but when said online, suggest different things. And further, as most know, attention is the 
+currency on social media, not being right. 
+
+I still think there's a bit of a lag in terms of people's understanding (or maybe just my own, which
+is why I'm writing this) of how deep the problem is. Attention is a scarce resource. If posting,
+primarily for attention, a person is gunning to take a scarce resource from other people. Logging on 
+to general social media platforms means you're signing up to consume content with set of incentives 
+which are very different from hanging out with people. 
+
+The problem is that social media isn't "a scam." I've used Twitter DMs to find jobs I've held for 
+years. It's extremely powerful to be able to put out feelers about work, about an idea you're
+tinkering with, to an undefined audience. Sometimes you don't know exactly where to look to find
+collaborators, feedback, partners. So it's great to shoot shots on social media. 
+
+What I'm getting at is context of written/typed language is as important as the words themselves. 
+We all sense this implicitly. A text to a friend is not a "post" to the world. But if you never post
+online, you miss out on the potential upside of finding collaborators, friends, or opportunities,
+which is one of the great powers of the internet.  
+
+In terms of solutions to this problem, I think we could expand modalities of "posting." You can
+post to close friends on Instagram, but that limits serendipitious upside. So does posting on 
+private modes on major social media sites. You can post in Slacks and Discords, but if someone doesn't 
+happen to see the message, it's quickly subsumed. 
+
+In a way, custom forums, and small Reddits, are the gold standard of online communication. A friend
+who runs a kiwi farm referred me to The Tropical Fruit Forum, when I brought up this line of thinking.
+People are trying to get things done on the Tropical Fruit Forum. Same with forums for specific cars.
+Maybe clout exists on those sites too, but it's localized, focused on a specific subcommunity which
+has an implicit set of interests.
+
+And attention seeking posts, don't seem to thrive in those forums. Why is that? I think it's for 
+the same reason that local businesses can cater to their neighborhood in a way that chains 
+can't: local businesses have to put in the work a head of time to understand their customers. This 
+transfers over to posting online: the environment in which you post matters as much as the words. It's
+about placement. And I think it's dangerous to exist in these generalized social media platforms. 
+There's too much downside: when posters just have to attract enough people globally, they will say
+anything in order to do so. They don't care about negative externalities. 
+
+An example of this would be 9 year-old boys who listen to Andrew Tate describe women as 
+"sub-sentient." This attracts attention on generalized platforms, where as on your local birding 
+forum, there simply aren't enough people to get "rage-baited" by purposely inflammatory posts.
+
+Again, though, there is still promise in global platforms. 
+
+Not to make this an advertisement, but I have worked with a friend on a project exploring technical
+solutions to the problem above, which I would essentially call: can we have the upside of global 
+communication without the downside of attention-seeking posts which steal time, a person's, 
+ultimately, most valuable resource. 
+
+Working name is Graph - shoot me an email if you'd like to talk the above.
+
+Thanks for your attention.  
+
+
+
+
+
+
+However, most time online is spent in this broad social platform.   
+
+ 
+
+Attention-seeking behavior is essentially pointless because the forum's
+audiences are small and interested in specific things so
+
+This post is doubtlessly informed by the too-much time I spent on Twitter, specifically an
+unsurprisingly "toxic" corner called "Crypto Twitter" which incentivized a certain 
+egregious form of posting meant to signal wealth and fitness 
+
+
+
+For what it's worth, I have made, with help from a friend Brad Glisson, some headway on this
+problem. 
+
+
+
+
+ As a writer, it sucks to see the medium of language used as means to 
+deceive people, and  
+
+But generally speaking, I think we view "posting" as morally neutral, when I actually
+think it's net negative. You're posting in order to be read, listened to, engaged with. 
+But how often do people post what they would actually want to read, as opposed to 
+following a vague, or not-so-vague, impulse to subtly (or not) signal status? 
+
+Maybe it is what it is. Toughen up. These people aren't poisoning your water. Other bad 
+things happen all the time. It just takes one meeting to send 1,000s of jobs overseas.
+Dying in war is worse than reading a post which sparks "discourse" as a way to hijack 
+attention.
+
+My point is though, "content creator" businesses are, on balance, unethical. Again,
+no shit, the world is unethical. Humans kill each other. But I think what's insidious
+here is that the content creator's output is "information." It's "saying things," 
+creating videos. Content creator businesses don't work unless they consume other 
+people's time, which is arguably, their most important resource. 
+
+And that implicit fact about content creators, should actually come with a warning, 
+like a food label. I'm not sure how to design that. But something like a ratings agency,
+the Moody's of content creators, asigning an independent assessment of an account's 
+output. You could potentially layer it on your social media platform somehow, so you
+could choose what you consume. "Following" tabs on Twitter et al. do this to some degree,
+but it would be cool to get the discovery of new accounts, but through a lens you could
+trust. Obviously that's a thorny issue and talk is cheap there. 
+
+Maybe that's all I have to say. I don't want to take up too much of your time. Because 
+I care!
+
+But yes, I think what gets me is that most "posters" present what they do as "net
+neutral," when it's actually net negative. 
+
+And the tough thing too is that the internet is great! There's so much potential: to 
+find interesting projects and people, to "expand your mind" and horizons. I think AI will
+maybe give us more way to consume the web. My friend worked on creating custom feeds,
+which pulled information 
+
+
+I also worked with that friend on tooling which aimed to    
