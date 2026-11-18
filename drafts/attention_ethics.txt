@@ -6,25 +6,44 @@ Online attention gives people two main, and overlapping, things. First, money. H
 a personal marketing lever. Online attention also confers a vaporous thing, "social status,"
 which correlates somewhat with perceived viability as a sexual partner.
 
-In a way, online attention isn't so different than offline attention.
+In a way, online attention isn't so different than offline attention. Money and sex are key human motivators, 
+achievement in the digital domain or "real life" are both arguably in pursuit of climbing those hierarchies. 
 
- Success in either the digital
-or "real life" domains correlation 
+The strange thing about online posting is that, the "metadata" around what a person says is different. "Metadata" in person essentially means the context behind someone saying something. A simple greeting like "hi"
+means very different things based on tone of voice, your relationship with the speaker, and a myriad of 
+other items which people, in 2026 often sum up with the word "vibe" or "aura."
 
- Money and sex are key human
-motivators. We seek both, and posting online is just another way to get those things. 
+In text-based communication, there is different metadata. There are factors like the aesthetic of the text 
+itself, the color, the font. Prose and poetry have aesthetics before you even read a word. Going further however, on a given social platform, the aesthetic metadata of the text doesn't change between users: one user's "good morning" is identical to another's.
 
-The strange thing about online posting is that, normal things in person mean something else
-online. A simple post like "good morning" on Twitter means something very different than someone
-saying that in person.
+However, not all plaintext "good mornings" are created equal. They have different metadata attached: namely who or what is saying "good morning." A famous actor tweeting "good morning" the day after a DUI, means a very different thing than a politician tweeting "good morning" after winning an election. Similarly a story posted by
+the Wall Street Journal means a different thing than a random X account, even if the words were the same.
 
-More so than that, "good morning" in text, is qualitatively identical no matter who says it. 
-But who says it, and when, changes the meaning of "good morning." A famous actor tweeting "good
-morning" the day after a DUI, means a very different thing than a politician tweeting "good morning"
-after winning an election. A scandal broke by the Wall Street Journal means a different thing than 
-the exact same text on an unknown Substack. 
+Coming back to my struggle to post online. I think it's that I'm uncomfortable with the metadata. I sort of understand what it means to interact in person, clothes, tone of voice, maybe my reputation as well, but interacting on social platforms means implicitly that I'm signing up to adhere to a company's metadata. 
 
-Extrapolating from this means that there is "metadata" attached to text. The information matters,
+In terms of metadata on Twitter, the platform I'm most comfortable with, there's follower count, the aesthetics of a profile picture, and each post has likes, comments, reposts, views. 
+
+Crucially, metadata is public, and is definitive. 10,000 followers is 10,000 followers. 
+
+
+
+
+
+
+
+
+
+I think... 
+
+FLIPPING ... Optimizing for the Metadata
+
+
+Maybe my point is simple, is that, I don't what to write for a specific platform.
+I think that means that you are writing for metadata which you didn't choose, arguably those driven to keep you on the platform, rather than  
+
+
+
+Going further, every platform has its own flavor of metadata. The information matters,
 but so does the context. As AI uncaps supply of digital information, it's possible that the 
 context will begin to gain in power relative to the information. The information is the easy part,
 the hard part is the metadata: who says it, and other visual aspects like font choice as well.  
