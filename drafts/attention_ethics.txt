@@ -2,33 +2,93 @@ https://x.com/NYCMayor/status/2117998092767396302
 
 Alright. Attention ethics. For a long time I've struggled with posting online. 
 
+
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
 Online attention gives people two main, and overlapping, things. First, money. Having followers is
-a personal marketing lever. Online attention also confers a vaporous thing, "social status,"
-which correlates somewhat with perceived viability as a sexual partner.
+a personal marketing lever. Second, social status, which correlates somewhat with perceived viability 
+as a sexual partner (among other things).
 
 In a way, online attention isn't so different than offline attention. Money and sex are key human motivators, 
 achievement in the digital domain or "real life" are both arguably in pursuit of climbing those hierarchies. 
 
-The strange thing about online posting is that, the "metadata" around what a person says is different. "Metadata" in person essentially means the context behind someone saying something. A simple greeting like "hi"
-means very different things based on tone of voice, your relationship with the speaker, and a myriad of 
-other items which people, in 2026 often sum up with the word "vibe" or "aura."
+The strange thing about online posting is that, the "metadata" around what a person says is different. "Metadata"
+in-person essentially means the context behind someone saying something. A simple greeting like "hi"
+means very different things based on tone of voice, prior relationship with the speaker, how they look, 
+and a myriad of other factors which people, in 2026, often sum up with the words "vibe" or "aura."
 
 In text-based communication, there is different metadata. There are factors like the aesthetic of the text 
-itself, the color, the font. Prose and poetry have aesthetics before you even read a word. Going further however, on a given social platform, the aesthetic metadata of the text doesn't change between users: one user's "good morning" is identical to another's.
+itself. For example, font consitutes metadata. Writing also has formatting aesthetics before you read 
+a word. However, on a given social platform, one users' "information" (a post) can be entirely identical to 
+another user's: one "good morning" posted by Sally, contains the same information (though not metadata), as 
+"good morning" posted by John. 
 
-However, not all plaintext "good mornings" are created equal. They have different metadata attached: namely who or what is saying "good morning." A famous actor tweeting "good morning" the day after a DUI, means a very different thing than a politician tweeting "good morning" after winning an election. Similarly a story posted by
-the Wall Street Journal means a different thing than a random X account, even if the words were the same.
+This is different than in-person interactions whereby it is impossible to have the same "good mornings" from 
+different people: the metadata, or more simply, context, is inextricable from what's being said. The written
+(or typed) word allows for the separation of information ("good morning"), and the context (metadata). A printed
+note detailing someone's state of mind has highly different impact depending on who wrote it (the president? 
+your neighbor?). Were it handwritten, there'd be metadata, allowing for another layer of interpretation. 
 
-Coming back to my struggle to post online. I think it's that I'm uncomfortable with the metadata. I sort of understand what it means to interact in person, clothes, tone of voice, maybe my reputation as well, but interacting on social platforms means implicitly that I'm signing up to adhere to a company's metadata. 
+Metadata makes it so that not all plaintext "good mornings" are created equal. Metadata online indicates who or 
+what is saying "good morning," but also how users of a platform receive that information. A famous actor tweeting 
+"good morning" the day after a DUI, means a very different thing than a politician tweeting "good morning" after 
+winning an election, means a different thing than a pseudonymous account with no followers tweeting "good morning."
 
-In terms of metadata on Twitter, the platform I'm most comfortable with, there's follower count, the aesthetics of a profile picture, and each post has likes, comments, reposts, views. 
+If you post "good morning" on a private account to no one, what does it mean?
+
+Continuing this line of thinking, it stands to reason that people would do best to optimize for their metadata as
+well as what they post itself. Again, this is not entirely different from the "real world": politicians dress well 
+for debates, a guy might do some extra pushups if they've got a date coming up, and so on. 
+
+It's difficult to separate how much effort to put into metadeta, whether offline or on, and how much to put into
+"content." But I think it's worth thinking about. 	
+
+
+Metadata online however, is less intuitive than in-person, call it. People evolved to understand
+queues around body language, to track reputation, and so forth. We're not equipped to understand why two 
+"good mornings," identical in isolation on a screen, mean very different things: it's confusing. 
+
+
+
+
+THE CONTENT AND THE METADATA... "ATTENTION" means optimizing the metadata... rather than the content
+
+
+My arguement is however, that social media often incentivizes optimization of metadata, in service of attention (TO A
+GENERALLY HIGHER / DIFFERENT DEGREE), than "real life." This leads to more time taken up by viewers, than a post really
+"deserves."
+
+In aggregate this means 
+
+500M users on X/Twitter. 
+
+ 
+
+
+
+Coming back to the struggle of posting online. It's about metadata. Every online platform has its own metadata. If you're
+posting on a platform, you're adhering to their conception of metadata. Posting on Substack means adhering to its choices about metadata, which are arguably (as in the case of saying "good morning"), more powerful than the words of a given 
+post itself. 
+
+What I'm arriving at, is that, any good piece of writing shouldn't depend on metadata. Maybe that helps it get attention. But good writing should stand on its own. That bar is much higher than writing for a specific platform. 
+
+
+
+ I think it's that I'm uncomfortable with the metadata. I sort of understand what it means to interact in person, clothes, tone of voice, maybe my reputation as well, but interacting on social platforms means implicitly that I'm signing up to adhere to a company's metadata. 
+
+In terms of metadata on Twitter, the platform I'm most comfortable with, there's follower count, the aesthetics of a profile picture, previous posts, reputation. Each post has likes, comments, reposts, views. That metadata is used to evaluate an individual "post" or "piece of content."
+
+Why don't 
 
 Crucially, metadata is public, and is definitive. 10,000 followers is 10,000 followers. 
 
 
 
 
-
+Similarly, a story posted by the Wall Street Journal means a different thing than a pseudonymous social media account,
+even if the words were the same. This is because of the reputation of each entity. The WSJ is expected to adhere to 
+the conditions of journalist integrity, and risks its reputation if it fails to do so. A pseudonymous social media
+account is risking much less, even if posting the exact same words on the same platform. 
 
 
 
