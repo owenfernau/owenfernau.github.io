@@ -10,7 +10,7 @@ a personal marketing lever. Second, social status, which correlates somewhat wit
 as a sexual partner (among other things).
 
 In a way, online attention isn't so different than offline attention. Money and sex are key human motivators, 
-achievement in the digital domain or "real life" are both arguably in pursuit of climbing those hierarchies. 
+achievement in either the digital domain or "real life" are both arguably in pursuit of climbing those hierarchies. 
 
 The strange thing about online posting is that, the "metadata" around what a person says is different. "Metadata"
 in-person essentially means the context behind someone saying something. A simple greeting like "hi"
@@ -19,14 +19,17 @@ and a myriad of other factors which people, in 2026, often sum up with the words
 
 In text-based communication, there is different metadata. There are factors like the aesthetic of the text 
 itself. For example, font consitutes metadata. Writing also has formatting aesthetics before you read 
-a word. However, on a given social platform, one users' "information" (a post) can be entirely identical to 
-another user's: one "good morning" posted by Sally, contains the same information (though not metadata), as 
-"good morning" posted by John. 
+a word. However, on a given social platform, one user's "information" (a post) can be entirely identical to 
+another user's: one "good morning" posted by Sally, contains the same information as  "good morning" posted by John. 
 
-This is different than in-person interactions whereby it is impossible to have the same "good mornings" from 
+However, these greetings contain different metadata: each post has numbers attached
+(hearts, retweets, comments). The poster's too, have different metadata attached: follower count, mutual followers, 
+
+In-person interactions differ from online ones in that it is impossible to have the same "good mornings" from 
 different people: the metadata, or more simply, context, is inextricable from what's being said. The written
-(or typed) word allows for the separation of information ("good morning"), and the context (metadata). A printed
-note detailing someone's state of mind has highly different impact depending on who wrote it (the president? 
+(or typed) word on the other hand allows for the separation of information ("good morning"), and the context (metadata).
+
+A printed note detailing someone's state of mind has highly different impact depending on who wrote it (the president? 
 your neighbor?). Were it handwritten, there'd be metadata, allowing for another layer of interpretation. 
 
 Metadata makes it so that not all plaintext "good mornings" are created equal. Metadata online indicates who or 
@@ -34,14 +37,36 @@ what is saying "good morning," but also how users of a platform receive that inf
 "good morning" the day after a DUI, means a very different thing than a politician tweeting "good morning" after 
 winning an election, means a different thing than a pseudonymous account with no followers tweeting "good morning."
 
-If you post "good morning" on a private account to no one, what does it mean?
-
 Continuing this line of thinking, it stands to reason that people would do best to optimize for their metadata as
 well as what they post itself. Again, this is not entirely different from the "real world": politicians dress well 
 for debates, a guy might do some extra pushups if they've got a date coming up, and so on. 
 
 It's difficult to separate how much effort to put into metadeta, whether offline or on, and how much to put into
-"content." But I think it's worth thinking about. 	
+"content." While not inextricable like real life communication, metadata and the content itself reinforce each 
+other. But it's important to note that different formats of communication, reward slightly different flavors 
+of metadata. In person, your physical presentation matters more. On social media, your follower count is key
+context added to your "content." 
+
+Each platform has its own metadata, with crossover. Tech-focused Twitter and LinkedIn care about universities. Tech 
+Twitter especially focuses on what companies you've worked at as well. I'm sure Instagram and TikTok have their own
+metadata language, but I'm not very familiar with those platforms. 
+
+My point is, to "raise awareness" (as always, mostly for myself by writing this), to consider what forms of metadata
+different platforms value. I would also argue, that the less context a piece of writing requires, the better it is. If an investment thesis 
+is solid enough, it shouldn't be necessary to know who wrote it. 
+
+XXXXXXXX
+XXXXXXXX
+XXXXXXXX
+XXXXXXXX
+XXXXXXXX
+XXXXXXXX
+XXXXXXXX
+
+Of course, reputation is useful. I like knowing that a book I read is at least somewhat well known before reading it 
+myself. Similarly online, people want to know a person is well-followed, before giving attention to that person themself.
+
+	
 
 
 Metadata online however, is less intuitive than in-person, call it. People evolved to understand
