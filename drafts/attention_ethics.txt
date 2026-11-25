@@ -52,8 +52,8 @@ Twitter especially focuses on what companies you've worked at as well. I'm sure 
 metadata language, but I'm not very familiar with those platforms. 
 
 My point is, to "raise awareness" (as always, mostly for myself by writing this), to consider what forms of metadata
-different platforms value. I would also argue, that the less context a piece of writing requires, the better it is. If an investment thesis 
-is solid enough, it shouldn't be necessary to know who wrote it. 
+different platforms value. I would also argue, that the less context a piece of writing requires, the better it is. If
+an investment thesis  is solid enough, it shouldn't be necessary to know who wrote it. 
 
 XXXXXXXX
 XXXXXXXX

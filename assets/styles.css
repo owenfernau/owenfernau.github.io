@@ -878,3 +878,7 @@ hr {
 }
 .prediction.yes .pred-dot:not(.past) { background: #3f7a4f; }
 .prediction.no .pred-dot:not(.past) { background: #8f3b3b; }
+
+/* Side-by-side comparison images in essays, forced to identical size */
+.tweet-pair { display: flex; flex-direction: column; gap: 8px; max-width: 510px; margin: 21px auto; }
+.tweet-pair img { display: block; width: 100%; aspect-ratio: 1290 / 426; object-fit: cover; object-position: left top; }
